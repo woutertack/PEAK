@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "PEAK",
+    "slug": "peak",
+    "scheme": "myapp",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/iconScreen.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splashScreen.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#127780"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-iconScreen.png",
+        "backgroundColor": "#127780"
+      },
+      "package": "com.woutertack.RNexpo"
+    },
+    "web": {
+      "favicon": "./assets/faviconScreen.png"
+    },
+    "plugins": [
+      [
+        "@rnmapbox/maps",
+        {
+          "RNMapboxMapsImpl": "mapbox",
+          "RNMapboxMapsDownloadToken": "sk.eyJ1Ijoid291dGVydGFjayIsImEiOiJjbHVlMzB6NXAxMzJuMnZwZ2wzamVsbDQwIn0.-5HYtJ3UQqM9eszrvpznrA"
+        }
+      ],
+      "expo-router"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "037f3112-805f-41f1-953c-a225f9c7948f"
+      }
+    },
+    "expo": {
+      "userInterfaceStyle": "automatic"
+    },
+    "owner": "woutertack"
+  }
+}
