@@ -58,7 +58,7 @@ const Map = () => {
       if (error) throw error;
   
       if (locationsData) {
-        console.log('Fetched locations:', locationsData);
+
         updateMapWithLocations(locationsData);
       }
     } catch (error) {
@@ -102,7 +102,6 @@ const Map = () => {
   
   const getHexagonArea = (resolution) => {
     const areaKm2 = h3.hexArea(resolution, 'km2' );
-    console.log(areaKm2, 'km²');
     // console.log(`Average area per hexagon at resolution ${resolution}: ${areaKm2} km² or ${areaM2} m²`);
   };
   
@@ -112,7 +111,7 @@ const Map = () => {
   const updateHexagons = (loc) => {
     console.log(loc.latitude, loc.longitude);
     const centerIndex = h3.geoToH3(loc.latitude, loc.longitude, 9);
-    console.log('Center hexagon index:', centerIndex);
+   
   
     // Call the function to check and add the hex index to the database
     checkAndAddHexIndex(centerIndex);

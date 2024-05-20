@@ -111,6 +111,7 @@ const EditProfile = ({navigation}) => {
               }}
             />
           </View>
+          {/* TO DO: make avatar load in faster */}
           <View style={styles.profileContainer}>
             <View style={styles.profileImg}>
             <AvatarUpload
@@ -121,13 +122,7 @@ const EditProfile = ({navigation}) => {
                
               }}
             />
-              {/* <TabBarIcon
-                library="FontAwesome"
-                icon="user-circle"
-                size={165}
-                style={styles.avatar}
-              />
-              <TertiaryButton label="Verander foto" onPress={() => {}} style={styles.profileBtn} /> */}
+             
             </View>
             <Text style={{ marginTop: 20, color: Colors.white, fontSize: 18 }}>Voornaam</Text>
             <TextInput

@@ -27,7 +27,7 @@ const StreakIcon = ({streak}) => {
         <Circle cx="11.119" cy="11.119" r="11.119" stroke="none"/>
         <Circle cx="11.119" cy="11.119" r="10.619" fill="none"/>
       </G>
-      <Text id="_2" data-name="2" transform="translate(387.86 230.289)" fill="#127780" font-size="18" font-family="NirmalaUI, Nirmala UI"><TSpan x="0" y="0">{streak}</TSpan></Text>
+      <Text id="_6" data-name="6" transform="translate(388.86 229.289)" fill="#127780" font-size="20" font-family="NirmalaUI, Nirmala UI"><TSpan x="0" y="0">{streak}</TSpan></Text>
     </G>
   </Svg>
 

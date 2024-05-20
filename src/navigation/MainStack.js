@@ -11,6 +11,7 @@ import Settings from "../screens/Settings";
 import EditProfile from "../screens/EditProfile";
 import Challenges from "../screens/Challenges";
 import Friends from "../screens/Friends";
+import FriendsProfile from "../screens/FriendsProfile";
 
 // Create Stack Navigator
 const Stack = createNativeStackNavigator();
@@ -51,6 +52,7 @@ function Main() {
         <Stack.Screen name="DrawerContent" component={DrawerContent} />
         <Stack.Screen name="Streaks" component={Streaks} />
         <Stack.Screen name="EditProfile" component={EditProfile} />
+        <Stack.Screen name="FriendsProfile" component={FriendsProfile} />
       </Stack.Navigator>
     </NavigationContainer>
   );

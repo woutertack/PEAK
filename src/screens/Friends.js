@@ -151,7 +151,7 @@ const Friends = ({ navigation }) => {
       <View style={styles.friendInfo}>
         <Text style={styles.friendName}>{`${item.first_name} ${item.last_name}`}</Text>
         <View style={styles.buttonProfile}>
-          <TouchableOpacity onPress={() => navigation.navigate('Profile', { friendId: item.id })} style={styles.buttonAccept}>
+          <TouchableOpacity onPress={() => navigation.navigate('FriendsProfile', { friendId: item.id })} style={styles.buttonAccept}>
             <Text style={styles.buttonAcceptText}>Ga naar profiel</Text>
             {/* TO DO add profile linking */}
           </TouchableOpacity>

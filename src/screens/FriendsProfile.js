@@ -1,40 +1,46 @@
-import React, { useContext, useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+// FriendsProfile.js
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
+import { useRoute } from '@react-navigation/native';
 import { Layout } from 'react-native-rapi-ui';
 import { StatusBar } from 'expo-status-bar';
 import TabBarIcon from "../components/utils/TabBarIcon";
 import Colors from '../consts/Colors';
 import Avatar from '../components/Avatar';
+import { format } from 'date-fns';
+import { nl } from 'date-fns/locale';
+import { supabase } from '../lib/initSupabase';
 import PrimaryButton from '../components/utils/buttons/PrimaryButton';
 import TertiaryButton from '../components/utils/buttons/TertiaryButton';
 import CardStats from '../components/cards/CardStats';
-import { AuthContext } from '../provider/AuthProvider';
-import { format, differenceInDays } from 'date-fns';
-import { nl } from 'date-fns/locale';
-import { supabase } from '../lib/initSupabase';
 import { calculateStreak } from '../components/utils/streaks/CalculateStreak'; // Import the calculateStreak function
 import { calculateMaxStreak } from '../components/utils/streaks/CalculateMaxStreak';
 
-const Profile = ({navigation}) => {
-  const { session } = useContext(AuthContext);
+
+const FriendsProfile = ({ navigation }) => {
+  const route = useRoute();
+  const { friendId } = route.params;
 
   const [loading, setLoading] = useState(true);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [createdAt, setCreatedAt] = useState('');
-  const [totalActiveDays, setTotalActiveDays] = useState(0);
+
   const [currentStreak, setCurrentStreak] = useState(0);
   const [maxStreak, setMaxStreak] = useState(0);
 
-  const fetchProfile = async () => {
+  useEffect(() => {
+    getFriendProfile();
+    getProfileLocations();
+  }, [friendId]);
+
+  async function getFriendProfile() {
     try {
-      if (!session?.user) throw new Error('No user on the session!');
       const { data, error, status } = await supabase
         .from('profiles')
-        .select('first_name, last_name, avatar_url, created_at')
-        .eq('id', session?.user.id)
+        .select(`first_name, last_name, avatar_url, created_at`)
+        .eq('id', friendId)
         .single();
       if (error && status !== 406) {
         throw error;
@@ -44,10 +50,6 @@ const Profile = ({navigation}) => {
         setLastName(data.last_name);
         setAvatarUrl(data.avatar_url);
         setCreatedAt(data.created_at);
-        const createdAtDate = new Date(data.created_at);
-        const currentDate = new Date();
-        const daysActive = differenceInDays(currentDate, createdAtDate);
-        setTotalActiveDays(daysActive);
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -56,42 +58,40 @@ const Profile = ({navigation}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const fetchProfileLocations = async () => {
+  async function getProfileLocations() {
     try {
-      if (!session?.user) throw new Error('No user on the session!');
       const { data, error, status } = await supabase
         .from('locations')
         .select('visited_at')
-        .eq('user_id', session.user.id)
+        .eq('user_id', friendId)
         .order('visited_at', { ascending: true });
       if (error && status !== 406) {
-        throw error;
+        throw error
       }
+    
       if (data) {
+        console.log(data);
         const streak = calculateStreak(data);
         setCurrentStreak(streak.currentStreak);
+        console.log('Current streak:', streak.currentStreak);
         const maxStreakValue = calculateMaxStreak(data);
         setMaxStreak(maxStreakValue);
+        console.log('Max streak:', maxStreakValue);
       }
     } catch (error) {
       if (error instanceof Error) {
-        Alert.alert(error.message);
+        Alert.alert(error.message)
       }
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchProfile();
-      fetchProfileLocations();
-    }, [session])
-  );
-
-  const formattedDate = createdAt ? `Lid sinds ${format(new Date(createdAt), 'MMMM yyyy', { locale: nl })}` : '';
+  const formattedDate = createdAt
+    ? `Lid sinds ${format(new Date(createdAt), 'MMMM yyyy', { locale: nl })}`
+    : '';
 
   return (
     <>
@@ -108,36 +108,27 @@ const Profile = ({navigation}) => {
                 navigation.goBack();
               }}
             />
-            <Text style={styles.headerText}>Profile</Text>
-            <TabBarIcon
-              library="Ionicons"
-              icon="settings-sharp"
-              size={32}
-              style={styles.settingsIcon}
-              onPress={() => {
-                navigation.navigate('Settings');
-              }}
-            />
+            <Text style={styles.headerText}>Vrienden</Text>
+            <View style={styles.iconPlaceholder} />
           </View>
           <View style={styles.profileContainer}>
             <View pointerEvents='none'>
               <Avatar rounded url={avatarUrl} size={180} containerStyle={styles.avatar} />
             </View>
-            <Text style={styles.nameText}>{`${firstName} ${lastName}, 22`}</Text>
+            <Text style={styles.nameText}>{`${firstName} ${lastName}`}</Text>
             <Text style={styles.memberSinceText}>{formattedDate}</Text>
+           
             <View style={styles.buttonsContainer}>
+              
               <View style={styles.viewBadgesButton}>
-                <TertiaryButton label={'Wijzig profiel'} onPress={() => navigation.navigate('EditProfile')} />
-              </View>
-              <View style={styles.viewBadgesButton}>
-                <PrimaryButton label={'Bekijk badges'} />
+                <PrimaryButton  label={'Bekijk badges'}  />
               </View>
             </View>
             <View style={styles.statsContainer}>
               <CardStats number="22.058" label="Totaal stappen" />
               <CardStats number="27" label="Totaal km" />
-              <CardStats number={totalActiveDays} label="Dagen bezig" />
-              <CardStats number={maxStreak} label="Langste streak" />
+              <CardStats number="315" label="Dagen bezig" />
+              <CardStats number={maxStreak}  label="Langste streak" />
               <CardStats number={currentStreak} label="Huidige streak" />
               <CardStats number="22" label="Badges" />
             </View>
@@ -147,6 +138,7 @@ const Profile = ({navigation}) => {
     </>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -238,6 +230,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#d1e8e2',
   },
+  iconPlaceholder: {
+    width: 38, // Match the icon size
+    height: 38, // Match the icon size
+  },
 });
 
-export default Profile;
+export default FriendsProfile;

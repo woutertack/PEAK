@@ -11,11 +11,12 @@ import PrimaryButton from '../components/utils/buttons/PrimaryButton';
 import { AuthContext } from '../provider/AuthProvider';
 import { supabase } from '../lib/initSupabase';
 import { calculateStreak } from '../components/utils/streaks/CalculateStreak'; // Import the calculateStreak function
-
+import { calculateMaxStreak } from '../components/utils/streaks/CalculateMaxStreak';
 const StreaksScreen = ({ navigation }) => {
   const { session } = useContext(AuthContext);
   const [streakData, setStreakData] = useState([]);
   const [currentStreak, setCurrentStreak] = useState(0);
+  const [maxStreak, setMaxStreak] = useState(0);
 
   useEffect(() => {
     const fetchStreakData = async () => {
@@ -35,6 +36,10 @@ const StreaksScreen = ({ navigation }) => {
         const streak = calculateStreak(data);
         setCurrentStreak(streak.currentStreak);
         setStreakData(streak.visitDates);
+
+        const maxStreakValue = calculateMaxStreak(data);
+        setMaxStreak(maxStreakValue);
+        console.log('Max streak:', maxStreakValue);
       }
     };
 
@@ -42,7 +47,7 @@ const StreaksScreen = ({ navigation }) => {
   }, []);
 
   const getLast7Days = () => {
-    const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    const days = ['Z', 'M', 'D', 'W', 'D', 'V', 'Z'];
     const result = [];
     const today = new Date();
 

@@ -49,15 +49,14 @@ export default function ({
       }
 
       if (data) {
-        console.log(data);
         const streak = calculateStreak(data);
-        console.log(streak);
         setCurrentStreak(streak.currentStreak);
       }
     };
 
     fetchStreakData();
   }, []);
+   // TO DO : update streaks when new location is added
 
   return (
   <SafeAreaView style={styles.safeArea}>
