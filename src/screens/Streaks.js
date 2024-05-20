@@ -12,12 +12,15 @@ import { AuthContext } from '../provider/AuthProvider';
 import { supabase } from '../lib/initSupabase';
 import { calculateStreak } from '../components/utils/streaks/CalculateStreak'; // Import the calculateStreak function
 import { calculateMaxStreak } from '../components/utils/streaks/CalculateMaxStreak';
+import useStatusBar from '../helpers/useStatusBar';
 const StreaksScreen = ({ navigation }) => {
   const { session } = useContext(AuthContext);
   const [streakData, setStreakData] = useState([]);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [maxStreak, setMaxStreak] = useState(0);
 
+  useStatusBar(Colors.secondaryGreen, 'light-content');
+  
   useEffect(() => {
     const fetchStreakData = async () => {
       const { data, error } = await supabase
@@ -61,10 +64,10 @@ const StreaksScreen = ({ navigation }) => {
   };
 
   const last7Days = getLast7Days();
+ 
 
   return (
     <>
-      <StatusBar backgroundColor={Colors.secondaryGreen} style="light" />
       <Layout>
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
           <View style={styles.header}>
@@ -129,7 +132,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: '#127780',
+    backgroundColor: Colors.secondaryGreen,
   },
   contentContainer: {
     padding: 20,

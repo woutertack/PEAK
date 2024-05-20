@@ -7,6 +7,7 @@ import { AuthContext } from '../provider/AuthProvider'
 import Avatar from '../components/Avatar'
 import Colors from '../consts/Colors'
 import useStore from '../helpers/firstLogin'
+import useStatusBar from '../helpers/useStatusBar'
 
 export default function Account({ }) {
   const [loading, setLoading] = useState(true)
@@ -15,7 +16,7 @@ export default function Account({ }) {
   const [avatarUrl, setAvatarUrl] = useState('')
   const { session } = useContext(AuthContext);
 
-
+  useStatusBar(Colors.secondaryGreen, 'light-content');
  
   useEffect(() => {
     if (session) getProfile()

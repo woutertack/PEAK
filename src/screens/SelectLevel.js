@@ -12,8 +12,10 @@ import LevelIcon2 from '../components/utils/icons/LevelIcon2';
 import LevelIcon3 from '../components/utils/icons/LevelIcon3';
 import { NavigationContainer } from '@react-navigation/native';
 import useStore from '../helpers/firstLogin';
+import useStatusBar from '../helpers/useStatusBar';
 
 const SelectLevel = ({navigation}) => {
+    useStatusBar(Colors.secondaryGreen, 'light-content');
     const { session } = useContext(AuthContext);
     const userId = session?.user.id;
     const [selectedLevel, setSelectedLevel] = useState(null);

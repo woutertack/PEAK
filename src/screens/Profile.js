@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Alert} from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Layout } from 'react-native-rapi-ui';
 import { StatusBar } from 'expo-status-bar';
@@ -15,6 +15,7 @@ import { nl } from 'date-fns/locale';
 import { supabase } from '../lib/initSupabase';
 import { calculateStreak } from '../components/utils/streaks/CalculateStreak'; // Import the calculateStreak function
 import { calculateMaxStreak } from '../components/utils/streaks/CalculateMaxStreak';
+import useStatusBar from '../helpers/useStatusBar';
 
 const Profile = ({navigation}) => {
   const { session } = useContext(AuthContext);
@@ -91,11 +92,13 @@ const Profile = ({navigation}) => {
     }, [session])
   );
 
+  useStatusBar(Colors.secondaryGreen, 'light-content');
+
   const formattedDate = createdAt ? `Lid sinds ${format(new Date(createdAt), 'MMMM yyyy', { locale: nl })}` : '';
 
   return (
     <>
-      <StatusBar backgroundColor={Colors.secondaryGreen} style="light" />
+      
       <Layout>
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
           <View style={styles.header}>

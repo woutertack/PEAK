@@ -6,6 +6,7 @@ import { AuthProvider } from "./src/provider/AuthProvider";
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import Colors from "./src/consts/Colors";
+import { StepProvider } from "./src/provider/StepProvider";
 
 
 
@@ -14,14 +15,14 @@ export default function App() {
  
 
   return (
-    <ThemeProvider   >
+    <>
       <AuthProvider>
-      <StatusBar style="light" backgroundColor="transparent" translucent={true} />
+     
         <Navigation />
       
       </AuthProvider>
       <StatusBar />
-    </ThemeProvider>
+    </>
   );
 }
 

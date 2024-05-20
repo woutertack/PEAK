@@ -9,8 +9,10 @@ import PrimaryButton from '../components/utils/buttons/PrimaryButton';
 import SecondaryButton from '../components/utils/buttons/SecondaryButton';
 import Avatar from '../components/Avatar';
 import TertiaryButton from '../components/utils/buttons/TertiaryButton';
+import useStatusBar from '../helpers/useStatusBar';
 
 const Challenges = ({ navigation }) => {
+  useStatusBar(Colors.secondaryGreen, 'light-content');
   const [loading, setLoading] = useState(false);
   const [incomingChallenges, setIncomingChallenges] = useState([
     {
@@ -40,6 +42,8 @@ const Challenges = ({ navigation }) => {
     // Remove the declined challenge from the list
     setIncomingChallenges((prevChallenges) => prevChallenges.filter(challenge => challenge.id !== id));
   };
+
+  
 
   return (
     <KeyboardAvoidingView behavior="height" enabled style={{ flex: 1 }}>

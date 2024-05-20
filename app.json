@@ -44,7 +44,11 @@
       }
     },
     "expo": {
-      "userInterfaceStyle": "automatic"
+      "userInterfaceStyle": "automatic",
+      "androidStatusBar": {
+        "backgroundColor": "#127780",
+        "translucent": false
+      }
     },
     "owner": "woutertack"
   }

@@ -9,8 +9,10 @@ import Avatar from '../components/Avatar';
 import AddFriend from '../components/utils/icons/AddFriend';
 import { AuthContext } from '../provider/AuthProvider';
 import { supabase } from '../lib/initSupabase'; // Adjust the path according to your project structure
+import useStatusBar from '../helpers/useStatusBar';
 
 const Friends = ({ navigation }) => {
+  useStatusBar(Colors.secondaryGreen, 'light-content');
   const [loading, setLoading] = useState(false);
   const { session } = useContext(AuthContext);
   const [users, setUsers] = useState([]);

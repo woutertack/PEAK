@@ -1,6 +1,7 @@
-import React, { useContext, useEffect, useState } from "react";
-import { View, TouchableOpacity, StyleSheet, Button, SafeAreaView } from 'react-native';
+import React, { useContext, useEffect, useState, useCallback  } from "react";
+import { View, TouchableOpacity, StyleSheet, Button, SafeAreaView} from 'react-native';
 import { StatusBar } from "expo-status-bar";
+
 
 import { supabase } from "../lib/initSupabase";
 import {
@@ -25,7 +26,7 @@ import FriendsIcon from "../components/utils/icons/FriendsIcon";
 import StreakIcon from "../components/utils/streaks/StreakIcon";
 import { AuthContext } from "../provider/AuthProvider";
 import { calculateStreak } from '../components/utils/streaks/CalculateStreak'; 
-
+import  useStatusBar from "../helpers/useStatusBar";
 
 
 
@@ -55,12 +56,15 @@ export default function ({
     };
 
     fetchStreakData();
+
   }, []);
+
+  // Set the status bar styles when unmounted bcs sometimes it doesn't update otherwise
+  useStatusBar('transparent', 'dark-content');
    // TO DO : update streaks when new location is added
 
   return (
   <SafeAreaView style={styles.safeArea}>
-      <StatusBar  backgroundColor="transparent" style="dark" />
     <Layout>
       <View style={styles.topNavContainer} pointerEvents="box-none" >
         {/* Left buttons */}
@@ -118,7 +122,6 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1, // You want SafeAreaView to fill the entire screen
     backgroundColor: 'transparent',
-     // or any color that matches your app's theme
   },
   topNavContainer: {
     flexDirection: 'row',
