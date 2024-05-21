@@ -5,10 +5,10 @@
     "scheme": "myapp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/iconScreen.png",
+    "icon": "./assets/iconScreen2.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splashScreen.png",
+      "image": "./assets/splashScreen2.png",
       "resizeMode": "contain",
       "backgroundColor": "#127780"
     },
@@ -20,13 +20,13 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-iconScreen.png",
+        "foregroundImage": "./assets/adaptive-iconScreen2.png",
         "backgroundColor": "#127780"
       },
       "package": "com.woutertack.RNexpo"
     },
     "web": {
-      "favicon": "./assets/faviconScreen.png"
+      "favicon": "./assets/faviconScreen2.png"
     },
     "plugins": [
       [
@@ -47,7 +47,7 @@
       "userInterfaceStyle": "automatic",
       "androidStatusBar": {
         "backgroundColor": "#127780",
-        "translucent": false
+        "translucent": true
       }
     },
     "owner": "woutertack"

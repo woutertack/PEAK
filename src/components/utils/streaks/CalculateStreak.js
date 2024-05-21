@@ -5,14 +5,17 @@ export const calculateStreak = (data) => {
     return { currentStreak: 0, visitDates: [] };
   }
 
-  const visitDates = data.map(item => new Date(item.visited_at).toDateString());
+  // Extract unique visit dates
+  const visitDatesSet = new Set(data.map(item => new Date(item.visited_at).toDateString()));
+  const visitDates = Array.from(visitDatesSet).sort((a, b) => new Date(a) - new Date(b));
+
   const today = new Date();
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
 
   const mostRecentVisit = new Date(visitDates[visitDates.length - 1]);
 
-  // Check if the most recent visit was yesterday
+  // Check if the most recent visit was yesterday or today
   if (mostRecentVisit.toDateString() !== yesterday.toDateString() && mostRecentVisit.toDateString() !== today.toDateString()) {
     return { currentStreak: 0, visitDates: visitDates.reverse() };
   }
@@ -41,5 +44,3 @@ export const calculateStreak = (data) => {
 
   return { currentStreak: streak, visitDates: visitDates.reverse() }; // Reverse the visitDates array to maintain order
 };
-
-

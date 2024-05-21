@@ -12,6 +12,7 @@ import EditProfile from "../screens/EditProfile";
 import Challenges from "../screens/Challenges";
 import Friends from "../screens/Friends";
 import FriendsProfile from "../screens/FriendsProfile";
+import BottomTabs from "./BottomTabs";
 
 // Create Stack Navigator
 const Stack = createNativeStackNavigator();
@@ -38,7 +39,7 @@ function DrawerContent() {
       }}>
       <Drawer.Screen name="Home" component={Home} />
       <Drawer.Screen name="Profile" component={Profile} />
-      <Drawer.Screen name="Challenges" component={Challenges} />
+      <Drawer.Screen name="Challenges" component={BottomTabs} />
       <Drawer.Screen name="Friends" component={Friends} />
       <Drawer.Screen name="Settings" component={Settings} />
     </Drawer.Navigator>

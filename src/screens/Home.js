@@ -27,7 +27,8 @@ import StreakIcon from "../components/utils/streaks/StreakIcon";
 import { AuthContext } from "../provider/AuthProvider";
 import { calculateStreak } from '../components/utils/streaks/CalculateStreak'; 
 import  useStatusBar from "../helpers/useStatusBar";
-
+import GoogleFit, { Scopes } from 'react-native-google-fit'
+import { Accelerometer } from "expo-sensors";
 
 
 export default function ({
@@ -37,6 +38,7 @@ export default function ({
   const [currentStreak, setCurrentStreak] = useState(0);
 
   useEffect(() => {
+    
     const fetchStreakData = async () => {
       const { data, error } = await supabase
         .from('locations')
@@ -56,8 +58,8 @@ export default function ({
     };
 
     fetchStreakData();
-
   }, []);
+
 
   // Set the status bar styles when unmounted bcs sometimes it doesn't update otherwise
   useStatusBar('transparent', 'dark-content');
@@ -76,7 +78,6 @@ export default function ({
 
         {/* Right button */}
         <View style={styles.navButtonGroup}>
-        
           <View style={styles.profileIcon} pointerEvents="auto">
           <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
             <User />

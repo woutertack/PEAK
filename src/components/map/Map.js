@@ -44,7 +44,7 @@ const Map = () => {
       return;
     }
     // const currentLocation = await Location.getCurrentPositionAsync({});
-    const currentLocation = { coords: { latitude: 51.01259, longitude: 3.101211 } };
+    const currentLocation = { coords: { latitude: 51.049999, longitude: 3.733333 } };
     setLocation(currentLocation.coords);
     console.log('Current location:', currentLocation.coords);
   };

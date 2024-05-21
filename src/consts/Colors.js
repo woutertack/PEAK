@@ -14,7 +14,7 @@ export default {
 
 
   // darkGreen: '#36D0A5',
-  lightGreen: '#4c9ea1',
+  lightGreen: '#46959C',
   darkGreen: "#0C4D53",
 
  
