@@ -23,13 +23,15 @@ import {
   Scopes,
   HealthConnectClient,
 } from 'react-native-health-connect';
+import { useHealthConnect } from "../provider/HealthConnectProvider";
 
 export default function ({ navigation }) {
   const { session } = useContext(AuthContext);
   const [currentStreak, setCurrentStreak] = useState(0);
+
  
 
-  
+
 
 
   useEffect(() => {
@@ -91,9 +93,7 @@ export default function ({ navigation }) {
         <View style={styles.mapSection}>
           <Map />
         </View>
-        <View style={styles.stepCountContainer}>
-          <Text style={styles.stepCountText}>Today's Steps: {stepCount}</Text>
-        </View>
+
       </Layout>
     </SafeAreaView>
   );

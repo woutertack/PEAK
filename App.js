@@ -6,7 +6,8 @@ import { AuthProvider } from "./src/provider/AuthProvider";
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import Colors from "./src/consts/Colors";
-import { StepProvider } from "./src/provider/StepProvider";
+import { HealthConnectProvider } from "./src/provider/HealthConnectProvider";
+
 
 
 
@@ -17,9 +18,9 @@ export default function App() {
   return (
     <>
       <AuthProvider>
-     
-        <Navigation />
-      
+        <HealthConnectProvider>
+          <Navigation />
+        </HealthConnectProvider>
       </AuthProvider>
       <StatusBar />
     </>

@@ -46,7 +46,6 @@
         }
       ],
       "expo-router",
-      "react-native-health-connect",
       [
         "expo-build-properties",
         {
@@ -55,6 +54,13 @@
             "targetSdkVersion": 34,
             "minSdkVersion": 26
           }
+        }
+      ],
+      [
+        "react-native-health-connect",
+        {
+          "mainActivityLanguage": "kotlin",
+          "permissionsRationaleActivityPath": "android/app/src/main/java/com/woutertack/RNexpo/PermissionsRationaleActivity.kt"
         }
       ]
     ],

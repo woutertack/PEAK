@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Alert} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Layout } from 'react-native-rapi-ui';
 import { StatusBar } from 'expo-status-bar';
@@ -10,16 +10,17 @@ import PrimaryButton from '../components/utils/buttons/PrimaryButton';
 import TertiaryButton from '../components/utils/buttons/TertiaryButton';
 import CardStats from '../components/cards/CardStats';
 import { AuthContext } from '../provider/AuthProvider';
-import { format, differenceInDays } from 'date-fns';
+import { format, differenceInDays, set } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { supabase } from '../lib/initSupabase';
 import { calculateStreak } from '../components/utils/streaks/CalculateStreak'; // Import the calculateStreak function
 import { calculateMaxStreak } from '../components/utils/streaks/CalculateMaxStreak';
 import useStatusBar from '../helpers/useStatusBar';
+import { useHealthConnect } from '../provider/HealthConnectProvider'; // Import the hook
 
-const Profile = ({navigation}) => {
+const Profile = ({ navigation }) => {
   const { session } = useContext(AuthContext);
-
+  const { readData, steps, distance } = useHealthConnect(); // Use the hook and get steps
   const [loading, setLoading] = useState(true);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -28,6 +29,8 @@ const Profile = ({navigation}) => {
   const [totalActiveDays, setTotalActiveDays] = useState(0);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [maxStreak, setMaxStreak] = useState(0);
+  const [totalSteps, setTotalSteps] = useState(0); // New state for total steps
+  const [totalDistance, setTotalDistance] = useState(0); // New state for total distance
 
   const fetchProfile = async () => {
     try {
@@ -49,6 +52,9 @@ const Profile = ({navigation}) => {
         const currentDate = new Date();
         const daysActive = differenceInDays(currentDate, createdAtDate);
         setTotalActiveDays(daysActive);
+
+        // Fetch total steps since account creation
+        await fetchTotalSteps(createdAtDate, currentDate);
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -56,6 +62,18 @@ const Profile = ({navigation}) => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTotalSteps = async (startDate, endDate) => {
+    try {
+      await readData(startDate, endDate);
+      setTotalSteps(steps);
+      setTotalDistance(Math.round((distance / 1000) * 10) / 10);
+    } catch (error) {
+      if (error instanceof Error) {
+        Alert.alert(error.message);
+      }
     }
   };
 
@@ -97,59 +115,57 @@ const Profile = ({navigation}) => {
   const formattedDate = createdAt ? `Lid sinds ${format(new Date(createdAt), 'MMMM yyyy', { locale: nl })}` : '';
 
   return (
-    <>
-      
-      <Layout>
-        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-          <View style={styles.header}>
-            <TabBarIcon
-              library="AntDesign"
-              icon="arrowleft"
-              size={38}
-              style={styles.icon}
-              onPress={() => {
-                navigation.goBack();
-              }}
-            />
-            <Text style={styles.headerText}>Profile</Text>
-            <TabBarIcon
-              library="Ionicons"
-              icon="settings-sharp"
-              size={32}
-              style={styles.settingsIcon}
-              onPress={() => {
-                navigation.navigate('Settings');
-              }}
-            />
+    <Layout>
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+        <View style={styles.header}>
+          <TabBarIcon
+            library="AntDesign"
+            icon="arrowleft"
+            size={38}
+            style={styles.icon}
+            onPress={() => {
+              navigation.goBack();
+            }}
+          />
+          <Text style={styles.headerText}>Profile</Text>
+          <TabBarIcon
+            library="Ionicons"
+            icon="settings-sharp"
+            size={32}
+            style={styles.settingsIcon}
+            onPress={() => {
+              navigation.navigate('Settings');
+            }}
+          />
+        </View>
+        <View style={styles.profileContainer}>
+          <View pointerEvents='none'>
+            <Avatar rounded url={avatarUrl} size={180} containerStyle={styles.avatar} />
           </View>
-          <View style={styles.profileContainer}>
-            <View pointerEvents='none'>
-              <Avatar rounded url={avatarUrl} size={180} containerStyle={styles.avatar} />
+          <Text style={styles.nameText}>{`${firstName} ${lastName}, 22`}</Text>
+          <Text style={styles.memberSinceText}>{formattedDate}</Text>
+          <View style={styles.buttonsContainer}>
+            <View style={styles.viewBadgesButton}>
+              <TertiaryButton label={'Wijzig profiel'} onPress={() => navigation.navigate('EditProfile')} />
             </View>
-            <Text style={styles.nameText}>{`${firstName} ${lastName}, 22`}</Text>
-            <Text style={styles.memberSinceText}>{formattedDate}</Text>
-            <View style={styles.buttonsContainer}>
-              <View style={styles.viewBadgesButton}>
-                <TertiaryButton label={'Wijzig profiel'} onPress={() => navigation.navigate('EditProfile')} />
-              </View>
-              <View style={styles.viewBadgesButton}>
-                <PrimaryButton label={'Bekijk badges'} />
-              </View>
-            </View>
-            <View style={styles.statsContainer}>
-              <CardStats number="22.058" label="Totaal stappen" />
-              <CardStats number="27" label="Totaal km" />
-              <CardStats number={totalActiveDays} label="Dagen bezig" />
-              <CardStats number={maxStreak} label="Langste streak" />
-              <CardStats number={currentStreak} label="Huidige streak" />
-              <CardStats number="22" label="Badges" />
+            <View style={styles.viewBadgesButton}>
+              <PrimaryButton label={'Bekijk badges'} />
             </View>
           </View>
-        </ScrollView>
-      </Layout>
-    </>
+          <View style={styles.statsContainer}>
+            <CardStats number={totalSteps} label="Totaal stappen" />
+            <CardStats number={totalDistance} label="Totaal km" />
+            <CardStats number={totalActiveDays} label="Dagen bezig" />
+            <CardStats number={maxStreak} label="Langste streak" />
+            <CardStats number={currentStreak} label="Huidige streak" />
+            <CardStats number="22" label="Badges" />
+          </View>
+        </View>
+      </ScrollView>
+    </Layout>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
