@@ -6,6 +6,7 @@ import Colors from '../../consts/Colors';
 import TimerIcon from '../utils/icons/TimerIcon';
 
 const CardChallenge = ({ title, progress, description, timeLeft }) => {
+  console.log(timeLeft)
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>

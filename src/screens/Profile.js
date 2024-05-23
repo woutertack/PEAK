@@ -37,7 +37,7 @@ const Profile = ({ navigation }) => {
       if (!session?.user) throw new Error('No user on the session!');
       const { data, error, status } = await supabase
         .from('profiles')
-        .select('first_name, last_name, avatar_url, created_at')
+        .select('first_name, last_name, avatar_url, created_at, total_steps, total_distance_km')
         .eq('id', session?.user.id)
         .single();
       if (error && status !== 406) {
@@ -48,13 +48,15 @@ const Profile = ({ navigation }) => {
         setLastName(data.last_name);
         setAvatarUrl(data.avatar_url);
         setCreatedAt(data.created_at);
+        setTotalSteps(data.total_steps);
+        setTotalDistance(data.total_distance_km);
+        
         const createdAtDate = new Date(data.created_at);
         const currentDate = new Date();
         const daysActive = differenceInDays(currentDate, createdAtDate);
         setTotalActiveDays(daysActive);
 
-        // Fetch total steps since account creation
-        await fetchTotalSteps(createdAtDate, currentDate);
+        
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -65,17 +67,18 @@ const Profile = ({ navigation }) => {
     }
   };
 
-  const fetchTotalSteps = async (startDate, endDate) => {
-    try {
-      await readData(startDate, endDate);
-      setTotalSteps(steps);
-      setTotalDistance(Math.round((distance / 1000) * 10) / 10);
-    } catch (error) {
-      if (error instanceof Error) {
-        Alert.alert(error.message);
-      }
-    }
-  };
+  // const fetchTotalSteps = async (startDate, endDate) => {
+  //   try {
+  //     await readData(startDate, endDate);
+  //     setTotalSteps(steps);
+  //     console.log('Total steps:', steps);
+  //     setTotalDistance(Math.round((distance / 1000) * 10) / 10);
+  //   } catch (error) {
+  //     if (error instanceof Error) {
+  //       Alert.alert(error.message);
+  //     }
+  //   }
+  // };
 
   const fetchProfileLocations = async () => {
     try {

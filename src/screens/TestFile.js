@@ -13,15 +13,21 @@ import { AuthContext } from '../provider/AuthProvider';
 const challengeTemplates = [
   {
     challenge_type: 'steps',
+    title: 'Stappen',
     goalRange: [5000, 20000],
+    description: goal => `Zet ${goal} stappen`,
   },
   {
     challenge_type: 'distance',
+    title: 'Afstand',
     goalRange: [3, 10], // in kilometers
+    description: goal => `Loop ${goal} kilometer`,
   },
   {
     challenge_type: 'hexagons',
+    title: 'Ontdek gebieden',
     goalRange: [1, 10],
+    description: goal => `Ontdek ${goal} nieuwe gebieden`,
   },
 ];
 
@@ -33,7 +39,9 @@ const getRandomChallenge = (type) => {
 
   return {
     challenge_type: challenge.challenge_type,
+    title: challenge.title,
     goal,
+    description: challenge.description(goal),
     creation_time: creationTime,
     type,
   };
@@ -80,11 +88,13 @@ const Challenges = ({ navigation }) => {
   useStatusBar(Colors.secondaryGreen, 'light-content');
   const [loading, setLoading] = useState(true);
   const [dailyChallenge, setDailyChallenge] = useState(null);
+  const [weeklyChallenge, setWeeklyChallenge] = useState(null);
+  const [monthlyChallenge, setMonthlyChallenge] = useState(null);
   const { steps, distance } = useHealthConnect();
   const { session } = useContext(AuthContext);
 
   useEffect(() => {
-    const fetchDailyChallenge = async () => {
+    const fetchChallenges = async () => {
       try {
         const userId = session?.user?.id;
 
@@ -92,7 +102,7 @@ const Challenges = ({ navigation }) => {
           throw new Error('User not logged in');
         }
 
-        // Fetch existing daily challenge
+        // Fetch existing challenges
         const { data: dailyData, error: dailyError } = await supabase
           .from('challenges')
           .select('*')
@@ -102,12 +112,32 @@ const Challenges = ({ navigation }) => {
           .limit(1)
           .single();
 
-        if (dailyError && dailyError.code !== 'PGRST116') {
-          throw new Error('Error fetching daily challenge');
+        const { data: weeklyData, error: weeklyError } = await supabase
+          .from('challenges')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('type', 'weekly')
+          .order('creation_time', { ascending: false })
+          .limit(1)
+          .single();
+
+        const { data: monthlyData, error: monthlyError } = await supabase
+          .from('challenges')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('type', 'monthly')
+          .order('creation_time', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (dailyError || weeklyError || monthlyError) {
+          throw new Error('Error fetching challenges');
         }
 
         const now = new Date();
-        const dailyCreationTime = dailyData ? new Date(dailyData.creation_time) : null;
+        const dailyCreationTime = new Date(dailyData?.creation_time);
+        const weeklyCreationTime = new Date(weeklyData?.creation_time);
+        const monthlyCreationTime = new Date(monthlyData?.creation_time);
 
         // If no daily challenge exists or it has expired, create a new one
         if (!dailyData || (now - dailyCreationTime) > (24 * 60 * 60 * 1000)) {
@@ -123,6 +153,34 @@ const Challenges = ({ navigation }) => {
           setDailyChallenge(dailyData);
         }
 
+        // If no weekly challenge exists or it has expired, create a new one
+        if (!weeklyData || (now - weeklyCreationTime) > (7 * 24 * 60 * 60 * 1000)) {
+          const newWeeklyChallenge = getRandomChallenge('weekly');
+          const { error } = await supabase
+            .from('challenges')
+            .insert([{ ...newWeeklyChallenge, user_id: userId }]);
+
+          if (error) throw error;
+
+          setWeeklyChallenge(newWeeklyChallenge);
+        } else {
+          setWeeklyChallenge(weeklyData);
+        }
+
+        // If no monthly challenge exists or it has expired, create a new one
+        if (!monthlyData || (now - monthlyCreationTime) > (30 * 24 * 60 * 60 * 1000)) {
+          const newMonthlyChallenge = getRandomChallenge('monthly');
+          const { error } = await supabase
+            .from('challenges')
+            .insert([{ ...newMonthlyChallenge, user_id: userId }]);
+
+          if (error) throw error;
+
+          setMonthlyChallenge(newMonthlyChallenge);
+        } else {
+          setMonthlyChallenge(monthlyData);
+        }
+
         setLoading(false);
       } catch (error) {
         Alert.alert('Error fetching challenges', error.message);
@@ -130,7 +188,7 @@ const Challenges = ({ navigation }) => {
       }
     };
 
-    fetchDailyChallenge();
+    fetchChallenges();
   }, [session]);
 
   const calculateProgress = (challenge) => {
@@ -147,7 +205,7 @@ const Challenges = ({ navigation }) => {
     }
   };
 
-  if (loading || !dailyChallenge) {
+  if (loading || !dailyChallenge || !weeklyChallenge || !monthlyChallenge) {
     return (
       <View style={styles.loadingContainer}>
         <Text>Loading...</Text>
@@ -175,10 +233,24 @@ const Challenges = ({ navigation }) => {
           </View>
           <CardChallenge
             key={`daily-${dailyChallenge.type}`}
-            title={`Dagelijkse uitdaging`}
+            title={`Dagelijkse uitdaging: ${dailyChallenge.title}`}
             progress={calculateProgress(dailyChallenge)}
-            description={`${dailyChallenge.goal} ${dailyChallenge.challenge_type}`}
+            description={dailyChallenge.description}
             timeLeft={calculateTimeLeft(dailyChallenge.creation_time, dailyChallenge.type)}
+          />
+          <CardChallenge
+            key={`weekly-${weeklyChallenge.type}`}
+            title={`Wekelijkse uitdaging: ${weeklyChallenge.title}`}
+            progress={calculateProgress(weeklyChallenge)}
+            description={weeklyChallenge.description}
+            timeLeft={calculateTimeLeft(weeklyChallenge.creation_time, weeklyChallenge.type)}
+          />
+          <CardChallenge
+            key={`monthly-${monthlyChallenge.type}`}
+            title={`Maandelijkse uitdaging: ${monthlyChallenge.title}`}
+            progress={calculateProgress(monthlyChallenge)}
+            description={monthlyChallenge.description}
+            timeLeft={calculateTimeLeft(monthlyChallenge.creation_time, monthlyChallenge.type)}
           />
         </ScrollView>
       </Layout>
