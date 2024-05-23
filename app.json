@@ -5,10 +5,10 @@
     "scheme": "myapp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/iconScreen2.png",
-    "userInterfaceStyle": "light",
+    "icon": "./assets/PeakIcon.png",
+    "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/splashScreen2.png",
+      "image": "./assets/PeakSplashscreen.png",
       "resizeMode": "contain",
       "backgroundColor": "#127780"
     },
@@ -16,17 +16,26 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.woutertack.RNexpo"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-iconScreen2.png",
+        "foregroundImage": "./assets/Peak-adaptiveIcon.png",
         "backgroundColor": "#127780"
       },
-      "package": "com.woutertack.RNexpo"
+      "package": "com.woutertack.RNexpo",
+      "permissions": [
+        "android.permission.ACTIVITY_RECOGNITION",
+        "android.permission.BODY_SENSORS",
+        "android.permission.health.READ_STEPS",
+        "android.permission.health.READ_FLOORS_CLIMBED",
+        "android.permission.health.READ_DISTANCE",
+        "android.permission.health.READ_ACTIVE_CALORIES_BURNED"
+      ]
     },
     "web": {
-      "favicon": "./assets/faviconScreen2.png"
+      "favicon": "./assets/PeakFavicon.png"
     },
     "plugins": [
       [
@@ -36,19 +45,27 @@
           "RNMapboxMapsDownloadToken": "sk.eyJ1Ijoid291dGVydGFjayIsImEiOiJjbHVlMzB6NXAxMzJuMnZwZ2wzamVsbDQwIn0.-5HYtJ3UQqM9eszrvpznrA"
         }
       ],
-      "expo-router"
+      "expo-router",
+      "react-native-health-connect",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "minSdkVersion": 26
+          }
+        }
+      ]
     ],
     "extra": {
       "eas": {
         "projectId": "037f3112-805f-41f1-953c-a225f9c7948f"
       }
     },
-    "expo": {
-      "userInterfaceStyle": "automatic",
-      "androidStatusBar": {
-        "backgroundColor": "#127780",
-        "translucent": true
-      }
+    "androidStatusBar": {
+      "backgroundColor": "#127780",
+      "translucent": true
     },
     "owner": "woutertack"
   }

@@ -16,6 +16,8 @@ function BottomTabs() {
   return (
     <Tab.Navigator
     screenOptions={({ route }) => ({
+      tabBarActiveTintColor: Colors.white,
+      tabBarInactiveTintColor: Colors.secondaryGreen,
       headerShown: false,
       tabBarStyle: { 
         backgroundColor: Colors.lightGreen, 
@@ -34,10 +36,7 @@ function BottomTabs() {
         }
       },
     })}
-      tabBarOptions={{
-        activeTintColor: Colors.white,
-        inactiveTintColor: Colors.secondaryGreen,
-      }}
+     
     >
       <Tab.Screen name="Challenges" component={Challenges} />
       <Tab.Screen name="Versus" component={Versus} />

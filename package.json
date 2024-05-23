@@ -23,7 +23,9 @@
     "@supabase/supabase-js": "^2.39.7",
     "aes-js": "^3.1.2",
     "date-fns": "^3.6.0",
+    "deprecated-react-native-prop-types": "^5.0.0",
     "expo": "~50.0.11",
+    "expo-build-properties": "~0.11.1",
     "expo-constants": "~15.4.6",
     "expo-dev-client": "~3.3.11",
     "expo-font": "~11.10.3",
@@ -33,14 +35,18 @@
     "expo-location": "~16.5.5",
     "expo-router": "~3.4.8",
     "expo-secure-store": "~12.8.1",
+    "expo-sensors": "~12.9.1",
     "expo-splash-screen": "~0.26.4",
     "expo-status-bar": "~1.11.1",
     "h3-reactnative": "github:realPrimoh/h3-reactnative",
     "react": "18.2.0",
     "react-native": "0.73.6",
+    "react-native-circular-progress": "^1.4.0",
     "react-native-elements": "^3.4.3",
     "react-native-gesture-handler": "~2.14.0",
     "react-native-get-random-values": "~1.8.0",
+    "react-native-health": "^1.18.0",
+    "react-native-health-connect": "^2.0.3",
     "react-native-maps": "1.10.0",
     "react-native-rapi-ui": "^0.2.1",
     "react-native-reanimated": "~3.6.2",
@@ -49,8 +55,7 @@
     "react-native-svg": "14.1.0",
     "react-native-url-polyfill": "^2.0.0",
     "typescript": "^5.3.0",
-    "zustand": "^4.5.2",
-    "expo-sensors": "~12.9.1"
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
