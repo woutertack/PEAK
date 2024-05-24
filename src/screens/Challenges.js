@@ -9,87 +9,54 @@ import CardChallenge from '../components/cards/CardChallenge';
 import { useHealthConnect } from '../provider/HealthConnectProvider';
 import { supabase } from '../lib/initSupabase';
 import { AuthContext } from '../provider/AuthProvider';
-
-const challengeTemplates = [
-  {
-    challenge_type: 'steps',
-    goalRange: [5000, 20000],
-  },
-  {
-    challenge_type: 'distance',
-    goalRange: [3, 10], // in kilometers
-  },
-  {
-    challenge_type: 'hexagons',
-    goalRange: [1, 10],
-  },
-];
-
-const getRandomChallenge = (type) => {
-  const randomIndex = Math.floor(Math.random() * challengeTemplates.length);
-  const challenge = challengeTemplates[randomIndex];
-  const goal = Math.floor(Math.random() * (challenge.goalRange[1] - challenge.goalRange[0] + 1)) + challenge.goalRange[0];
-  const creationTime = new Date().toISOString();
-
-  return {
-    challenge_type: challenge.challenge_type,
-    goal,
-    creation_time: creationTime,
-    type,
-  };
-};
-
-const calculateTimeLeft = (creationTime, type) => {
-  const now = new Date().getTime();
-  const creationTimestamp = new Date(creationTime).getTime();
-  const elapsedTime = now - creationTimestamp;
-  let totalTime;
-
-  switch (type) {
-    case 'daily':
-      totalTime = 24 * 60 * 60 * 1000; // 24 hours
-      break;
-    case 'weekly':
-      totalTime = 7 * 24 * 60 * 60 * 1000; // 7 days
-      break;
-    case 'monthly':
-      const currentMonth = new Date(creationTime).getMonth();
-      const nextMonth = new Date(creationTime).setMonth(currentMonth + 1);
-      totalTime = nextMonth - creationTimestamp;
-      break;
-    default:
-      totalTime = 0;
-  }
-
-  const remainingTime = totalTime - elapsedTime;
-  const hours = Math.floor((remainingTime / (1000 * 60 * 60)) % 24);
-  const minutes = Math.floor((remainingTime / (1000 * 60)) % 60);
-  const seconds = Math.floor((remainingTime / 1000) % 60);
-  const days = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
-
-  if (type === 'daily') {
-    return `${hours}h ${minutes}m ${seconds}s`;
-  } else if (type === 'weekly') {
-    return `${days}d ${hours}h`;
-  } else if (type === 'monthly') {
-    return `${days}d ${hours}h`;
-  }
-};
+import useLocationData from '../helpers/useLocationData';
+import getRandomChallenge from '../components/utils/challenges/getRandomChallenge';
+import calculateInitialTimeLeft from '../components/utils/challenges/calculateInitialTimeLeft';
+import formatChallengeDescription from '../components/utils/challenges/formatChallengeDescription';
+import { err } from 'react-native-svg';
 
 const Challenges = ({ navigation }) => {
   useStatusBar(Colors.secondaryGreen, 'light-content');
   const [loading, setLoading] = useState(true);
   const [dailyChallenge, setDailyChallenge] = useState(null);
-  const { steps, distance } = useHealthConnect();
+  const [weeklyChallenge, setWeeklyChallenge] = useState(null);
+  const [monthlyChallenge, setMonthlyChallenge] = useState(null);
+  const [dailyProgress, setDailyProgress] = useState(0);
+  const [weeklyProgress, setWeeklyProgress] = useState(0);
+  const [monthlyProgress, setMonthlyProgress] = useState(0);
   const { session } = useContext(AuthContext);
+  const { readHealthData } = useHealthConnect();
+  const userId = session?.user?.id;
+
+ 
 
   useEffect(() => {
-    const fetchDailyChallenge = async () => {
+    
+    const fetchChallenges = async () => {
       try {
-        const userId = session?.user?.id;
-
         if (!userId) {
           throw new Error('User not logged in');
+        }
+
+        // Fetch user profile to get the level
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('level')
+          .eq('id', userId)
+          .single();
+
+        if (profileError) {
+          throw new Error('Error fetching user profile');
+        }
+
+        let levelMultiplier = 1;
+        switch (profileData.level) {
+          case 'medium':
+            levelMultiplier = 2;
+            break;
+          case 'hard':
+            levelMultiplier = 3;
+            break;
         }
 
         // Fetch existing daily challenge
@@ -102,16 +69,38 @@ const Challenges = ({ navigation }) => {
           .limit(1)
           .single();
 
-        if (dailyError && dailyError.code !== 'PGRST116') {
-          throw new Error('Error fetching daily challenge');
+        const { data: weeklyData, error: weeklyError } = await supabase
+          .from('challenges')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('type', 'weekly')
+          .order('creation_time', { ascending: false })
+          .limit(1)
+          .single();
+
+        const { data: monthlyData, error: monthlyError } = await supabase
+          .from('challenges')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('type', 'monthly')
+          .order('creation_time', { ascending: false })
+          .limit(1)
+          .single();
+
+        if ((dailyError && dailyError.code !== 'PGRST116') ||
+            (weeklyError && weeklyError.code !== 'PGRST116') ||
+            (monthlyError && monthlyError.code !== 'PGRST116')) {
+          throw new Error('Error fetching challenges');
         }
 
         const now = new Date();
         const dailyCreationTime = dailyData ? new Date(dailyData.creation_time) : null;
+        const weeklyCreationTime = weeklyData ? new Date(weeklyData.creation_time) : null;
+        const monthlyCreationTime = monthlyData ? new Date(monthlyData.creation_time) : null;
 
         // If no daily challenge exists or it has expired, create a new one
         if (!dailyData || (now - dailyCreationTime) > (24 * 60 * 60 * 1000)) {
-          const newDailyChallenge = getRandomChallenge('daily');
+          const newDailyChallenge = getRandomChallenge('daily', levelMultiplier);
           const { error } = await supabase
             .from('challenges')
             .insert([{ ...newDailyChallenge, user_id: userId }]);
@@ -119,8 +108,42 @@ const Challenges = ({ navigation }) => {
           if (error) throw error;
 
           setDailyChallenge(newDailyChallenge);
+          calculateProgress(newDailyChallenge, 'daily');
         } else {
           setDailyChallenge(dailyData);
+          calculateProgress(dailyData, 'daily');
+        }
+
+        // If no weekly challenge exists or it has expired, create a new one
+        if (!weeklyData || (now - weeklyCreationTime) > (7 * 24 * 60 * 60 * 1000)) {
+          const newWeeklyChallenge = getRandomChallenge('weekly', levelMultiplier);
+          const { error } = await supabase
+            .from('challenges')
+            .insert([{ ...newWeeklyChallenge, user_id: userId }]);
+
+          if (error) throw error;
+
+          setWeeklyChallenge(newWeeklyChallenge);
+          calculateProgress(newWeeklyChallenge, 'weekly');
+        } else {
+          setWeeklyChallenge(weeklyData);
+          calculateProgress(weeklyData, 'weekly');
+        }
+
+        // If no monthly challenge exists or it has expired, create a new one
+        if (!monthlyData || (now - monthlyCreationTime) > (30 * 24 * 60 * 60 * 1000)) {
+          const newMonthlyChallenge = getRandomChallenge('monthly', levelMultiplier);
+          const { error } = await supabase
+            .from('challenges')
+            .insert([{ ...newMonthlyChallenge, user_id: userId }]);
+
+          if (error) throw error;
+
+          setMonthlyChallenge(newMonthlyChallenge);
+          calculateProgress(newMonthlyChallenge, 'monthly');
+        } else {
+          setMonthlyChallenge(monthlyData);
+          calculateProgress(monthlyData, 'monthly');
         }
 
         setLoading(false);
@@ -130,24 +153,103 @@ const Challenges = ({ navigation }) => {
       }
     };
 
-    fetchDailyChallenge();
-  }, [session]);
+    const calculateProgress = async (challenge, type) => {
+      const { totalSteps, totalDistance } = await readHealthData(challenge.creation_time);
+      console.log(userId, 'userId')
+      let progress = 0;
+      
+      if (challenge.challenge_type === 'hexagons') {
+        // Fetch hexagon data
+        const { data: hexagons, error } = await supabase
+          .from('locations')
+          .select('visited_at')
+          .eq('user_id', userId)
+          .gte('visited_at', challenge.creation_time);
+    
+        if (error) {
+          console.error('Error fetching hexagon data:', error);
+          return;
+        }
+    
+        progress = hexagons.length / challenge.goal;
+      } else {
+        switch (challenge.challenge_type) {
+          case 'steps':
+            progress = totalSteps / challenge.goal;
+            break;
+          case 'distance':
+            progress = totalDistance / challenge.goal; // The goal is in kilometers
+            break;
+          default:
+            progress = 0;
+        }
+      }
+    
+      if (type === 'daily') {
+        setDailyProgress(progress);
+      } else if (type === 'weekly') {
+        setWeeklyProgress(progress);
+      } else if (type === 'monthly') {
+        setMonthlyProgress(progress);
+      }
+    
+      // Update the completed state in Supabase if the goal is reached
+      if (progress >= 1) {
+        const { error } = await supabase
+          .from('challenges')
+          .update({ completed: true })
+          .eq('id', challenge.id);
+    
+        if (error) {
+          console.error('Error updating challenge completion status:', error);
+        } else {
+          console.log('Challenge marked as completed');
+        }
+      }
+    };
 
-  const calculateProgress = (challenge) => {
-    switch (challenge.challenge_type) {
-      case 'steps':
-        return steps / challenge.goal;
-      case 'distance':
-        return distance / (challenge.goal * 1000); // Convert kilometers to meters
-      case 'hexagons':
-        // Implement the logic for hexagons if you have the data available
-        return 0; // Placeholder
-      default:
-        return 0;
-    }
-  };
+    //   let progress = 0;
+    //   switch (challenge.challenge_type) {
+    //     case 'steps':
+    //       progress = totalSteps / challenge.goal;
+    //       break;
+    //     case 'distance':
+    //       progress = totalDistance / challenge.goal; // The goal is in kilometers
+    //       break;
+    //     case 'hexagons':
+    //       progress = hexagons.length / challenge.goal;
+    //       break;
+    //     default:
+    //       progress = 0;
+    //   }
 
-  if (loading || !dailyChallenge) {
+    //   if (type === 'daily') {
+    //     setDailyProgress(progress);
+    //   } else if (type === 'weekly') {
+    //     setWeeklyProgress(progress);
+    //   } else if (type === 'monthly') {
+    //     setMonthlyProgress(progress);
+    //   }
+
+    //   // Update the completed state in Supabase if the goal is reached
+    //   if (progress >= 1) {
+    //     const { error } = await supabase
+    //       .from('challenges')
+    //       .update({ completed: true })
+    //       .eq('id', challenge.id);
+
+    //     if (error) {
+    //       console.error('Error updating challenge completion status:', error);
+    //     } else {
+    //       console.log('Challenge marked as completed');
+    //     }
+    //   }
+    // };
+
+    fetchChallenges();
+  }, [session, readHealthData]);
+
+  if (loading  || !dailyChallenge || !weeklyChallenge || !monthlyChallenge) {
     return (
       <View style={styles.loadingContainer}>
         <Text>Loading...</Text>
@@ -176,9 +278,29 @@ const Challenges = ({ navigation }) => {
           <CardChallenge
             key={`daily-${dailyChallenge.type}`}
             title={`Dagelijkse uitdaging`}
-            progress={calculateProgress(dailyChallenge)}
-            description={`${dailyChallenge.goal} ${dailyChallenge.challenge_type}`}
-            timeLeft={calculateTimeLeft(dailyChallenge.creation_time, dailyChallenge.type)}
+            progress={dailyProgress}
+            description={formatChallengeDescription(dailyChallenge.challenge_type, dailyChallenge.goal)}
+            initialTimeLeft={calculateInitialTimeLeft(dailyChallenge.creation_time, dailyChallenge.type)}
+            type={dailyChallenge.type}
+            creationTime={dailyChallenge.creation_time}
+          />
+          <CardChallenge
+            key={`weekly-${weeklyChallenge.type}`}
+            title={`Wekelijkse uitdaging`}
+            progress={weeklyProgress}
+            description={formatChallengeDescription(weeklyChallenge.challenge_type, weeklyChallenge.goal)}
+            initialTimeLeft={calculateInitialTimeLeft(weeklyChallenge.creation_time, weeklyChallenge.type)}
+            type={weeklyChallenge.type}
+            creationTime={weeklyChallenge.creation_time}
+          />
+          <CardChallenge
+            key={`monthly-${monthlyChallenge.type}`}
+            title={`Maandelijkse uitdaging`}
+            progress={monthlyProgress}
+            description={formatChallengeDescription(monthlyChallenge.challenge_type, monthlyChallenge.goal)}
+            initialTimeLeft={calculateInitialTimeLeft(monthlyChallenge.creation_time, monthlyChallenge.type)}
+            type={monthlyChallenge.type}
+            creationTime={monthlyChallenge.creation_time}
           />
         </ScrollView>
       </Layout>

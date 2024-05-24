@@ -28,13 +28,15 @@ import { useHealthConnect } from "../provider/HealthConnectProvider";
 export default function ({ navigation }) {
   const { session } = useContext(AuthContext);
   const [currentStreak, setCurrentStreak] = useState(0);
-
+  const { getPermissions } = useHealthConnect();
  
 
 
 
 
   useEffect(() => {
+    getPermissions();
+
     const fetchStreakData = async () => {
       const { data, error } = await supabase
         .from('locations')

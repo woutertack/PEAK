@@ -15,7 +15,7 @@ export const HealthConnectProvider = ({ children }) => {
   const [distance, setDistance] = useState(0); 
   const { session } = useContext(AuthContext);
 
-  const readHealthData = async (startDate) => {
+  const getPermissions = async () => {
     if (Platform.OS !== 'android') {
       return { totalSteps: 0, totalDistance: 0 };
     }
@@ -33,11 +33,32 @@ export const HealthConnectProvider = ({ children }) => {
       { accessType: 'read', recordType: 'FloorsClimbed' },
       { accessType: 'read', recordType: 'ActiveCaloriesBurned' }
     ]);
+  };
+
+  const readHealthData = async (startDate) => {
+    if (Platform.OS !== 'android') {
+      return { totalSteps: 0, totalDistance: 0 };
+    }
+
+    // // Initialize the client
+    // const isInitialized = await initialize();
+    // if (!isInitialized) {
+    //   return { totalSteps: 0, totalDistance: 0 };
+    // }
+
+    // // Request permissions
+    // await requestPermission([
+    //   { accessType: 'read', recordType: 'Steps' },
+    //   { accessType: 'read', recordType: 'Distance' },
+    //   { accessType: 'read', recordType: 'FloorsClimbed' },
+    //   { accessType: 'read', recordType: 'ActiveCaloriesBurned' }
+    // ]);
 
     const timeRangeFilter = {
       operator: 'after',
-      startTime: startDate.toISOString(),
+      startTime: startDate,
     };
+
 
     // Fetch and calculate steps
     const stepsRecords = await readRecords('Steps', { timeRangeFilter });
@@ -70,6 +91,8 @@ export const HealthConnectProvider = ({ children }) => {
     }
 
     const createdAt = new Date(data.created_at);
+
+
     const { totalSteps: currentSteps, totalDistance: currentDistance } = await readHealthData(createdAt);
 
     // Update state with fetched data
@@ -101,13 +124,14 @@ export const HealthConnectProvider = ({ children }) => {
   useEffect(() => {
     const intervalId = setInterval(() => {
       updateUserDataToSupabase();
+      readHealthData()
     }, 10000); // Update every 10 seconds
 
     return () => clearInterval(intervalId); // Clear interval on unmount
   }, [session]);
 
   return (
-    <HealthConnectContext.Provider value={{ steps, distance, readHealthData }}>
+    <HealthConnectContext.Provider value={{ steps, distance, readHealthData, getPermissions }}>
       {children}
     </HealthConnectContext.Provider>
   );

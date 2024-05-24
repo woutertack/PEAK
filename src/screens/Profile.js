@@ -67,19 +67,6 @@ const Profile = ({ navigation }) => {
     }
   };
 
-  // const fetchTotalSteps = async (startDate, endDate) => {
-  //   try {
-  //     await readData(startDate, endDate);
-  //     setTotalSteps(steps);
-  //     console.log('Total steps:', steps);
-  //     setTotalDistance(Math.round((distance / 1000) * 10) / 10);
-  //   } catch (error) {
-  //     if (error instanceof Error) {
-  //       Alert.alert(error.message);
-  //     }
-  //   }
-  // };
-
   const fetchProfileLocations = async () => {
     try {
       if (!session?.user) throw new Error('No user on the session!');
