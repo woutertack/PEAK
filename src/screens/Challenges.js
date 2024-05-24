@@ -155,7 +155,7 @@ const Challenges = ({ navigation }) => {
 
     const calculateProgress = async (challenge, type) => {
       const { totalSteps, totalDistance } = await readHealthData(challenge.creation_time);
-      console.log(userId, 'userId')
+
       let progress = 0;
       
       if (challenge.challenge_type === 'hexagons') {

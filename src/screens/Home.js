@@ -16,27 +16,17 @@ import StreakIcon from "../components/utils/streaks/StreakIcon";
 import { AuthContext } from "../provider/AuthProvider";
 import { calculateStreak } from '../components/utils/streaks/CalculateStreak'; 
 import useStatusBar from "../helpers/useStatusBar";
-import {
-  initialize,
-  requestPermission,
-  readRecords,
-  Scopes,
-  HealthConnectClient,
-} from 'react-native-health-connect';
 import { useHealthConnect } from "../provider/HealthConnectProvider";
+import DailyChallengeCard from "../components/cards/DailyChallengeCard";  // Import the new component
 
 export default function ({ navigation }) {
   const { session } = useContext(AuthContext);
   const [currentStreak, setCurrentStreak] = useState(0);
-  const { getPermissions } = useHealthConnect();
- 
-
-
-
+  const [dailyChallenge, setDailyChallenge] = useState(null); // State to hold daily challenge data
+  const [dailyProgress, setDailyProgress] = useState(0); // State to hold daily challenge progress
+  const {  readHealthData } = useHealthConnect();
 
   useEffect(() => {
-    getPermissions();
-
     const fetchStreakData = async () => {
       const { data, error } = await supabase
         .from('locations')
@@ -55,8 +45,66 @@ export default function ({ navigation }) {
       }
     };
 
+    const fetchDailyChallenge = async () => {
+      try {
+        const { data: dailyData, error: dailyError } = await supabase
+          .from('challenges')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .eq('type', 'daily')
+          .order('creation_time', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (dailyError && dailyError.code !== 'PGRST116') {
+          throw new Error('Error fetching daily challenge');
+        }
+
+        if (dailyData) {
+          setDailyChallenge(dailyData);
+          calculateDailyProgress(dailyData);
+        }
+      } catch (error) {
+        console.error('Error fetching daily challenge:', error);
+      }
+    };
+
+    const calculateDailyProgress = async (challenge) => {
+      const { totalSteps, totalDistance } = await readHealthData(challenge.creation_time);
+      let progress = 0;
+
+      if (challenge.challenge_type === 'hexagons') {
+        const { data: hexagons, error } = await supabase
+          .from('locations')
+          .select('visited_at')
+          .eq('user_id', session.user.id)
+          .gte('visited_at', challenge.creation_time);
+
+        if (error) {
+          console.error('Error fetching hexagon data:', error);
+          return;
+        }
+
+        progress = hexagons.length / challenge.goal;
+      } else {
+        switch (challenge.challenge_type) {
+          case 'steps':
+            progress = totalSteps;
+            break;
+          case 'distance':
+            progress = totalDistance; // The goal is in kilometers
+            break;
+          default:
+            progress = 0;
+        }
+      }
+
+      setDailyProgress(progress);
+    };
+
     fetchStreakData();
-  }, [session.user.id]);
+    fetchDailyChallenge();
+  }, [session.user.id, readHealthData]);
 
   useStatusBar('transparent', 'dark-content');
 
@@ -95,12 +143,19 @@ export default function ({ navigation }) {
         <View style={styles.mapSection}>
           <Map />
         </View>
-
+        {dailyChallenge && (
+          <View style={styles.challengeContainer}>
+            <DailyChallengeCard
+              progress={dailyProgress}
+              goal={dailyChallenge.goal}
+              unit={dailyChallenge.challenge_type === 'steps' ? 'steps' : dailyChallenge.challenge_type === 'distance' ? 'km' : 'hexagons'}
+            />
+          </View>
+        )}
       </Layout>
     </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -150,18 +205,15 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  stepCountContainer: {
+  challengeContainer: {
     position: 'absolute',
-    bottom: 50,
+    bottom: 20,
     left: 20,
     right: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+   
     borderRadius: 10,
-    padding: 10,
-    alignItems: 'center',
-  },
-  stepCountText: {
-    color: '#fff',
-    fontSize: 18,
+    padding: 5,
+    
+   
   },
 });
