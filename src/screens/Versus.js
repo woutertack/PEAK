@@ -17,11 +17,14 @@ import TrophyIcon from '../components/utils/icons/TrophyIcon';
 import { AuthContext } from '../provider/AuthProvider';
 import calculateTime from '../components/utils/versus/calculateTime';
 import TimerIcon from '../components/utils/icons/TimerIcon';
+import { useHealthConnect } from '../provider/HealthConnectProvider';
+
 
 const Versus = ({ navigation }) => {
   useStatusBar(Colors.secondaryGreen, 'light-content');
   const { session } = useContext(AuthContext);
   const userId = session?.user.id; 
+  const { readHealthData } = useHealthConnect();
   
   const [challenges, setChallenges] = useState([]);
 
@@ -40,31 +43,57 @@ const Versus = ({ navigation }) => {
       if (error) {
         Alert.alert('Error fetching challenges', error.message);
       } else {
-        // Sort challenges to ensure your stats are first
-        const sortedChallenges = data.map(challenge => {
-          console.log('ss', challenge.creator.id);
-          if (challenge.creator.id === userId) {
-            return { ...challenge, creator_is_user: true };
-          } else if (challenge.friend.id === userId) {
-            return { ...challenge, creator_is_user: false };
-          } else {
-            return challenge;
-          }
-        }).sort((a, b) => {
-          if (a.creator_is_user) return -1;
-          if (b.creator_is_user) return 1;
-          return 0;
-        });
+        const challengesWithProgress = await Promise.all(data.map(async (challenge) => {
+          const userProgress = await getUserProgress(challenge.accepted_time, challenge.challenge_type);
+          return {
+            ...challenge,
+            user_progress: userProgress,
+          };
+        }));
+        setChallenges(challengesWithProgress);
+      }
+    };
 
-        setChallenges(sortedChallenges);
-       
+    const getUserProgress = async (acceptedTime, challengeType) => {
+      try {
+        const healthData = await readHealthData(acceptedTime);
+        if (challengeType === 'steps') {
+          return healthData.totalSteps;
+        } else if (challengeType === 'distance') {
+          return healthData.totalDistance;
+        }
+        return 0;
+      } catch (error) {
+        console.error('Error reading health data', error);
+        return 0;
       }
     };
 
     fetchChallenges();
   }, []);
 
-  const isFriend = (challenge) => challenge.friend.id === session.user.id;
+  const isCreator = (challenge) => challenge.creator.id === userId;
+
+  const updateProgress = async (challenge) => {
+    const progress = challenge.user_progress;
+    console.log('Updating progress', progress);
+    const progressField = isCreator(challenge) ? 'creator_progress' : 'friend_progress';
+    const { error } = await supabase
+      .from('versus')
+      .update({ [progressField]: progress })
+      .eq('id', challenge.id);
+
+    if (error) {
+      Alert.alert('Error updating progress', error.message);
+    }
+  };
+
+  useEffect(() => {
+    challenges.forEach((challenge) => {
+      updateProgress(challenge);
+    });
+  }, [challenges]);
+
 
   return (
     <KeyboardAvoidingView behavior="height" enabled style={{ flex: 1 }}>
@@ -95,11 +124,11 @@ const Versus = ({ navigation }) => {
             <View key={challenge.id} style={styles.challengeContainer}>
               <View style={styles.goalContainer}>
                 <TrophyIcon/>
-                <Text style={styles.challengeGoal}>{challenge.goal} {challenge.challenge_type === 'steps' ? 'stappen' : challenge.challenge_type}</Text>
+                <Text style={styles.challengeGoal}>{challenge.goal}  {challenge.challenge_type === 'steps' ? 'stappen' : challenge.challenge_type}</Text>
                 <TimerIcon/>
                 <Text style={styles.timeLeft}>{calculateTime( challenge.deadline)}</Text>
               </View>
-              <View style={[styles.progressContainer, isFriend(challenge) ? styles.rowReverse : null]}>
+              <View style={[styles.progressContainer, isCreator(challenge) ? null : styles.rowReverse]}>
                 <View style={styles.progressItem}>
                   <Text style={styles.progressLabel}>
                     {challenge.creator_is_user ? 'uw score' : `${challenge.creator.first_name} ${challenge.creator.last_name}`}
@@ -126,7 +155,7 @@ const Versus = ({ navigation }) => {
                 </View>
                 <View style={styles.progressItem}>
                   <Text style={styles.progressLabel}>
-                    {challenge.creator_is_user ? `${challenge.friend.first_name} ${challenge.friend.last_name}` : 'uw score'}
+                    {challenge.creator_is_user ? `${challenge.friend.first_name} ${challenge.friend.last_name}` : 'Uw score'}
                 
                   </Text>
                   <AnimatedCircularProgress
