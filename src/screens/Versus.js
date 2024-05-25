@@ -15,6 +15,8 @@ import { supabase } from '../lib/initSupabase';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import TrophyIcon from '../components/utils/icons/TrophyIcon';
 import { AuthContext } from '../provider/AuthProvider';
+import calculateTime from '../components/utils/versus/calculateTime';
+import TimerIcon from '../components/utils/icons/TimerIcon';
 
 const Versus = ({ navigation }) => {
   useStatusBar(Colors.secondaryGreen, 'light-content');
@@ -94,6 +96,8 @@ const Versus = ({ navigation }) => {
               <View style={styles.goalContainer}>
                 <TrophyIcon/>
                 <Text style={styles.challengeGoal}>{challenge.goal} {challenge.challenge_type === 'steps' ? 'stappen' : challenge.challenge_type}</Text>
+                <TimerIcon/>
+                <Text style={styles.timeLeft}>{calculateTime( challenge.deadline)}</Text>
               </View>
               <View style={[styles.progressContainer, isFriend(challenge) ? styles.rowReverse : null]}>
                 <View style={styles.progressItem}>
@@ -168,6 +172,7 @@ const Versus = ({ navigation }) => {
   );
 };
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -234,6 +239,12 @@ const styles = StyleSheet.create({
     paddingLeft: 5,
     fontSize: 18,
     color: Colors.white,
+    flex: 1,
+  },
+  timeLeft: {
+    color: Colors.white,
+    fontSize: 14,
+    marginLeft: 5,
   },
   progressContainer: {
     alignItems: 'center',
