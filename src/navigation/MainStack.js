@@ -14,6 +14,7 @@ import Friends from "../screens/Friends";
 import FriendsProfile from "../screens/FriendsProfile";
 import BottomTabs from "./BottomTabs";
 import CreateVersus from "../screens/CreateVersus";
+import AcceptVersus from "../screens/AcceptVersus";
 
 // Create Stack Navigator
 const Stack = createNativeStackNavigator();
@@ -56,6 +57,7 @@ function Main() {
         <Stack.Screen name="EditProfile" component={EditProfile} />
         <Stack.Screen name="FriendsProfile" component={FriendsProfile} />
         <Stack.Screen name="CreateVersus" component={CreateVersus} />
+        <Stack.Screen name="AcceptVersus" component={AcceptVersus} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -1,8 +1,7 @@
 // File path: CreateVersus.js
 
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, KeyboardAvoidingView, TouchableOpacity, Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState, useEffect, useContext } from 'react';
+import { View, StyleSheet, ScrollView, KeyboardAvoidingView, TouchableOpacity, Alert, Platform } from 'react-native';
 import { Layout, Text, Button, TextInput, Picker } from 'react-native-rapi-ui';
 import { StatusBar } from 'expo-status-bar';
 import TabBarIcon from '../components/utils/TabBarIcon';
@@ -10,48 +9,129 @@ import Colors from '../consts/Colors';
 import useStatusBar from '../helpers/useStatusBar';
 import { supabase } from '../lib/initSupabase'
 import PrimaryButton from '../components/utils/buttons/PrimaryButton';
-import DatePicker from 'react-native-date-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { AuthContext } from '../provider/AuthProvider';
 
 const CreateVersus = ({ navigation }) => {
   useStatusBar(Colors.secondaryGreen, 'light-content');
+  const { session } = useContext(AuthContext);
 
   const [challengeType, setChallengeType] = useState('steps');
   const [goal, setGoal] = useState('');
-  const [noLimit, setNoLimit] = useState(false);
-  const [timeslot, setTimeslot] = useState('');
+  const [timeslotDate, setTimeslotDate] = useState(new Date());
+  const [timeslotTime, setTimeslotTime] = useState(new Date());
   const [friendId, setFriendId] = useState('');
   const [friends, setFriends] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
 
   useEffect(() => {
     const fetchFriends = async () => {
-      const { data, error } = await supabase.from('profiles').select('id, first_name, last_name');
+      const userId = session?.user.id;
+
+      const { data, error } = await supabase
+        .from('friend_requests')
+        .select('requester_id, requestee_id')
+        .eq('status', 'accepted')
+        .or(`requester_id.eq.${userId},requestee_id.eq.${userId}`);
+
       if (error) {
         Alert.alert('Error fetching friends', error.message);
+        return;
+      }
+
+      const friendIds = data.map((request) =>
+        request.requester_id === userId ? request.requestee_id : request.requester_id
+      );
+
+      if (friendIds.length > 0) {
+        const { data: friendsData, error: friendsError } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name')
+          .in('id', friendIds);
+
+        if (friendsError) {
+          Alert.alert('Error fetching friends profiles', friendsError.message);
+        } else {
+          setFriends(friendsData);
+        }
       } else {
-        setFriends(data);
+        setFriends([]);
       }
     };
 
     fetchFriends();
   }, []);
 
-  const handleSubmit = async () => {
+  const handleDateConfirm = (event, selectedDate) => {
+    if (selectedDate) {
+      setTimeslotDate(selectedDate);
+    }
+    setDatePickerVisibility(false);
+  };
+
+  const handleTimeConfirm = (event, selectedTime) => {
+    if (selectedTime) {
+      setTimeslotTime(selectedTime);
+    }
+    setTimePickerVisibility(false);
+  };
+
+  const showDatePicker = () => {
+    setDatePickerVisibility(true);
+  };
+
+  const showTimePicker = () => {
+    setTimePickerVisibility(true);
+  };
+
+  const validateForm = () => {
+    if (!challengeType) {
+      Alert.alert('Error', 'Please select a challenge type.');
+      return false;
+    }
     if (!friendId) {
       Alert.alert('Error', 'Please select a friend to challenge.');
-      return;
+      return false;
     }
+    const combinedTimeslot = new Date(
+      timeslotDate.getFullYear(),
+      timeslotDate.getMonth(),
+      timeslotDate.getDate(),
+      timeslotTime.getHours(),
+      timeslotTime.getMinutes(),
+      timeslotTime.getSeconds()
+    );
+    if (combinedTimeslot <= new Date()) {
+      Alert.alert('Error', 'The timeslot must be in the future.');
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
 
     setLoading(true);
 
+    // Combine date and time into a single Date object
+    const combinedTimeslot = new Date(
+      timeslotDate.getFullYear(),
+      timeslotDate.getMonth(),
+      timeslotDate.getDate(),
+      timeslotTime.getHours(),
+      timeslotTime.getMinutes(),
+      timeslotTime.getSeconds()
+    );
+    console.log(combinedTimeslot);
+  
     const newChallenge = {
-      creator_id: supabase.auth.user().id,
+      creator_id: session?.user.id,
       friend_id: friendId,
       challenge_type: challengeType,
-      goal: noLimit ? null : parseInt(goal),
-      no_limit: noLimit,
-      timeslot: timeslot,
+      goal: goal ? parseInt(goal) : null,
+      deadline: combinedTimeslot,
     };
 
     const { error } = await supabase.from('versus').insert([newChallenge]);
@@ -66,14 +146,6 @@ const CreateVersus = ({ navigation }) => {
     setLoading(false);
   };
 
-  
-  const handleConfirm = (date) => {
-    setTimeslot(date);
-    setDatePickerVisibility(false);
-  };
-  const [date, setDate] = useState(new Date())
-  const [open, setOpen] = useState(false)
-
   return (
     <KeyboardAvoidingView behavior="height" enabled style={{ flex: 1 }}>
       <StatusBar backgroundColor={Colors.secondaryGreen} style="light" />
@@ -87,12 +159,12 @@ const CreateVersus = ({ navigation }) => {
               style={styles.iconBack}
               onPress={() => navigation.goBack()}
             />
-            <Text style={styles.headerText}>Create Challenge</Text>
+            <Text style={styles.headerText}>Maak uitdaging</Text>
             <View style={styles.iconPlaceholder}></View>
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Challenge Type:</Text>
+            <Text style={styles.label}>Challenge Type</Text>
             <Picker
               items={[
                 { label: 'Stappen', value: 'steps' },
@@ -112,73 +184,69 @@ const CreateVersus = ({ navigation }) => {
               value={goal}
               onChangeText={(value) => setGoal(value)}
               keyboardType="numeric"
-              editable={!noLimit}
             />
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Timeslot:</Text>
-            <TouchableOpacity onPress={() => setDatePickerVisibility(true)}>
-              <Text style={styles.datePicker}>
-                {timeslot ? timeslot.toLocaleString() : 'Select Date & Time'}
-              </Text>
-            </TouchableOpacity>
-            <DatePicker
-              modal
-              open={isDatePickerVisible}
-              date={timeslot}
-              onConfirm={handleConfirm}
-              onCancel={() => setDatePickerVisibility(false)}
-            />
-          </View>
-
-          {/* <View style={styles.formGroup}>
-            <Text style={styles.label}>Goal:</Text>
-            <Input
-              value={goal}
-              onChangeText={(value) => setGoal(value)}
-              keyboardType="numeric"
-              editable={!noLimit}
-            />
+            <Text style={styles.label}>Kies hoelang uitdaging loopt</Text>
+            <View style={{ flexDirection: 'row', gap: 20, marginTop: 5 }}>
+              <TouchableOpacity onPress={showDatePicker}>
+                <View style={styles.datumWrapper}>
+                  <Text style={styles.datumTitle}>
+                    Datum
+                  </Text>
+                  <Text style={styles.datePicker}>
+                    {timeslotDate.toLocaleDateString()}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+              {isDatePickerVisible && (
+                <DateTimePicker
+                  value={timeslotDate}
+                  mode="date"
+                  display="default"
+                  onChange={handleDateConfirm}
+                />
+              )}
+              <TouchableOpacity onPress={showTimePicker}>
+                <View style={styles.datumWrapper}>
+                  <Text style={styles.datumTitle}>
+                    Tijd
+                  </Text>
+                  <Text style={styles.datePicker}>
+                    {timeslotTime.toLocaleTimeString()}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+              {isTimePickerVisible && (
+                <DateTimePicker
+                  value={timeslotTime}
+                  mode="time"
+                  display="default"
+                  onChange={handleTimeConfirm}
+                />
+              )}
+            </View>
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>No Limit:</Text>
-            <Input
-              type="checkbox"
-              value={noLimit}
-              onValueChange={(value) => setNoLimit(value)}
-            />
-          </View>
-
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Timeslot:</Text>
-            <Input
-              value={timeslot}
-              onChangeText={(value) => setTimeslot(value)}
-              placeholder="e.g. 7 days, 1 month"
-            />
-          </View>
-
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Friend:</Text>
+            <Text style={styles.label}>Kies een vriend</Text>
             <Picker
               items={friends.map(friend => ({
                 label: `${friend.first_name} ${friend.last_name}`,
-                value: friend.id
+                value: friend.id,
               }))}
               value={friendId}
               onValueChange={(value) => setFriendId(value)}
             />
-          </View> */}
+          </View>
 
-         
         </ScrollView>
 
         <View style={styles.createBtn}>
           <PrimaryButton    
             label={loading ? 'Creating...' : 'Create Challenge'}
-            // onPress={handleSubmit}
+            onPress={handleSubmit}
             disabled={loading}  
           />
         </View>
@@ -186,6 +254,8 @@ const CreateVersus = ({ navigation }) => {
     </KeyboardAvoidingView>
   );
 };
+
+ 
 
 const styles = StyleSheet.create({
   container: {
@@ -200,6 +270,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginBottom: 20,
   },
   headerText: {
     color: '#fff',
@@ -220,6 +291,27 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     color: '#fff',
     fontSize: 16,
+  },
+  datePicker: {
+    color: '#000',
+    padding: 10,
+    borderColor: '#fff',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+  datumWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  datumTitle: {
+    color: '#fff',
+    marginTop: -10,
+    marginRight: 10,
   },
   createBtn: {
     position: 'absolute',
