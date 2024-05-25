@@ -208,43 +208,6 @@ const Challenges = ({ navigation }) => {
       }
     };
 
-    //   let progress = 0;
-    //   switch (challenge.challenge_type) {
-    //     case 'steps':
-    //       progress = totalSteps / challenge.goal;
-    //       break;
-    //     case 'distance':
-    //       progress = totalDistance / challenge.goal; // The goal is in kilometers
-    //       break;
-    //     case 'hexagons':
-    //       progress = hexagons.length / challenge.goal;
-    //       break;
-    //     default:
-    //       progress = 0;
-    //   }
-
-    //   if (type === 'daily') {
-    //     setDailyProgress(progress);
-    //   } else if (type === 'weekly') {
-    //     setWeeklyProgress(progress);
-    //   } else if (type === 'monthly') {
-    //     setMonthlyProgress(progress);
-    //   }
-
-    //   // Update the completed state in Supabase if the goal is reached
-    //   if (progress >= 1) {
-    //     const { error } = await supabase
-    //       .from('challenges')
-    //       .update({ completed: true })
-    //       .eq('id', challenge.id);
-
-    //     if (error) {
-    //       console.error('Error updating challenge completion status:', error);
-    //     } else {
-    //       console.log('Challenge marked as completed');
-    //     }
-    //   }
-    // };
 
     fetchChallenges();
   }, [session, readHealthData]);
@@ -252,7 +215,7 @@ const Challenges = ({ navigation }) => {
   if (loading  || !dailyChallenge || !weeklyChallenge || !monthlyChallenge) {
     return (
       <View style={styles.loadingContainer}>
-        <Text>Loading...</Text>
+        <Text style={{color: Colors.white}}>Loading...</Text>
       </View>
     );
   }

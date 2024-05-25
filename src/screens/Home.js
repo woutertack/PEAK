@@ -46,6 +46,7 @@ export default function ({ navigation }) {
     };
 
     const fetchDailyChallenge = async () => {
+      // TO DO : check if it's todays challenge
       try {
         const { data: dailyData, error: dailyError } = await supabase
           .from('challenges')
@@ -117,6 +118,7 @@ export default function ({ navigation }) {
             <Ionicons name="menu" size={40} color={Colors.secondaryGreen} />
           </TouchableOpacity>
           {/* Right button */}
+          {/* TO DO ADD OPACITY OUTSIDE VIEW */}
           <View style={styles.navButtonGroup}>
             <View style={styles.profileIcon} pointerEvents="auto">
               <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
@@ -145,11 +147,14 @@ export default function ({ navigation }) {
         </View>
         {dailyChallenge && (
           <View style={styles.challengeContainer}>
-            <DailyChallengeCard
-              progress={dailyProgress}
-              goal={dailyChallenge.goal}
-              unit={dailyChallenge.challenge_type === 'steps' ? 'steps' : dailyChallenge.challenge_type === 'distance' ? 'km' : 'hexagons'}
-            />
+            
+              <DailyChallengeCard
+                progress={dailyProgress}
+                goal={dailyChallenge.goal}
+                unit={dailyChallenge.challenge_type === 'steps' ? 'steps' : dailyChallenge.challenge_type === 'distance' ? 'km' : 'hexagons'}
+                navigation={navigation}
+              />
+         
           </View>
         )}
       </Layout>

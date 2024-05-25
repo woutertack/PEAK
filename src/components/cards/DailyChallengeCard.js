@@ -1,10 +1,10 @@
 import { max } from 'date-fns';
 import React from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import * as Progress from 'react-native-progress';
 import Colors from '../../consts/Colors';
 
-const DailyChallengeCard = ({ progress, goal, unit }) => {
+const DailyChallengeCard = ({ progress, goal, unit, navigation }) => {
   const progressPercentage = progress / goal;
 
 
@@ -15,6 +15,7 @@ const DailyChallengeCard = ({ progress, goal, unit }) => {
     <View style={styles.card}>
     {/* <Text style={styles.titleInside}>Daily challenge</Text>
     <View style={styles.underlineInside}></View> */}
+    <TouchableOpacity onPress={() => navigation.navigate("Challenges")}  activeOpacity={0.9}>
       <View styles={styles.progressBarContainer}>
         <Text style={styles.progressText}>{`${Math.floor(progress)} / ${goal} ${unit}`}</Text>
         <Progress.Bar 
@@ -28,6 +29,7 @@ const DailyChallengeCard = ({ progress, goal, unit }) => {
           style={styles.progressBar} 
         />
       </View>
+    </TouchableOpacity>
     </View>
     </>
   );
