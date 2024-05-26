@@ -31,6 +31,7 @@ const Profile = ({ navigation }) => {
   const [maxStreak, setMaxStreak] = useState(0);
   const [totalSteps, setTotalSteps] = useState(0); // New state for total steps
   const [totalDistance, setTotalDistance] = useState(0); // New state for total distance
+  const [completedChallenges, setCompletedChallenges] = useState(0); 
 
   const fetchProfile = async () => {
     try {
@@ -93,10 +94,30 @@ const Profile = ({ navigation }) => {
     }
   };
 
+  const fetchCompletedChallenges = async () => {
+    try {
+      if (!session?.user) throw new Error('No user on the session!');
+      const { data, error } = await supabase
+        .from('challenges')
+        .select('id')
+        .eq('user_id', session.user.id)
+        .eq('completed', true);
+      if (error) {
+        throw error;
+      }
+      setCompletedChallenges(data.length);
+    } catch (error) {
+      if (error instanceof Error) {
+        Alert.alert(error.message);
+      }
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
       fetchProfile();
       fetchProfileLocations();
+      fetchCompletedChallenges();
     }, [session])
   );
 
@@ -149,7 +170,7 @@ const Profile = ({ navigation }) => {
             <CardStats number={totalActiveDays} label="Dagen bezig" />
             <CardStats number={maxStreak} label="Langste streak" />
             <CardStats number={currentStreak} label="Huidige streak" />
-            <CardStats number="22" label="Badges" />
+            <CardStats number={completedChallenges} label="Voltooide uitdagingen" />
           </View>
         </View>
       </ScrollView>

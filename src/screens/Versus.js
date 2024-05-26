@@ -75,7 +75,7 @@ const Versus = ({ navigation }) => {
       return 0;
     }
   };
-  // TO DO HEXAGON
+
 
   const isCreator = (challenge) => challenge.creator.id === userId;
 

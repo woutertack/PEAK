@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
-import { useRoute } from '@react-navigation/native';
+import { useFocusEffect, useRoute } from '@react-navigation/native';
 import { Layout } from 'react-native-rapi-ui';
 import { StatusBar } from 'expo-status-bar';
 import TabBarIcon from "../components/utils/TabBarIcon";
@@ -15,6 +15,7 @@ import CardStats from '../components/cards/CardStats';
 import { calculateStreak } from '../components/utils/streaks/CalculateStreak';
 import { calculateMaxStreak } from '../components/utils/streaks/CalculateMaxStreak';
 import { AuthContext } from '../provider/AuthProvider';
+
 
 const FriendsProfile = ({ navigation }) => {
   const route = useRoute();
@@ -34,13 +35,16 @@ const FriendsProfile = ({ navigation }) => {
   const [maxStreak, setMaxStreak] = useState(0);
   const [totalSteps, setTotalSteps] = useState(0); 
   const [totalDistance, setTotalDistance] = useState(0);
+  const [completedChallenges, setCompletedChallenges] = useState(0); 
 
-  useEffect(() => {
-    getFriendProfile();
-    getProfileLocations();
-    getWinLossRecord();
-  }, [friendId]);
-
+  useFocusEffect(
+    useCallback(() => {
+      getFriendProfile();
+      getProfileLocations();
+      getWinLossRecord();
+      fetchCompletedChallenges();
+    }, [friendId])
+  );
   async function getFriendProfile() {
     try {
       const { data, error, status } = await supabase
@@ -127,6 +131,24 @@ const FriendsProfile = ({ navigation }) => {
     }
   }
 
+  const fetchCompletedChallenges = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('challenges')
+        .select('id')
+        .eq('user_id', friendId)
+        .eq('completed', true);
+      if (error) {
+        throw error;
+      }
+      setCompletedChallenges(data.length);
+    } catch (error) {
+      if (error instanceof Error) {
+        Alert.alert(error.message);
+      }
+    }
+  };
+
   const formattedDate = createdAt
     ? `Lid sinds ${format(new Date(createdAt), 'MMMM yyyy', { locale: nl })}`
     : '';
@@ -171,7 +193,7 @@ const FriendsProfile = ({ navigation }) => {
               <CardStats number={totalActiveDays} label="Dagen bezig" />
               <CardStats number={maxStreak} label="Langste streak" />
               <CardStats number={currentStreak} label="Huidige streak" />
-              <CardStats number="22" label="Badges" />
+              <CardStats number={completedChallenges} label="Voltooide uitdagingen" />
             </View>
           </View>
         </ScrollView>
