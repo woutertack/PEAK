@@ -4,12 +4,15 @@ import { Layout, themeColor } from "react-native-rapi-ui";
 import Svg, { G, Path, Defs, ClipPath, Rect, Polygon, Polyline } from 'react-native-svg';
 import Colors from "../../consts/Colors";
 import Logo from "../../components/utils/icons/Logo";
+import useStatusBar from "../../helpers/useStatusBar";
 
 export default function () {
+  useStatusBar(Colors.secondaryGreen, 'light-content');
 
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
   return (
+    <>
     
       <View
         style={{
@@ -52,13 +55,13 @@ export default function () {
         </View>
 
       </View>
- 
+      </>
   );
 }
 
 const styles = StyleSheet.create({
   text: {
-    color: Colors.primaryGreen,
+    color: '#44f1b6',
     fontSize: 11,
     fontWeight: 'bold',
     textAlign: 'center',

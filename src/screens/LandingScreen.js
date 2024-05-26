@@ -8,9 +8,10 @@ import SecondaryButton from '../components/utils/buttons/SecondaryButton';
 import Swiper from '../components/slider/Slider';
 import slides from '../components/slider/SliderData';
 import Colors from '../consts/Colors';
+import useStatusBar from '../helpers/useStatusBar';
 
 const LandingScreen = ({ navigation }) => {
-
+  useStatusBar(Colors.secondaryGreen, 'light-content');
   
   
   return (

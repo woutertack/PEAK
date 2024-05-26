@@ -149,7 +149,7 @@ export default function ({ navigation }) {
               <DailyChallengeCard
                 progress={dailyProgress}
                 goal={dailyChallenge.goal}
-                unit={dailyChallenge.challenge_type === 'steps' ? 'steps' : dailyChallenge.challenge_type === 'distance' ? 'km' : 'hexagons'}
+                unit={dailyChallenge.challenge_type }
                 navigation={navigation}
               />
          

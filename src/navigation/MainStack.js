@@ -16,6 +16,8 @@ import BottomTabs from "./BottomTabs";
 import CreateVersus from "../screens/CreateVersus";
 import AcceptVersus from "../screens/AcceptVersus";
 import HistoryVersus from "../screens/HistoryVersus";
+import SelectLevelUser from "../screens/SelectLevelUser";
+import LandingScreen from "../screens/LandingScreen";
 
 // Create Stack Navigator
 const Stack = createNativeStackNavigator();
@@ -60,6 +62,8 @@ function Main() {
         <Stack.Screen name="CreateVersus" component={CreateVersus} />
         <Stack.Screen name="AcceptVersus" component={AcceptVersus} />
         <Stack.Screen name="HistoryVersus" component={HistoryVersus} />
+        <Stack.Screen name="SelectLevelUser" component={SelectLevelUser} />
+
       </Stack.Navigator>
     </NavigationContainer>
   );

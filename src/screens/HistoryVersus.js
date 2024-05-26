@@ -12,6 +12,7 @@ import { AuthContext } from '../provider/AuthProvider';
 import calculateTime from '../components/utils/versus/calculateTime';
 import TimerIcon from '../components/utils/icons/TimerIcon';
 import useStatusBar from '../helpers/useStatusBar';
+import getChallengeTypeText  from '../components/utils/getChallengeTypeText';
 
 const HistoryVersus = ({ navigation }) => {
   useStatusBar(Colors.secondaryGreen, 'light-content');
@@ -45,6 +46,9 @@ const HistoryVersus = ({ navigation }) => {
   const isCreator = (challenge) => challenge.creator.id === userId;
   const isWinner = (userId, challenge) => challenge.winner === userId;
 
+
+
+
   return (
     <KeyboardAvoidingView behavior="height" enabled style={{ flex: 1 }}>
       <StatusBar backgroundColor={Colors.secondaryGreen} style="light" />
@@ -68,7 +72,7 @@ const HistoryVersus = ({ navigation }) => {
             <View key={challenge.id} style={styles.challengeContainer}>
               <View style={styles.goalContainer}>
                 <TrophyIcon />
-                <Text style={styles.challengeGoal}>{challenge.goal}  {challenge.challenge_type === 'steps' ? 'stappen' : challenge.challenge_type}</Text>
+                <Text style={styles.challengeGoal}>{challenge.goal} {getChallengeTypeText(challenge.challenge_type)}</Text>
               </View>
               <View style={[styles.progressContainer, isCreator(challenge) ? null : styles.rowReverse]}>
                 <View style={[styles.progressItem, isWinner(challenge.creator.id, challenge) && styles.winnerBorder]}>

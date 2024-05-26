@@ -7,13 +7,12 @@ export default {
   secondaryBlue: 'rgb(106,206,241)',
   lightBlue: 'rgb(205,239,250)',
 
-  // primaryGreen: '#44f1b6',
   primaryGreen: '#36D0A5',
   secondaryGreen: '#127780',
   tirtiaryGreen: '#18A1AD',
 
 
-  // darkGreen: '#36D0A5',
+
   lightGreen: '#46959C',
   darkGreen: "#0C4D53",
 

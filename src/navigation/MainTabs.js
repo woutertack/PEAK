@@ -11,13 +11,13 @@ import Home from "../screens/Home";
 
 const Tabs = createNativeStackNavigator();
 const MainTabs = () => {
-  const { isDarkmode } = useTheme("light");
+
   return (
     <Tabs.Navigator
       initialRouteName="Home"
       screenOptions={{
         headerShown: false,
-        tabBarShowLabel: false, // Assumes you still want to hide the labels
+        tabBarShowLabel: false,
         display: 'hidden',
       }}
     >

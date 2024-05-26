@@ -12,14 +12,14 @@ const PrimaryButton = ({ label, onPress, isLoading, isDisabled, icon }) => {
       style={styles.button}
     >
       <LinearGradient
-        colors={['rgba(0, 0, 0, 0.1)', 'transparent']}
+        colors={['rgba(0, 0, 0, 0.16)', 'transparent']}
         start={{ x: 0.5, y: 1 }}
         end={{ x: 0.5, y: 0 }}
         style={styles.innerShadow}
       />
       {!isLoading ? (
         <>
-          {/* {icon && <View style={styles.iconContainer}>{icon}</View>} */}
+
           <Text style={styles.buttonText}>
             {label}
           </Text>
@@ -49,21 +49,22 @@ const styles = StyleSheet.create({
       width: 0,
       height: 4,
     },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.16,
     shadowRadius: 8,
     elevation: 4,
   },
   buttonText: {
+    fontFamily: 'Bahnschrift',
     color: '#fff',
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: 'bold',
     zIndex: 1, // Ensure text appears above the gradient
     textShadowOffset: {
       width: 0,
       height: 2,
     },
     textShadowRadius: 2,
-    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowColor: 'rgba(0, 0, 0, 0.16)',
     },
   innerShadow: {
     position: 'absolute',

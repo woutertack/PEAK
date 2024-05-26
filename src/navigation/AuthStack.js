@@ -5,7 +5,7 @@ import Login from "../screens/auth/Login";
 import Register from "../screens/auth/Register";
 import ForgetPassword from "../screens/auth/ForgetPassword";
 import LandingScreen from "../screens/LandingScreen";
-import Loading from "../screens/utils/Loading";
+
 
 const AuthStack = createNativeStackNavigator();
 const Auth = () => {

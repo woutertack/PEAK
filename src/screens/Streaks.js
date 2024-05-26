@@ -13,6 +13,8 @@ import { supabase } from '../lib/initSupabase';
 import { calculateStreak } from '../components/utils/streaks/CalculateStreak'; // Import the calculateStreak function
 import { calculateMaxStreak } from '../components/utils/streaks/CalculateMaxStreak';
 import useStatusBar from '../helpers/useStatusBar';
+import TertiaryButton from '../components/utils/buttons/TertiaryButton';
+import SecondaryButton from '../components/utils/buttons/SecondaryButton';
 const StreaksScreen = ({ navigation }) => {
   const { session } = useContext(AuthContext);
   const [streakData, setStreakData] = useState([]);
@@ -103,7 +105,7 @@ const StreaksScreen = ({ navigation }) => {
               Open de app elke dag en ontdek een nieuw gebied om je streak te behouden
             </Text>
           </View>
-          <PrimaryButton
+          <SecondaryButton
             label={'Ga verder met ontdekken'}
             onPress={() => navigation.navigate('Home')}
           />

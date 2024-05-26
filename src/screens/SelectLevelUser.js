@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { StyleSheet, TouchableOpacity, Text, View, Alert, ScrollView } from 'react-native';
-import { StatusBar } from "expo-status-bar";
+
 import { Layout } from "react-native-rapi-ui";
 import { supabase } from '../lib/initSupabase'; // Ensure correct path
 import { AuthContext } from '../provider/AuthProvider'; // Context to access user session
@@ -14,7 +14,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import useStore from '../helpers/firstLogin';
 import useStatusBar from '../helpers/useStatusBar';
 
-const SelectLevel = ({navigation}) => {
+const SelectLevelUser = ({navigation}) => {
     useStatusBar(Colors.secondaryGreen, 'light-content');
     const { session } = useContext(AuthContext);
     const userId = session?.user.id;
@@ -27,7 +27,7 @@ const SelectLevel = ({navigation}) => {
     };
 
     const handleUpdateLevel = async () => {
-        if(!selectedLevel) return Alert.alert( 'Selecteer een doel');
+        if(!selectedLevel) return Alert.alert('Selecteer een doel');
         try {
             await supabase
             .from('profiles')
@@ -40,11 +40,12 @@ const SelectLevel = ({navigation}) => {
             Alert.alert('Error', 'Failed to update level');
         }
         console.log('Level updated:', selectedLevel);
-    
+        navigation.navigate('Settings');
     };
 
     return (
         <>
+            
             <Layout>
                 <ScrollView
                     style={styles.container}
@@ -101,7 +102,7 @@ const SelectLevel = ({navigation}) => {
     );
 };
 
-export default SelectLevel;
+export default SelectLevelUser;
 
 const styles = StyleSheet.create({
     container: {

@@ -15,6 +15,7 @@ import TimerIcon from '../components/utils/icons/TimerIcon';
 import { useHealthConnect } from '../provider/HealthConnectProvider';
 import HistoryIcon from '../components/utils/icons/HistoryIcon';
 import useStatusBar from '../helpers/useStatusBar';
+import  getChallengeTypeText  from '../components/utils/getChallengeTypeText';
 
 const Versus = ({ navigation }) => {
   useStatusBar(Colors.secondaryGreen, 'light-content');
@@ -59,13 +60,22 @@ const Versus = ({ navigation }) => {
         return healthData.totalSteps;
       } else if (challengeType === 'distance') {
         return healthData.totalDistance;
-      }
+      } else if (challengeType === 'hexagons') {
+        const { data: hexagons, error } = await supabase
+          .from('locations')
+          .select('visited_at')
+          .eq('user_id', session.user.id)
+          .gte('visited_at', acceptedTime);
+
+        return hexagons.length;
+        }
       return 0;
     } catch (error) {
       console.error('Error reading health data', error);
       return 0;
     }
   };
+  // TO DO HEXAGON
 
   const isCreator = (challenge) => challenge.creator.id === userId;
 
@@ -143,6 +153,7 @@ const Versus = ({ navigation }) => {
 
 
 
+
   return (
     <KeyboardAvoidingView behavior="height" enabled style={{ flex: 1 }}>
       <StatusBar backgroundColor={Colors.secondaryGreen} style="light" />
@@ -185,7 +196,7 @@ const Versus = ({ navigation }) => {
             <View key={challenge.id} style={styles.challengeContainer}>
               <View style={styles.goalContainer}>
                 <TrophyIcon/>
-                <Text style={styles.challengeGoal}>{challenge.goal}  {challenge.challenge_type === 'steps' ? 'stappen' : challenge.challenge_type}</Text>
+                <Text style={styles.challengeGoal}> {challenge.goal} {getChallengeTypeText(challenge.challenge_type)}</Text>
                 <TimerIcon/>
                 <Text style={styles.timeLeft}>{calculateTime( challenge.deadline)}</Text>
               </View>
@@ -212,7 +223,7 @@ const Versus = ({ navigation }) => {
                       )
                     }
                   </AnimatedCircularProgress>
-                  <Text style={styles.progressSteps}>{challenge.creator_progress}/{challenge.goal} </Text>
+                  <Text style={styles.progressSteps}>{isCreator(challenge) ? challenge.user_progress : challenge.creator_progress} / {challenge.goal}</Text>
                 </View>
                 <View style={styles.progressItem}>
                   <Text style={styles.progressLabel}>
@@ -237,7 +248,7 @@ const Versus = ({ navigation }) => {
                       )
                     }
                   </AnimatedCircularProgress>
-                  <Text style={styles.progressSteps}>{challenge.friend_progress}/{challenge.goal} </Text>
+                  <Text style={styles.progressSteps}>{isCreator(challenge) ? challenge.friend_progress : challenge.user_progress} / {challenge.goal}</Text>
                 </View>
               </View>
             </View>
@@ -250,7 +261,7 @@ const Versus = ({ navigation }) => {
             <TabBarIcon
               library="AntDesign"
               icon="plus"
-              size={38}
+              size={48}
               style={styles.icon}
               onPress={() => {
                 navigation.navigate('CreateVersus');

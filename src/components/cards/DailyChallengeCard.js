@@ -3,9 +3,12 @@ import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import * as Progress from 'react-native-progress';
 import Colors from '../../consts/Colors';
+import getChallengeTypeText from '../utils/getChallengeTypeText';
 
 const DailyChallengeCard = ({ progress, goal, unit, navigation }) => {
   const progressPercentage = progress / goal;
+
+  const type = getChallengeTypeText(unit);
 
 
   return (
@@ -17,7 +20,7 @@ const DailyChallengeCard = ({ progress, goal, unit, navigation }) => {
     <View style={styles.underlineInside}></View> */}
     <TouchableOpacity onPress={() => navigation.navigate("Challenges")}  activeOpacity={0.9}>
       <View styles={styles.progressBarContainer}>
-        <Text style={styles.progressText}>{`${Math.floor(progress)} / ${goal} ${unit}`}</Text>
+        <Text style={styles.progressText}>{`${Math.floor(progress)} / ${goal} ${type}`}</Text>
         <Progress.Bar 
           progress={progressPercentage} 
           width={200} 

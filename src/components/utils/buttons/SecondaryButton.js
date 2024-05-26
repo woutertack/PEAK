@@ -56,8 +56,9 @@ const styles = StyleSheet.create({
   buttonText: {
     color: Colors.secondaryGreen,
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: 'bold',
     zIndex: 1, // Ensure text appears above the gradient
+    fontFamily: 'Bahnschrift',
   },
   innerShadow: {
     position: 'absolute',

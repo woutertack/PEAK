@@ -60,8 +60,10 @@ export const HealthConnectProvider = ({ children }) => {
   };
 
   const updateUserDataToSupabase = async () => {
+
     const user = session?.user;
     if (!user) {
+
       return;
     }
 
@@ -70,7 +72,7 @@ export const HealthConnectProvider = ({ children }) => {
       const { data, error } = await supabase
         .from('profiles')
         .select('created_at, total_steps, total_distance_km')
-        .eq('id', user.id)
+        .eq('id', user?.id)
         .single();
 
       if (error || !data) {
@@ -96,7 +98,7 @@ export const HealthConnectProvider = ({ children }) => {
             total_steps: currentSteps,
             total_distance_km: currentDistance  
           })
-          .eq('id', user.id);
+          .eq('id', user?.id);
 
         if (updateError) {
           throw new Error('Error updating Supabase:', updateError);

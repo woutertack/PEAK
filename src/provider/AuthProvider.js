@@ -10,9 +10,6 @@ const AuthProvider = (props) => {
 	const [session, setSession] = useState(null);
 	const [user, setUser] = useState(null);
 
-		
-		
-
 	useEffect(() => {
 		supabase.auth.getSession().then(({ data: { session } }) => {
 			setSession(session)

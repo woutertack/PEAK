@@ -132,7 +132,7 @@ const Profile = ({ navigation }) => {
           <View pointerEvents='none'>
             <Avatar rounded url={avatarUrl} size={180} containerStyle={styles.avatar} />
           </View>
-          <Text style={styles.nameText}>{`${firstName} ${lastName}, 22`}</Text>
+          <Text style={styles.nameText}>{`${firstName} ${lastName}`}</Text>
           {/* TO DO ADD AGE */}
           <Text style={styles.memberSinceText}>{formattedDate}</Text>
           <View style={styles.buttonsContainer}>
@@ -140,7 +140,7 @@ const Profile = ({ navigation }) => {
               <TertiaryButton label={'Wijzig profiel'} onPress={() => navigation.navigate('EditProfile')} />
             </View>
             <View style={styles.viewBadgesButton}>
-              <PrimaryButton label={'Bekijk badges'} />
+              
             </View>
           </View>
           <View style={styles.statsContainer}>

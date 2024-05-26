@@ -64,12 +64,13 @@ export default function Login({ navigation }) {
               }}
             />
             <Text
-              fontWeight="bold"
+              fontWeight="medium"
               size="h3"
               style={{
                 
                 padding: 0,
-                paddingVertical: 40,
+                paddingVertical: 10,
+                paddingTop: 40,
                 
                 color: Colors.white,
               }}

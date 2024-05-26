@@ -11,15 +11,14 @@ import { supabase } from '../lib/initSupabase';
 const AppNavigation = () => {
     const firstLogin = useStore(state => state.firstLogin);
     const { user, session } = useContext(AuthContext);
-    console.log(firstLogin);
 
     useEffect(() => {
         const fetchFirstLogin = async () => {
-            if (user) {
+            if (session) {
                 const { data, error } = await supabase
                     .from('profiles')
                     .select('first_login')
-                    .eq('id', session.user.id)
+                    .eq('id', session?.user.id)
                     .single();
 
                 if (error) {
@@ -31,16 +30,16 @@ const AppNavigation = () => {
         };
 
         fetchFirstLogin();
-    }, [user, session, firstLogin]);
+    }, [session, firstLogin]);
 
-    // Rest of your code...
 
-    if (user === null) {
-        return <Loading />;
+
+    if (!session || !user ) {
+        return <Auth />;
     }
 
-    if (!user) {
-        return <Auth />;
+    if (session == null) {
+        return <Loading />;
     }
 
     if (firstLogin) {
