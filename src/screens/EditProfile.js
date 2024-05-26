@@ -100,7 +100,7 @@ const EditProfile = ({navigation}) => {
                 navigation.navigate('Profile');
               }}
             />
-            <Text style={styles.headerText}>Edit Profile</Text>
+            <Text style={styles.headerText}>Profiel</Text>
             <TabBarIcon
               library="Ionicons"
               icon="settings-sharp"
@@ -147,7 +147,7 @@ const EditProfile = ({navigation}) => {
           </View>
           <View style={styles.updateBtn}>
             <PrimaryButton
-              label={loading ? 'Loading ...' : 'Update'}
+              label={loading ? 'Laden ...' : 'Bijwerken'}
               onPress={() => updateProfile({ firstName, lastName, avatar_url: avatarUrl })}
               disabled={loading}
             />

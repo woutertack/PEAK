@@ -15,6 +15,7 @@ import FriendsProfile from "../screens/FriendsProfile";
 import BottomTabs from "./BottomTabs";
 import CreateVersus from "../screens/CreateVersus";
 import AcceptVersus from "../screens/AcceptVersus";
+import HistoryVersus from "../screens/HistoryVersus";
 
 // Create Stack Navigator
 const Stack = createNativeStackNavigator();
@@ -40,9 +41,9 @@ function DrawerContent() {
         drawerInactiveTintColor: Colors.white,
       }}>
       <Drawer.Screen name="Home" component={Home} />
-      <Drawer.Screen name="Profile" component={Profile} />
-      <Drawer.Screen name="Challenges" component={BottomTabs} />
-      <Drawer.Screen name="Friends" component={Friends} />
+      <Drawer.Screen name="Profile" component={Profile} options={{ title: 'Profiel' }}/>
+      <Drawer.Screen name="Challenges" component={BottomTabs} options={{ title: 'Uitdagingen' }}/>
+      <Drawer.Screen name="Friends" component={Friends} options={{ title: 'Vrienden' }}/>
       <Drawer.Screen name="Settings" component={Settings} />
     </Drawer.Navigator>
   );
@@ -58,6 +59,7 @@ function Main() {
         <Stack.Screen name="FriendsProfile" component={FriendsProfile} />
         <Stack.Screen name="CreateVersus" component={CreateVersus} />
         <Stack.Screen name="AcceptVersus" component={AcceptVersus} />
+        <Stack.Screen name="HistoryVersus" component={HistoryVersus} />
       </Stack.Navigator>
     </NavigationContainer>
   );

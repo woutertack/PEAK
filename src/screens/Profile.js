@@ -10,7 +10,7 @@ import PrimaryButton from '../components/utils/buttons/PrimaryButton';
 import TertiaryButton from '../components/utils/buttons/TertiaryButton';
 import CardStats from '../components/cards/CardStats';
 import { AuthContext } from '../provider/AuthProvider';
-import { format, differenceInDays, set } from 'date-fns';
+import { format, differenceInDays } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { supabase } from '../lib/initSupabase';
 import { calculateStreak } from '../components/utils/streaks/CalculateStreak'; // Import the calculateStreak function
@@ -117,7 +117,7 @@ const Profile = ({ navigation }) => {
               navigation.goBack();
             }}
           />
-          <Text style={styles.headerText}>Profile</Text>
+          <Text style={styles.headerText}>Profiel</Text>
           <TabBarIcon
             library="Ionicons"
             icon="settings-sharp"
@@ -133,6 +133,7 @@ const Profile = ({ navigation }) => {
             <Avatar rounded url={avatarUrl} size={180} containerStyle={styles.avatar} />
           </View>
           <Text style={styles.nameText}>{`${firstName} ${lastName}, 22`}</Text>
+          {/* TO DO ADD AGE */}
           <Text style={styles.memberSinceText}>{formattedDate}</Text>
           <View style={styles.buttonsContainer}>
             <View style={styles.viewBadgesButton}>

@@ -1,145 +1,128 @@
-import { useState, useEffect, useContext } from 'react'
-import { supabase } from '../lib/initSupabase'
-import { StyleSheet, View, Alert } from 'react-native'
-import { Button, Input } from 'react-native-elements'
-import { Session } from '@supabase/supabase-js'
-import { AuthContext } from '../provider/AuthProvider'
-import Avatar from '../components/Avatar'
-import Colors from '../consts/Colors'
-import useStore from '../helpers/firstLogin'
-import useStatusBar from '../helpers/useStatusBar'
+import React, { useContext, useEffect, useState, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, Alert, Settings } from 'react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { Layout } from 'react-native-rapi-ui';
+import { StatusBar } from 'expo-status-bar';
+import TabBarIcon from "../components/utils/TabBarIcon";
+import Colors from '../consts/Colors';
+import Avatar from '../components/Avatar';
+import PrimaryButton from '../components/utils/buttons/PrimaryButton';
+import TertiaryButton from '../components/utils/buttons/TertiaryButton';
+import CardStats from '../components/cards/CardStats';
+import { AuthContext } from '../provider/AuthProvider';
+import { format, differenceInDays } from 'date-fns';
+import { nl } from 'date-fns/locale';
+import { supabase } from '../lib/initSupabase';
+import { calculateStreak } from '../components/utils/streaks/CalculateStreak'; // Import the calculateStreak function
+import { calculateMaxStreak } from '../components/utils/streaks/CalculateMaxStreak';
+import useStatusBar from '../helpers/useStatusBar';
+import { useHealthConnect } from '../provider/HealthConnectProvider'; // Import the hook
 
-export default function Account({ }) {
-  const [loading, setLoading] = useState(true)
-  const [username, setUsername] = useState('')
-  const [website, setWebsite] = useState('')
-  const [avatarUrl, setAvatarUrl] = useState('')
+export default function Account({navigation }) {
   const { session } = useContext(AuthContext);
+  const { readData, steps, distance } = useHealthConnect(); // Use the hook and get steps
+  const [loading, setLoading] = useState(true);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [createdAt, setCreatedAt] = useState('');
+  const [totalActiveDays, setTotalActiveDays] = useState(0);
+  const [currentStreak, setCurrentStreak] = useState(0);
+  const [maxStreak, setMaxStreak] = useState(0);
+  const [totalSteps, setTotalSteps] = useState(0); // New state for total steps
+  const [totalDistance, setTotalDistance] = useState(0); // New state for total distance
 
-  useStatusBar(Colors.secondaryGreen, 'light-content');
- 
-  useEffect(() => {
-    if (session) getProfile()
-  }, [session])
-
-  async function getProfile() {
+  const fetchProfile = async () => {
     try {
-      setLoading(true)
-      if (!session?.user) throw new Error('No user on the session!')
-
+      if (!session?.user) throw new Error('No user on the session!');
       const { data, error, status } = await supabase
         .from('profiles')
-        .select(`username, website, avatar_url`)
+        .select('first_name, last_name, avatar_url, created_at, total_steps, total_distance_km')
         .eq('id', session?.user.id)
-        .single()
+        .single();
       if (error && status !== 406) {
-        throw error
+        throw error;
       }
-
       if (data) {
-        setUsername(data.username)
-        setWebsite(data.website)
-        setAvatarUrl(data.avatar_url)
+        setFirstName(data.first_name);
+        setLastName(data.last_name);
+        setAvatarUrl(data.avatar_url);
+        setCreatedAt(data.created_at);
+        setTotalSteps(data.total_steps);
+        setTotalDistance(data.total_distance_km);
+        
+        const createdAtDate = new Date(data.created_at);
+        const currentDate = new Date();
+        const daysActive = differenceInDays(currentDate, createdAtDate);
+        setTotalActiveDays(daysActive);
+
+        
       }
     } catch (error) {
       if (error instanceof Error) {
-        Alert.alert(error.message)
+        Alert.alert(error.message);
       }
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  async function updateProfile({
-    username,
-    website,
-    avatar_url,
-  }) {
-    try {
-      setLoading(true)
-      if (!session?.user) throw new Error('No user on the session!')
-
-      const updates = {
-        id: session?.user.id,
-        username,
-        website,
-        avatar_url,
-        updated_at: new Date(),
-      }
-
-      const { error } = await supabase.from('profiles').upsert(updates)
-
-      if (error) {
-        throw error
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        Alert.alert(error.message)
-      }
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const signOut = async () => {
-    try {
-      await supabase.auth.signOut()
-      useStore.setState({ firstLogin: true })
-    } catch (error) {
-      console.log('Error logging out:', error.message)
-    }
-  }
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.verticallySpaced, styles.mt20]}>
-        <Input label="Email" value={session?.user?.email} disabled />
-      </View>
-      <View style={styles.verticallySpaced}>
-        <Input label="Username" value={username || ''} onChangeText={(text) => setUsername(text)} />
-      </View>
-      <View style={styles.verticallySpaced}>
-        <Input label="Website" value={website || ''} onChangeText={(text) => setWebsite(text)} />
-      </View>
-
-      <View>
-      <Avatar
-        size={200}
-        url={avatarUrl}
-        onUpload={(url) => {
-          setAvatarUrl(url)
-          updateProfile({ username, website, avatar_url: url })
-        }}
-      />
-    </View>
-
-      <View style={[styles.verticallySpaced, styles.mt20]}>
-        <Button
-          title={loading ? 'Loading ...' : 'Update'}
-          onPress={() => updateProfile({ username, website, avatar_url: avatarUrl })}
-          disabled={loading}
-        />
-      </View>
-
-      <View style={styles.verticallySpaced}>
-        <Button title="Sign Out" onPress={() => signOut()} />
-      </View>
-    </View>
-  )
-}
+    <Layout>
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+        <View style={styles.header}>
+          <TabBarIcon
+            library="AntDesign"
+            icon="arrowleft"
+            size={38}
+            style={styles.icon}
+            onPress={() => {
+              navigation.goBack();
+            }}
+          />
+          <Text style={styles.headerText}>Settings</Text>
+          <View style={styles.iconPlaceholder} />
+        </View>
+        
+      </ScrollView>
+    </Layout>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 40,
-    padding: 12,
-    backgroundColor: Colors.black,
+    flex: 1,
+    backgroundColor: Colors.secondaryGreen,
   },
-  verticallySpaced: {
-    paddingTop: 4,
-    paddingBottom: 4,
-    alignSelf: 'stretch',
+  contentContainer: {
+    padding: 20,
+    flexGrow: 1,
+    
   },
-  mt20: {
-    marginTop: 20,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between', // Distributes space around elements
   },
-})
+
+  backIcon: {
+    marginRight: 10,
+  },
+  settingsIcon: {
+    marginLeft: 'auto',
+    color: '#fff',
+    
+  },
+  headerText: {
+    fontSize: 24,
+    color: '#fff',
+    fontWeight: 'bold',
+  },  
+  iconPlaceholder: {
+    width: 38, // Match the icon size
+    height: 38, // Match the icon size
+  },
+  
+});
+

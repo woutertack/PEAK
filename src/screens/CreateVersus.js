@@ -87,6 +87,11 @@ const CreateVersus = ({ navigation }) => {
   };
 
   const validateForm = () => {
+    if (!goal) {
+      Alert.alert('Error', 'Geef een goal in!');
+      return false;
+    }
+
     if (!challengeType) {
       Alert.alert('Error', 'Please select a challenge type.');
       return false;
@@ -139,7 +144,7 @@ const CreateVersus = ({ navigation }) => {
     if (error) {
       Alert.alert('Error creating challenge', error.message);
     } else {
-      Alert.alert('Success', 'Challenge created successfully!');
+      Alert.alert('Uitdaging aangemaakt!', 'Je uitdaging zal starten wanneer je vriend deze accepteert.');
       navigation.goBack();
     }
 
@@ -164,7 +169,7 @@ const CreateVersus = ({ navigation }) => {
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Challenge Type</Text>
+            <Text style={styles.label}>Uitdaging Type</Text>
             <Picker
               items={[
                 { label: 'Stappen', value: 'steps' },
@@ -178,7 +183,7 @@ const CreateVersus = ({ navigation }) => {
 
           <View style={styles.formGroup}>
             <Text style={styles.label}>Goal
-              <Text style={{fontSize: 12, color: Colors.white, margin: '8'}}>  (Laat leeg voor om ter meest)</Text>
+              <Text style={{fontSize: 12, color: Colors.white, margin: '8'}}></Text>
             </Text>
             <TextInput
               value={goal}
@@ -245,7 +250,7 @@ const CreateVersus = ({ navigation }) => {
 
         <View style={styles.createBtn}>
           <PrimaryButton    
-            label={loading ? 'Creating...' : 'Create Challenge'}
+            label={loading ? 'Creëren...' : 'Creëer uitdaging'}
             onPress={handleSubmit}
             disabled={loading}  
           />

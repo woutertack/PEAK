@@ -7,6 +7,9 @@ import useStatusBar from '../helpers/useStatusBar';
 import { supabase } from '../lib/initSupabase';
 import TabBarIcon from '../components/utils/TabBarIcon';
 import { AuthContext } from '../provider/AuthProvider';
+import SecondaryButton from '../components/utils/buttons/SecondaryButton';
+import TertiaryButton from '../components/utils/buttons/TertiaryButton';
+import Avatar from '../components/Avatar';
 
 const AcceptVersus = ({ navigation }) => {
   useStatusBar(Colors.secondaryGreen, 'light-content');
@@ -23,7 +26,7 @@ const AcceptVersus = ({ navigation }) => {
         .from('versus')
         .select(`
           id, goal, challenge_type, deadline, status, 
-          creator:creator_id (id, first_name, last_name)
+          creator:creator_id (id, first_name, last_name, avatar_url)
         `)
         .eq('friend_id', userId)
         .eq('status', 'pending');
@@ -54,7 +57,7 @@ const AcceptVersus = ({ navigation }) => {
     if (error) {
       Alert.alert('Error updating challenge status', error.message);
     } else {
-      Alert.alert('Success', `Challenge ${response}`);
+     
       setChallenges(challenges.filter(challenge => challenge.id !== challengeId));
     }
     setLoading(false);
@@ -71,34 +74,31 @@ const AcceptVersus = ({ navigation }) => {
               size={38}
               style={styles.iconBack}
               onPress={() => {
-                navigation.navigate('Home');
+                navigation.goBack();
               }}
             />
-            <Text style={styles.headerText}>Versus</Text>
+            <Text style={styles.headerText}>Uitnodigingen</Text>
               <View style={styles.iconPlaceholder} />
           </View>
-        {challenges.map((challenge) => (
-          <View key={challenge.id} style={styles.challengeContainer}>
-            <Text style={styles.challengeTitle}>
-              Challenge from {challenge.creator.first_name} {challenge.creator.last_name}
-            </Text>
-            <Text style={styles.challengeGoal}>{challenge.goal} {challenge.challenge_type === 'steps' ? 'steps' : challenge.challenge_type}</Text>
-            <View style={styles.buttonContainer}>
-              <Button
-                text="Accept"
-                onPress={() => handleResponse(challenge.id, 'accepted')}
-                style={styles.acceptButton}
-                disabled={loading}
-              />
-              <Button
-                text="Decline"
-                onPress={() => handleResponse(challenge.id, 'declined')}
-                style={styles.declineButton}
-                disabled={loading}
-              />
+        {challenges.length === 0 ? (
+          <Text style={styles.noChallengesText}>Geen uitnodigingen op dit moment</Text>
+        ) : (
+          challenges.map((challenge) => (
+            <View key={challenge.id} style={styles.incomingChallenge}>
+              <View style={styles.avatar} pointerEvents="none">
+                <Avatar url={challenge.creator.avatar_url} size={50}  />
+              </View>
+              <View style={styles.challengeInfo}>
+                <Text style={styles.challengeText}>{`${challenge.creator.first_name} ${challenge.creator.last_name} heeft je uitgedaagd`}</Text>
+                <Text style={styles.challengeSubtitle}>{challenge.goal}</Text>
+                <View style={styles.buttonsContainer}>
+                  <SecondaryButton label="Accepteer" onPress={() => handleResponse(challenge.id, 'accepted')} style={styles.acceptButton} />
+                  <TertiaryButton label="Weiger" onPress={() => handleResponse(challenge.id, 'declined')} style={styles.declineButton} />
+                </View>
+              </View>
             </View>
-          </View>
-        ))}
+          ))
+        )}
       </ScrollView>
     </Layout>
   );
@@ -129,6 +129,12 @@ const styles = StyleSheet.create({
     width: 38, // Match the icon size
     height: 38, // Match the icon size
   },
+  noChallengesText: {
+    color: '#fff',
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 30,
+  },
   challengeContainer: {
     backgroundColor: '#00796B',
     padding: 15,
@@ -147,15 +153,43 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 10,
   },
-  buttonContainer: {
+  incomingChallenge: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    marginBottom: 20,
+    marginTop: 20,
   },
-  acceptButton: {
-    backgroundColor: '#4CAF50',
+  avatar: {
+    width: 50,
+    height: 70,
+    borderRadius: 50,
+    marginRight: 20,
   },
-  declineButton: {
-    backgroundColor: '#F44336',
+  challengeInfo: {
+    flex: 1,
+  },
+  challengeSubtitle: {
+    color: '#fff',
+    fontSize: 14,
+    marginBottom: 5,
+  },
+  challengeText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  buttonsContainer: {
+    flexDirection: 'row',
+    width: '45%',
+    marginTop: 10,
+    gap: 10,
+  },
+  acceptButton: {},
+  declineButton: {},
+  updateBtn: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    right: 20,
   },
 });
 

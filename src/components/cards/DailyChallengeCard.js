@@ -10,7 +10,7 @@ const DailyChallengeCard = ({ progress, goal, unit, navigation }) => {
 
   return (
     <>
-    <Text style={styles.title}>Daily challenge</Text>
+    <Text style={styles.title}>Dagelijkse uitdaging</Text>
     <View style={styles.underline}></View>
     <View style={styles.card}>
     {/* <Text style={styles.titleInside}>Daily challenge</Text>
@@ -52,15 +52,15 @@ const styles = StyleSheet.create({
     maxWidth: 200,
   },
   title : {
-    fontSize: 21,
+    fontSize: 18,
     fontWeight: 'bold',
     color: Colors.secondaryGreen,
     marginBottom: 0,
-    marginLeft: 10, 
+    marginLeft: 5, 
   },
   underline: {
-    left: 7,
-    width: 170,
+    left: 5,
+    width: 187,
     height: 3,  // 3px width
     backgroundColor: Colors.secondaryGreen,
     marginBottom: 10,

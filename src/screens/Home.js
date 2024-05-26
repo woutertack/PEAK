@@ -120,26 +120,24 @@ export default function ({ navigation }) {
           {/* Right button */}
           {/* TO DO ADD OPACITY OUTSIDE VIEW */}
           <View style={styles.navButtonGroup}>
-            <View style={styles.profileIcon} pointerEvents="auto">
-              <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
+           
+              <TouchableOpacity style={styles.profileIcon} onPress={() => navigation.navigate("Profile")}>
                 <User />
               </TouchableOpacity>
-            </View>
-            <View style={styles.profileIcon}>
-              <TouchableOpacity onPress={() => navigation.navigate("Challenges")}>
+         
+           
+              <TouchableOpacity style={styles.profileIcon} onPress={() => navigation.navigate("Challenges")}>
                 <Target />
               </TouchableOpacity>
-            </View>
-            <View style={styles.profileIcon}>
-              <TouchableOpacity onPress={() => navigation.navigate("Friends")}>
+         
+              <TouchableOpacity style={styles.profileIcon} onPress={() => navigation.navigate("Friends")}>
                 <FriendsIcon />
               </TouchableOpacity>
-            </View>
-            <View style={styles.streakIcon}>
-              <TouchableOpacity onPress={() => navigation.navigate("Streaks")}>
+
+     
+              <TouchableOpacity style={styles.streakIcon} onPress={() => navigation.navigate("Streaks")}>
                 <StreakIcon streak={currentStreak} />
               </TouchableOpacity>
-            </View>
           </View>
         </View>
         <View style={styles.mapSection}>
