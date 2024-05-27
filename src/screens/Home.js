@@ -1,11 +1,8 @@
-import React, { useContext, useEffect, useState } from "react";
-import { View, TouchableOpacity, StyleSheet, SafeAreaView, Alert, Platform } from 'react-native';
+import React, { useContext, useState, useCallback } from "react";
+import { View, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import { StatusBar } from "expo-status-bar";
 import { supabase } from "../lib/initSupabase";
-import {
-  Layout,
-  Text,
-} from "react-native-rapi-ui";
+import { Layout, Text } from "react-native-rapi-ui";
 import { Ionicons } from "@expo/vector-icons";
 import Colors from "../consts/Colors";
 import Map from "../components/map/Map";
@@ -17,95 +14,130 @@ import { AuthContext } from "../provider/AuthProvider";
 import { calculateStreak } from '../components/utils/streaks/CalculateStreak'; 
 import useStatusBar from "../helpers/useStatusBar";
 import { useHealthConnect } from "../provider/HealthConnectProvider";
-import DailyChallengeCard from "../components/cards/DailyChallengeCard";  // Import the new component
+import DailyChallengeCard from "../components/cards/DailyChallengeCard";
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function ({ navigation }) {
   const { session } = useContext(AuthContext);
   const [currentStreak, setCurrentStreak] = useState(0);
-  const [dailyChallenge, setDailyChallenge] = useState(null); // State to hold daily challenge data
-  const [dailyProgress, setDailyProgress] = useState(0); // State to hold daily challenge progress
-  const {  readHealthData } = useHealthConnect();
+  const [dailyChallenge, setDailyChallenge] = useState(null);
+  const [dailyProgress, setDailyProgress] = useState(0);
+  const { readHealthData } = useHealthConnect();
 
-  useEffect(() => {
-    const fetchStreakData = async () => {
-      const { data, error } = await supabase
+  const fetchStreakData = async () => {
+    const { data, error } = await supabase
+      .from('locations')
+      .select('visited_at')
+      .eq('user_id', session.user.id)
+      .order('visited_at', { ascending: true });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    if (data) {
+      const streak = calculateStreak(data);
+      setCurrentStreak(streak.currentStreak);
+    }
+  };
+
+  const fetchDailyChallenge = async () => {
+    try {
+      const { data: dailyData, error: dailyError } = await supabase
+        .from('challenges')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .eq('type', 'daily')
+        .order('creation_time', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (dailyError && dailyError.code !== 'PGRST116') {
+        throw new Error('Error fetching daily challenge');
+      }
+
+      if (dailyData) {
+        const today = new Date();
+        const creationDate = new Date(dailyData.creation_time);
+        const isToday = today.toDateString() === creationDate.toDateString();
+
+        if (isToday) {
+          setDailyChallenge(dailyData);
+          calculateDailyProgress(dailyData);
+        } else {
+          setDailyChallenge(null);
+        }
+      }
+    
+    } catch (error) {
+      console.error('Error fetching daily challenge:', error);
+    }
+  };
+
+  const calculateDailyProgress = async (challenge) => {
+    const { totalSteps, totalDistance } = await readHealthData(challenge.creation_time);
+    let progress = 0;
+
+    if (challenge.challenge_type === 'hexagons') {
+      const { data: hexagons, error } = await supabase
         .from('locations')
         .select('visited_at')
         .eq('user_id', session.user.id)
-        .order('visited_at', { ascending: true });
+        .gte('visited_at', challenge.creation_time);
 
       if (error) {
-        console.error(error);
+        console.error('Error fetching hexagon data:', error);
         return;
       }
 
-      if (data) {
-        const streak = calculateStreak(data);
-        setCurrentStreak(streak.currentStreak);
+      progress = hexagons.length ;
+    } else {
+      switch (challenge.challenge_type) {
+        case 'steps':
+          progress = totalSteps;
+          break;
+        case 'distance':
+          progress = totalDistance;
+          break;
+        default:
+          progress = 0;
       }
-    };
+    }
 
-    const fetchDailyChallenge = async () => {
-      // TO DO : check if it's todays challenge
-      try {
-        const { data: dailyData, error: dailyError } = await supabase
-          .from('challenges')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .eq('type', 'daily')
-          .order('creation_time', { ascending: false })
-          .limit(1)
-          .single();
+    setDailyProgress(progress);
+    updateChallengeCompletionStatus(challenge, progress);
+  };
 
-        if (dailyError && dailyError.code !== 'PGRST116') {
-          throw new Error('Error fetching daily challenge');
-        }
+  const handleHexagonCaptured = () => {
+    if (dailyChallenge && dailyChallenge.challenge_type === 'hexagons') {
+      const newProgress = dailyProgress + 1;
+      setDailyProgress(newProgress);
+      updateChallengeCompletionStatus(dailyChallenge, newProgress);
+    }
+  };
 
-        if (dailyData) {
-          setDailyChallenge(dailyData);
-          calculateDailyProgress(dailyData);
-        }
-      } catch (error) {
-        console.error('Error fetching daily challenge:', error);
-      }
-    };
+  const updateChallengeCompletionStatus = async (challenge, progress) => {
+    if (progress >= challenge.goal) {
+      const { error } = await supabase
+        .from('challenges')
+        .update({ completed: true })
+        .eq('id', challenge.id);
 
-    const calculateDailyProgress = async (challenge) => {
-      const { totalSteps, totalDistance } = await readHealthData(challenge.creation_time);
-      let progress = 0;
-
-      if (challenge.challenge_type === 'hexagons') {
-        const { data: hexagons, error } = await supabase
-          .from('locations')
-          .select('visited_at')
-          .eq('user_id', session.user.id)
-          .gte('visited_at', challenge.creation_time);
-
-        if (error) {
-          console.error('Error fetching hexagon data:', error);
-          return;
-        }
-
-        progress = hexagons.length / challenge.goal;
+      if (error) {
+        console.error('Error updating challenge completion status:', error);
       } else {
-        switch (challenge.challenge_type) {
-          case 'steps':
-            progress = totalSteps;
-            break;
-          case 'distance':
-            progress = totalDistance; // The goal is in kilometers
-            break;
-          default:
-            progress = 0;
-        }
+        console.log('Challenge marked as completed');
       }
+    }
+  };
 
-      setDailyProgress(progress);
-    };
-
-    fetchStreakData();
-    fetchDailyChallenge();
-  }, [session.user.id, readHealthData]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchStreakData();
+      fetchDailyChallenge();
+    }, [session.user.id, readHealthData, dailyProgress])
+  );
 
   useStatusBar('transparent', 'dark-content');
 
@@ -118,7 +150,7 @@ export default function ({ navigation }) {
             <Ionicons name="menu" size={40} color={Colors.secondaryGreen} />
           </TouchableOpacity>
           {/* Right button */}
-          {/* TO DO ADD OPACITY OUTSIDE VIEW */}
+
           <View style={styles.navButtonGroup}>
            
               <TouchableOpacity style={styles.profileIcon} onPress={() => navigation.navigate("Profile")}>
@@ -141,24 +173,28 @@ export default function ({ navigation }) {
           </View>
         </View>
         <View style={styles.mapSection}>
-          <Map />
+          <Map onHexagonCaptured={handleHexagonCaptured}/>
         </View>
-        {dailyChallenge && (
+        {dailyChallenge ? (
           <View style={styles.challengeContainer}>
-            
-              <DailyChallengeCard
-                progress={dailyProgress}
-                goal={dailyChallenge.goal}
-                unit={dailyChallenge.challenge_type }
-                navigation={navigation}
-              />
-         
+            <DailyChallengeCard
+              progress={dailyProgress}
+              goal={dailyChallenge.goal}
+              unit={dailyChallenge.challenge_type}
+              navigation={navigation}
+            />
           </View>
+        ) : (
+          <TouchableOpacity style={styles.noChallengeContainer} onPress={() => navigation.navigate("Challenges")}  activeOpacity={0.9}>
+              <Text style={styles.noChallengeText}>Klik hier voor nieuwe uitdaging</Text>
+          </TouchableOpacity>
         )}
       </Layout>
     </SafeAreaView>
   );
 }
+
+
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -216,7 +252,41 @@ const styles = StyleSheet.create({
    
     borderRadius: 10,
     padding: 5,
-    
-   
   },
+  noChallengeContainer: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    right: 20,
+    borderRadius: 10,
+    padding: 5,
+    color: Colors.secondaryGreen,
+    alignItems: 'center',
+    backgroundColor: '#f2f2f2',
+    borderRadius: 10,
+    padding: 15,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    alignItems: 'start',
+    maxWidth: 200,
+  },
+  noChallengeText: {
+    fontSize: 17,
+    color: Colors.secondaryGreen,
+    fontWeight: 'bold',
+    marginBottom: 0,
+    },
+    underlineInside : {
+      left: 0,
+  
+    height: 3,  // 3px width
+    backgroundColor: Colors.secondaryGreen,
+    marginBottom: 10,
+    },
 });
