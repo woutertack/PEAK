@@ -1,129 +1,137 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, KeyboardAvoidingView, ProgressBarAndroid, Alert, Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { Layout, Text, Button } from 'react-native-rapi-ui';
-import { StatusBar } from 'expo-status-bar';
+// Ranking.js
+import React, { useState, useEffect, useContext } from 'react';
+import { View, StyleSheet, ScrollView, Text } from 'react-native';
+import { Layout } from 'react-native-rapi-ui';
 import TabBarIcon from "../components/utils/TabBarIcon";
 import Colors from '../consts/Colors';
-import PrimaryButton from '../components/utils/buttons/PrimaryButton';
-import SecondaryButton from '../components/utils/buttons/SecondaryButton';
-import Avatar from '../components/Avatar';
-import TertiaryButton from '../components/utils/buttons/TertiaryButton';
-import useStatusBar from '../helpers/useStatusBar';
+import ToggleButton from '../components/utils/buttons/ToggleButton';
+import LeaderboardItem from '../components/ranking/LeaderboardItem';
+import Tabs from '../components/ranking/Tabs';
+import { supabase } from '../lib/initSupabase';
+import { AuthContext } from '../provider/AuthProvider';
 
 const Ranking = ({ navigation }) => {
-  useStatusBar(Colors.secondaryGreen, 'light-content');
-  const [loading, setLoading] = useState(false);
-  const [incomingChallenges, setIncomingChallenges] = useState([
-    {
-      id: 1,
-      friendName: 'Wouter Tack',
-      friendAvatar: '1715979997164.jpeg',
-      challengeText: 'Wandel 10 000 stappen',
-    },
-    {
-      id: 2,
-      friendName: 'Jan Jansen',
-      friendAvatar: 'https://your-friend-avatar-url.com/avatar2.jpg',
-      challengeText: 'Ontdek 3 nieuwe gebieden',
-    },
-  ]);
+  const [selectedOption, setSelectedOption] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState('km²');
+  const [selectedTimeFrame, setSelectedTimeFrame] = useState('All Time');
+  const [users, setUsers] = useState([]);
+  const { session } = useContext(AuthContext);
 
-  const acceptChallenge = (id) => {
-    // Your logic to accept the challenge
-    Alert.alert('Challenge accepted!');
-    // Remove the accepted challenge from the list
-    setIncomingChallenges((prevChallenges) => prevChallenges.filter(challenge => challenge.id !== id));
+  useEffect(() => {
+    if (selectedOption === 'All') {
+      getAllUsers();
+    } else {
+      getFriends();
+    }
+  }, [selectedOption]);
+
+  const getAllUsers = async () => {
+    const { data, error } = await supabase.from('profiles').select('*');
+    if (error) {
+      console.log(error.message);
+    } else {
+      setUsers(data ?? []);
+    }
   };
 
-  const declineChallenge = (id) => {
-    // Your logic to decline the challenge
-    Alert.alert('Challenge declined!');
-    // Remove the declined challenge from the list
-    setIncomingChallenges((prevChallenges) => prevChallenges.filter(challenge => challenge.id !== id));
+  const getFriends = async () => {
+    const { data, error } = await supabase
+      .from('friend_requests')
+      .select(`
+        requester_id,
+        requestee_id,
+        requester_profile:profiles!requester_id(id, first_name, last_name, avatar_url, total_hexagons, total_distance_km, total_steps),
+        requestee_profile:profiles!requestee_id(id, first_name, last_name, avatar_url, total_hexagons, total_distance_km, total_steps)
+      `)
+      .or(`requester_id.eq.${session.user.id},requestee_id.eq.${session.user.id}`)
+      .eq('status', 'accepted');
+    if (error) {
+      console.log(error.message);
+    } else {
+      const friends = data.map(req => {
+        const isRequester = req.requester_id === session.user.id;
+        return isRequester ? req.requestee_profile : req.requester_profile;
+      });
+
+      const { data: currentUserData, error: currentUserError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+      
+      if (currentUserError) {
+        console.log(currentUserError.message);
+      } else {
+        friends.push(currentUserData);
+      }
+      setUsers(friends);
+    }
   };
 
-  
+  const sortUsers = (users, category) => {
+    if (!users || !users.length) return [];
+    return [...users].sort((a, b) => {
+      if (category === 'Gebieden') {
+        return b.total_hexagons - a.total_hexagons;
+      } else if (category === 'km²') {
+        return b.total_distance_km - a.total_distance_km;
+      } else if (category === 'Stappen') {
+        return b.total_steps - a.total_steps;
+      }
+      return 0;
+    });
+  };
+
+  const sortedUsers = sortUsers(users, selectedCategory);
+
+  // Find current user and rank
+  const currentUser = sortedUsers.find(user => user.id === session.user.id);
+  const currentUserRank = sortedUsers.findIndex(user => user.id === session.user.id) + 1;
 
   return (
-    <KeyboardAvoidingView behavior="height" enabled style={{ flex: 1 }}>
-      <StatusBar backgroundColor={Colors.secondaryGreen} style="light" />
-      <Layout style={{ flex: 1 }}>
-        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-          <View style={styles.header}>
-            <TabBarIcon
-              library="AntDesign"
-              icon="arrowleft"
-              size={38}
-              style={styles.icon}
-              onPress={() => {
-                navigation.navigate('Home');
-              }}
-            />
-            <Text style={styles.headerText}>Ranking</Text>
-            <View style={styles.iconPlaceholder} />
-          </View>
-          
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Dagelijkse uitdagingen</Text>
-            <View style={styles.challenge}>
-              <Text style={styles.challengeTitle}>Wandel 10 000 stappen</Text>
-              <Text style={styles.challengeSubtitle}>4575 stappen</Text>
-              <ProgressBarAndroid styleAttr="Horizontal" color={Colors.primaryGreen} indeterminate={false} progress={0.4575} />
-            </View>
-            <View style={styles.challenge}>
-              <Text style={styles.challengeTitle}>Ontdek 3 nieuwe gebieden</Text>
-              <Text style={styles.challengeSubtitle}>1 ontdekt</Text>
-              <ProgressBarAndroid styleAttr="Horizontal" color={Colors.primaryGreen} indeterminate={false} progress={1 / 3} />
-            </View>
-          </View>
-          
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Wekelijkse uitdagingen</Text>
-            <View style={styles.challenge}>
-              <Text style={styles.challengeTitle}>Wandel 10 000 stappen</Text>
-              <Text style={styles.challengeSubtitle}>4575 stappen</Text>
-              <ProgressBarAndroid styleAttr="Horizontal" color={Colors.primaryGreen} indeterminate={false} progress={0.4575} />
-            </View>
-            <View style={styles.challenge}>
-              <Text style={styles.challengeTitle}>Ontdek 3 nieuwe gebieden</Text>
-              <Text style={styles.challengeSubtitle}>1 ontdekt</Text>
-              <ProgressBarAndroid styleAttr="Horizontal" color={Colors.primaryGreen} indeterminate={false} progress={1 / 3} />
-            </View>
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Accepteer uitdagingen</Text>
-            {incomingChallenges.map((challenge) => (
-              <View key={challenge.id} style={styles.incomingChallenge}>
-                <View style={styles.avatar} pointerEvents="none">
-                  <Avatar url={challenge.friendAvatar} size={50}  />
-                </View>
-                <View style={styles.challengeInfo}>
-                  <Text style={styles.challengeText}>{`${challenge.friendName} heeft je uitgedaagd`}</Text>
-                  <Text style={styles.challengeSubtitle}>{challenge.challengeText}</Text>
-                  <View style={styles.buttonsContainer}>
-                    <SecondaryButton label="Accepteer" onPress={() => acceptChallenge(challenge.id)} style={styles.acceptButton} />
-                    <TertiaryButton label="Weiger" onPress={() => declineChallenge(challenge.id)} style={styles.declineButton} />
-                  </View>
-                </View>
-              </View>
-            ))}
-          </View>
-        </ScrollView>
-        <View style={styles.updateBtn}>
-          <PrimaryButton
-            label={loading ? 'Loading ...' : 'Creëer een uitdaging'}
+    <Layout>
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+        <View style={styles.header}>
+          <TabBarIcon
+            library="AntDesign"
+            icon="arrowleft"
+            size={38}
+            style={styles.icon}
             onPress={() => {
-              setLoading(true);
-              // Your create challenge logic here
-              setLoading(false);
+              navigation.goBack();
             }}
-            disabled={loading}
           />
+          <ToggleButton selectedOption={selectedOption} setSelectedOption={setSelectedOption} />
         </View>
-      </Layout>
-    </KeyboardAvoidingView>
+        <View style={styles.headerTitle}>
+          <Text style={styles.headerText}>Ranking</Text>
+        </View>
+        <Tabs options={['Gebieden', 'km²', 'Stappen']} selectedOption={selectedCategory} setSelectedOption={setSelectedCategory} />
+        {/* <Tabs options={['Weekly', 'All Time', 'Monthly']} selectedOption={selectedTimeFrame} setSelectedOption={setSelectedTimeFrame} /> */}
+        <View style={styles.leaderboard}>
+        {currentUser && (
+          <LeaderboardItem
+            key={currentUser.id}
+            user={{ ...currentUser, rank: currentUserRank }}
+            selectedCategory={selectedCategory}
+            isCurrentUser
+          />
+        )}
+
+      
+          {sortedUsers.map((user, index) => (
+            user.id !== session.user.id && (
+              <LeaderboardItem
+                key={user.id}
+                user={{ ...user, rank: index + 1 }}
+                selectedCategory={selectedCategory}
+                onPress={() => navigation.navigate('FriendsProfile', { friendId: user.id })}
+              />
+            )
+          ))}
+        </View>
+      </ScrollView>
+    </Layout>
   );
 };
 
@@ -134,77 +142,29 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
-    paddingBottom: 100, // Make room for the button
+    flexGrow: 1,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  headerText: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
-    flex: 1,
-    textAlign: 'center',
-  },
-  section: {
-    marginTop: 20,
-  },
-  sectionTitle: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  challenge: {
-    marginBottom: 10,
-  },
-  challengeTitle: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  challengeSubtitle: {
-    color: '#fff',
-    fontSize: 14,
-    marginBottom: 5,
-  },
-  incomingChallenge: {
-    flexDirection: 'row',
-    marginBottom: 20,
-  },
-  avatar: {
-    width: 50,
-    height: 70,
-    borderRadius: 50,
-    marginRight: 20,
-  },
-  challengeInfo: {
-    flex: 1,
-  },
-  challengeText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  buttonsContainer: {
-    flexDirection: 'row',
-    width: '45%',
+  headerTitle: {
     marginTop: 10,
-    gap: 10,
+    justifyContent: 'center',
+    textAlign: 'center',
+    alignContent: 'center'
   },
-  acceptButton: {},
-  declineButton: {},
-  updateBtn: {
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 20,
+  headerText: {
+    fontSize: 24,
+    color: '#fff',
+    fontWeight: 'bold',
+    justifyContent: 'center',
+    textAlign: 'center',
+    alignContent: 'center'
   },
-  iconPlaceholder: {
-    width: 38, // Match the icon size
-    height: 38, // Match the icon size
+  leaderboard: {
+    marginTop: 20,
   },
 });
 

@@ -1,6 +1,5 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, Text, View, Alert, ScrollView } from 'react-native';
-
 import { Layout } from "react-native-rapi-ui";
 import { supabase } from '../lib/initSupabase'; // Ensure correct path
 import { AuthContext } from '../provider/AuthProvider'; // Context to access user session
@@ -10,16 +9,35 @@ import PrimaryButton from '../components/utils/buttons/PrimaryButton';
 import LevelIcon1 from '../components/utils/icons/LevelIcon1';
 import LevelIcon2 from '../components/utils/icons/LevelIcon2';
 import LevelIcon3 from '../components/utils/icons/LevelIcon3';
-import { NavigationContainer } from '@react-navigation/native';
 import useStore from '../helpers/firstLogin';
 import useStatusBar from '../helpers/useStatusBar';
 
-const SelectLevelUser = ({navigation}) => {
+const SelectLevelUser = ({ navigation }) => {
     useStatusBar(Colors.secondaryGreen, 'light-content');
     const { session } = useContext(AuthContext);
     const userId = session?.user.id;
     const [selectedLevel, setSelectedLevel] = useState(null);
     const setFirstLogin = useStore(state => state.setFirstLogin);
+
+    useEffect(() => {
+        const fetchUserLevel = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('level')
+                    .eq('id', userId)
+                    .single();
+                if (error) {
+                    console.error('Error fetching user level:', error.message);
+                } else {
+                    setSelectedLevel(data.level);
+                }
+            } catch (error) {
+                console.error('Error fetching user level:', error.message);
+            }
+        };
+        fetchUserLevel();
+    }, [userId]);
 
     const handleLevelSelect = (level) => {
         console.log('Level selected:', level);
@@ -27,15 +45,14 @@ const SelectLevelUser = ({navigation}) => {
     };
 
     const handleUpdateLevel = async () => {
-        if(!selectedLevel) return Alert.alert('Selecteer een doel');
+        if (!selectedLevel) return Alert.alert('Selecteer een doel');
         try {
             await supabase
-            .from('profiles')
-            .update({ level: selectedLevel, first_login: false })
-            .eq('id', userId);
+                .from('profiles')
+                .update({ level: selectedLevel, first_login: false })
+                .eq('id', userId);
 
             setFirstLogin(false);
-            
         } catch (error) {
             Alert.alert('Error', 'Failed to update level');
         }
@@ -44,61 +61,58 @@ const SelectLevelUser = ({navigation}) => {
     };
 
     return (
-        <>
-            
-            <Layout>
-                <ScrollView
-                    style={styles.container}
-                    contentContainerStyle={styles.contentContainer}
-                >
-                    <View style={styles.logoContainer}>
-                        <Logo width={146.974} height={36.269} style={styles.logo} />
-                    </View>
-                    <View style={styles.wrapper}>
-                        <Text style={styles.header}>Selecteer je doel</Text>
-                        <TouchableOpacity 
-                            style={[styles.levelItem, selectedLevel === 'beginner' && { borderColor: Colors.primaryGreen, borderWidth: 4}]} 
-                            onPress={() => handleLevelSelect('beginner')}
-                        >
-                            <View style={styles.levelIcon}>
-                                <LevelIcon1 />
-                            </View>
-                            <View style={styles.levelContent}>
-                                <Text style={styles.levelTitle}>Basis</Text>
-                                <Text style={styles.levelText}>Beweeg elke dag 15 à 30 minuten</Text>
-                            </View>
-                        </TouchableOpacity>
-                        <TouchableOpacity 
-                            style={[styles.levelItem, selectedLevel === 'medium' && { borderColor: Colors.primaryGreen, borderWidth: 4 }]} 
-                            onPress={() => handleLevelSelect('medium')}
-                        >
-                            <View style={styles.levelIcon}>
-                                <LevelIcon2 />
-                            </View>
-                            <View style={styles.levelContent}>
-                                <Text style={styles.levelTitle}>Uitdagend</Text>
-                                <Text style={styles.levelText}>Beweeg elke dag 30 à 60 minuten</Text>
-                            </View>
-                        </TouchableOpacity>
-                        <TouchableOpacity 
-                            style={[styles.levelItem, selectedLevel === 'hard' && { borderColor: Colors.primaryGreen, borderWidth: 4 }]} 
-                            onPress={() => handleLevelSelect('hard')}
-                        >
-                            <View style={styles.levelIcon}>
-                                <LevelIcon3 />
-                            </View>
-                            <View style={styles.levelContent}>
-                                <Text style={styles.levelTitle}>Gevorderd</Text>
-                                <Text style={styles.levelText}>Beweeg elke dag +60 minuten</Text>
-                            </View>
-                        </TouchableOpacity>
-                    </View>
-                    <View style={styles.button}>
-                        <PrimaryButton onPress={handleUpdateLevel} label={'Ga verder'} disabled={!selectedLevel} />
-                    </View>
-                </ScrollView>
-            </Layout>
-            </>
+        <Layout>
+            <ScrollView
+                style={styles.container}
+                contentContainerStyle={styles.contentContainer}
+            >
+                <View style={styles.logoContainer}>
+                    <Logo width={146.974} height={36.269} style={styles.logo} />
+                </View>
+                <View style={styles.wrapper}>
+                    <Text style={styles.header}>Selecteer je doel</Text>
+                    <TouchableOpacity
+                        style={[styles.levelItem, selectedLevel === 'beginner' && { borderColor: Colors.primaryGreen, borderWidth: 4 }]}
+                        onPress={() => handleLevelSelect('beginner')}
+                    >
+                        <View style={styles.levelIcon}>
+                            <LevelIcon1 />
+                        </View>
+                        <View style={styles.levelContent}>
+                            <Text style={styles.levelTitle}>Basis</Text>
+                            <Text style={styles.levelText}>Beweeg elke dag 15 à 30 minuten</Text>
+                        </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.levelItem, selectedLevel === 'medium' && { borderColor: Colors.primaryGreen, borderWidth: 4 }]}
+                        onPress={() => handleLevelSelect('medium')}
+                    >
+                        <View style={styles.levelIcon}>
+                            <LevelIcon2 />
+                        </View>
+                        <View style={styles.levelContent}>
+                            <Text style={styles.levelTitle}>Uitdagend</Text>
+                            <Text style={styles.levelText}>Beweeg elke dag 30 à 60 minuten</Text>
+                        </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.levelItem, selectedLevel === 'hard' && { borderColor: Colors.primaryGreen, borderWidth: 4 }]}
+                        onPress={() => handleLevelSelect('hard')}
+                    >
+                        <View style={styles.levelIcon}>
+                            <LevelIcon3 />
+                        </View>
+                        <View style={styles.levelContent}>
+                            <Text style={styles.levelTitle}>Gevorderd</Text>
+                            <Text style={styles.levelText}>Beweeg elke dag +60 minuten</Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
+                <View style={styles.button}>
+                    <PrimaryButton onPress={handleUpdateLevel} label={'Ga verder'} disabled={!selectedLevel} />
+                </View>
+            </ScrollView>
+        </Layout>
     );
 };
 
@@ -126,18 +140,18 @@ const styles = StyleSheet.create({
     },
     levelTitle: {
         fontSize: 33,
-        color: Colors.tirtiaryGreen,
+        color: Colors.secondaryGreen,
         marginTop: 5,
     },
-    levelText:{
+    levelText: {
         fontSize: 18,
-        color: Colors.tirtiaryGreen,
+        color: Colors.secondaryGreen,
         width: 150,
         marginTop: 5,
     },
     header: {
         fontSize: 24,
-        color: Colors.primaryGreen,
+        color: '#15EDA3',
         fontWeight: 'bold',
         marginBottom: 10,
         textAlign: 'center'
@@ -145,11 +159,11 @@ const styles = StyleSheet.create({
     logoContainer: {
         alignItems: 'center',
         marginTop: 15,
-      },
+    },
     wrapper: {
         flex: 1,
         justifyContent: 'center',
-       },
+    },
     button: {
         marginBottom: 40,
     },

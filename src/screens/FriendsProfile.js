@@ -10,11 +10,13 @@ import { format, differenceInDays } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import { supabase } from '../lib/initSupabase';
 import PrimaryButton from '../components/utils/buttons/PrimaryButton';
+import SecondaryButton from '../components/utils/buttons/SecondaryButton';
 import TertiaryButton from '../components/utils/buttons/TertiaryButton';
 import CardStats from '../components/cards/CardStats';
 import { calculateStreak } from '../components/utils/streaks/CalculateStreak';
 import { calculateMaxStreak } from '../components/utils/streaks/CalculateMaxStreak';
 import { AuthContext } from '../provider/AuthProvider';
+import useStatusBar from '../helpers/useStatusBar';
 
 
 const FriendsProfile = ({ navigation }) => {
@@ -22,6 +24,7 @@ const FriendsProfile = ({ navigation }) => {
   const { friendId } = route.params;
   const { session } = useContext(AuthContext);
   const userId = session?.user.id;
+  useStatusBar(Colors.secondaryGreen, 'light-content');
 
   const [loading, setLoading] = useState(true);
   const [firstName, setFirstName] = useState('');
@@ -36,6 +39,8 @@ const FriendsProfile = ({ navigation }) => {
   const [totalSteps, setTotalSteps] = useState(0); 
   const [totalDistance, setTotalDistance] = useState(0);
   const [completedChallenges, setCompletedChallenges] = useState(0); 
+  const [isFriend, setIsFriend] = useState(false);
+  const [requestSent, setRequestSent] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -43,6 +48,7 @@ const FriendsProfile = ({ navigation }) => {
       getProfileLocations();
       getWinLossRecord();
       fetchCompletedChallenges();
+      checkFriendshipStatus();
     }, [friendId])
   );
   async function getFriendProfile() {
@@ -149,6 +155,74 @@ const FriendsProfile = ({ navigation }) => {
     }
   };
 
+  async function checkFriendshipStatus() {
+    try {
+      const { data, error } = await supabase
+        .from('friend_requests')
+        .select('status')
+        .or(`requester_id.eq.${userId},requestee_id.eq.${userId}`)
+        .or(`requester_id.eq.${friendId},requestee_id.eq.${friendId}`)
+        .eq('status', 'accepted');
+
+      if (error) {
+        throw error;
+      }
+
+      setIsFriend(data.length > 0);
+
+      if (!isFriend) {
+        const { data: requestData, error: requestError } = await supabase
+          .from('friend_requests')
+          .select('status')
+          .or(`requester_id.eq.${userId},requestee_id.eq.${userId}`)
+          .or(`requester_id.eq.${friendId},requestee_id.eq.${friendId}`)
+          .eq('status', 'pending');
+
+        if (requestError) {
+          throw requestError;
+        }
+
+        setRequestSent(requestData.length > 0);
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        Alert.alert(error.message);
+      }
+    }
+  }
+
+  const handleAddFriend = async (requesteeId) => {
+    // Check if there is already a friend request with the same status
+    const { data: existingRequests, error: fetchError } = await supabase
+      .from('friend_requests')
+      .select('*')
+      .or(`requester_id.eq.${session.user.id},requestee_id.eq.${session.user.id}`)
+      .or(`requester_id.eq.${requesteeId},requestee_id.eq.${requesteeId}`)
+      .eq('status', 'pending');
+
+    if (fetchError) {
+      Alert.alert('Error', 'Failed to check existing friend requests');
+      return;
+    }
+
+    if (existingRequests.length > 0) {
+      setRequestSent(true);
+      Alert.alert('Info', 'Vriendschapsverzoek is al verstuurd');
+      return;
+    }
+
+    // If no existing friend request, insert a new one
+    const { error: insertError } = await supabase.from('friend_requests').insert([
+      { requester_id: session.user.id, requestee_id: requesteeId, status: 'pending' }
+    ]);
+
+    if (insertError) {
+      Alert.alert('Error', 'Failed to send friend request');
+    } else {
+      setRequestSent(true);
+      Alert.alert('Success', 'Vriendschapsverzoek verstuurd');
+    }
+  };
   const formattedDate = createdAt
     ? `Lid sinds ${format(new Date(createdAt), 'MMMM yyyy', { locale: nl })}`
     : '';
@@ -178,23 +252,28 @@ const FriendsProfile = ({ navigation }) => {
             <Text style={styles.nameText}>{`${firstName} ${lastName}`}</Text>
             <Text style={styles.memberSinceText}>{formattedDate}</Text>
            
-            <View style={styles.buttonsContainer}>
-              <View style={styles.viewBadgesButton} pointerEvents='none'>
-                <TertiaryButton label={`${winLossRecord.userWins} vs ${winLossRecord.friendWins}`} />
-              </View>
-              
-              <View style={styles.viewBadgesButton}>
-                <PrimaryButton label={'Nu uitdagen'} onPress={() => navigation.navigate('CreateVersus',  { friendId })} />
-              </View>
-            </View>
-            <View style={styles.statsContainer}>
-              <CardStats number={totalSteps} label="Totaal stappen" />
-              <CardStats number={totalDistance} label="Totaal km" />
-              <CardStats number={totalActiveDays} label="Dagen bezig" />
-              <CardStats number={maxStreak} label="Langste streak" />
-              <CardStats number={currentStreak} label="Huidige streak" />
-              <CardStats number={completedChallenges} label="Voltooide uitdagingen" />
-            </View>
+            {isFriend ? (
+              <>
+                <View style={styles.buttonsContainer}>
+                  <View style={styles.viewBadgesButton} pointerEvents='none'>
+                    <TertiaryButton label={`${winLossRecord.userWins} vs ${winLossRecord.friendWins}`} />
+                  </View>
+                  <View style={styles.viewBadgesButton}>
+                    <PrimaryButton label={'Nu uitdagen'} onPress={() => navigation.navigate('CreateVersus', { friendId })} />
+                  </View>
+                </View>
+                <View style={styles.statsContainer}>
+                  <CardStats number={totalSteps} label="Totaal stappen" />
+                  <CardStats number={totalDistance} label="Totaal km" />
+                  <CardStats number={totalActiveDays} label="Dagen bezig" />
+                  <CardStats number={maxStreak} label="Langste streak" />
+                  <CardStats number={currentStreak} label="Huidige streak" />
+                  <CardStats number={completedChallenges} label="Voltooide uitdagingen" />
+                </View>
+              </>
+            ) : (
+              <SecondaryButton label={requestSent ? 'Vriendschapsverzoek verstuurd' : 'Stuur Vriendschapsverzoek'} onPress={() => handleAddFriend(friendId)} disabled={requestSent} />
+            )}
           </View>
         </ScrollView>
       </Layout>

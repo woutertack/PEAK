@@ -125,18 +125,18 @@ const styles = StyleSheet.create({
     },
     levelTitle: {
         fontSize: 33,
-        color: Colors.tirtiaryGreen,
+        color: Colors.secondaryGreen,
         marginTop: 5,
     },
     levelText:{
         fontSize: 18,
-        color: Colors.tirtiaryGreen,
+        color: Colors.secondaryGreen,
         width: 150,
         marginTop: 5,
     },
     header: {
         fontSize: 24,
-        color: Colors.primaryGreen,
+        color: '#15EDA3',
         fontWeight: 'bold',
         marginBottom: 10,
         textAlign: 'center'
