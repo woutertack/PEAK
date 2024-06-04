@@ -13,6 +13,7 @@
     "@react-native-community/geolocation": "^3.2.0",
     "@react-native-community/progress-bar-android": "^1.0.5",
     "@react-native-masked-view/masked-view": "0.3.0",
+    "@react-native-picker/picker": "2.6.1",
     "@react-navigation/bottom-tabs": "^6.5.16",
     "@react-navigation/drawer": "^6.6.15",
     "@react-navigation/native": "^6.1.17",
@@ -24,10 +25,10 @@
     "aes-js": "^3.1.2",
     "date-fns": "^3.6.0",
     "deprecated-react-native-prop-types": "^5.0.0",
-    "expo": "~50.0.11",
+    "expo": "~50.0.19",
     "expo-build-properties": "~0.11.1",
     "expo-constants": "~15.4.6",
-    "expo-dev-client": "~3.3.11",
+    "expo-dev-client": "~3.3.12",
     "expo-font": "~11.10.3",
     "expo-image-picker": "~14.7.1",
     "expo-linear-gradient": "~12.7.2",
@@ -40,6 +41,7 @@
     "expo-status-bar": "~1.11.1",
     "h3-reactnative": "github:realPrimoh/h3-reactnative",
     "react": "18.2.0",
+    "react-map-gl": "^7.1.7",
     "react-native": "0.73.6",
     "react-native-circular-progress": "^1.4.0",
     "react-native-date-picker": "^5.0.3",
@@ -49,6 +51,7 @@
     "react-native-health": "^1.18.0",
     "react-native-health-connect": "^2.0.3",
     "react-native-maps": "1.10.0",
+    "react-native-maps-super-cluster": "^1.6.0",
     "react-native-progress": "^5.0.1",
     "react-native-rapi-ui": "^0.2.1",
     "react-native-reanimated": "~3.6.2",
@@ -57,8 +60,7 @@
     "react-native-svg": "14.1.0",
     "react-native-url-polyfill": "^2.0.0",
     "typescript": "^5.3.0",
-    "zustand": "^4.5.2",
-    "@react-native-picker/picker": "2.6.1"
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

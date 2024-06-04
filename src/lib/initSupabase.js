@@ -7,7 +7,7 @@ import { createClient } from '@supabase/supabase-js'
 const apiUrl = process.env.EXPO_PUBLIC_API_URL;
 const apiKey = process.env.EXPO_PUBLIC_API_KEY;
 
-export const supabase = createClient(apiUrl, apiKey, {
+export const supabase = createClient(apiUrl, apiKey,{
   auth: {
     storage: AsyncStorage,
     autoRefreshToken: true,

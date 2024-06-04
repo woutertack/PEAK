@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useContext, useCallback } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import Mapbox, { ShapeSource, FillLayer, LineLayer, SymbolLayer } from '@rnmapbox/maps';
+import Mapbox, { ShapeSource, FillLayer, LineLayer } from '@rnmapbox/maps';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { supabase } from '../../lib/initSupabase.js';
@@ -9,18 +9,17 @@ import { useFocusEffect } from '@react-navigation/native';
 import Colors from '../../consts/Colors.js';
 import { AuthContext } from '../../provider/AuthProvider';
 
-Mapbox.setAccessToken("your-mapbox-access-token");
+
+// Mapbox.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_KEY);
+Mapbox.setAccessToken("pk.eyJ1Ijoid291dGVydGFjayIsImEiOiJja3A3MWV4NzcwdzVhMnRxdHJmcmJzbWZtIn0.3DtWFcL1fG0pk3JsABoTpA");
 const h3 = require("h3-reactnative");
 
 const Map = ({ onHexagonCaptured }) => {
   const [location, setLocation] = useState(null);
   const [hexagons, setHexagons] = useState(null);
-  const [clusters, setClusters] = useState(null);
-  const [lineWidth, setLineWidth] = useState(2.5);
-  const [locationsWithCoordinates, setLocationsWithCoordinates] = useState([]);
-  const [zoomLevel, setZoomLevel] = useState(14.5);
+  const [lineWidth, setLineWidth] = useState(3);
   const { session } = useContext(AuthContext);
-
+  
   const userId = session?.user.id;
   const mapRef = useRef(null);
   const cameraRef = useRef(null);
@@ -30,7 +29,7 @@ const Map = ({ onHexagonCaptured }) => {
       requestLocationPermission().then(() => {
         fetchLocations(); 
       });
-    }, [userId])
+    }, [userId, ])
   );
 
   useEffect(() => {
@@ -45,8 +44,8 @@ const Map = ({ onHexagonCaptured }) => {
       console.error('Permission to access location was denied');
       return;
     }
-    // const currentLocation = await Location.getCurrentPositionAsync({});
-    const currentLocation = { coords: { latitude: 50.749999, longitude: 3.733333 } };
+    const currentLocation = await Location.getCurrentPositionAsync({});
+    // const currentLocation = { coords: { latitude: 50.749999, longitude: 3.733333 } };
     setLocation(currentLocation.coords);
 
     console.log('Current location:', currentLocation.coords);
@@ -62,6 +61,7 @@ const Map = ({ onHexagonCaptured }) => {
       if (error) throw error;
 
       if (locationsData) {
+        console.log(locationsData);
         const locationsWithCoordinates = locationsData
         .filter(location => h3.h3IsValid(location.hex_index)) // Filter valid hex indexes
         .map(location => {
@@ -70,8 +70,7 @@ const Map = ({ onHexagonCaptured }) => {
         });
         
         console.log('Locations:', locationsWithCoordinates);
-        setLocationsWithCoordinates(locationsWithCoordinates);
-        updateMapWithLocations(locationsWithCoordinates);
+        updateMapWithLocations(locationsData);
       }
     } catch (error) {
       console.error('Error fetching locations:', error.message);
@@ -111,9 +110,10 @@ const Map = ({ onHexagonCaptured }) => {
   };
 
   const updateHexagons = (loc) => {
+    console.log(loc.latitude, loc.longitude);
     const centerIndex = h3.geoToH3(loc.latitude, loc.longitude, 9);
     checkAndAddHexIndex(centerIndex);
-
+  
     const hexIndices = h3.kRing(centerIndex, 0);
     const hexagons = hexIndices.map(index => h3.h3ToGeoBoundary(index, true));
     const hexGeoJson = {
@@ -130,8 +130,9 @@ const Map = ({ onHexagonCaptured }) => {
     setHexagons(hexGeoJson);
   };
 
-  const updateMapWithLocations = (locationsWithCoordinates) => {
-    const features = locationsWithCoordinates.map(location => {
+  const updateMapWithLocations = (locationsData) => {
+    const currentLocationHex = location ? h3.geoToH3(location.latitude, location.longitude, 9) : null;
+    const features = locationsData.map(location => {
       const boundary = h3.h3ToGeoBoundary(location.hex_index, true);
       return {
         type: 'Feature',
@@ -144,66 +145,47 @@ const Map = ({ onHexagonCaptured }) => {
         }
       };
     });
-
+    
+    if (currentLocationHex) {
+      const currentBoundary = h3.h3ToGeoBoundary(currentLocationHex, true);
+      features.push({
+        type: 'Feature',
+        properties: {
+          description: "Current Location",
+        },
+        geometry: {
+          type: 'Polygon',
+          coordinates: [currentBoundary]
+        }
+      });
+    }
+  
     const hexGeoJson = {
       type: 'FeatureCollection',
       features: features
     };
-
+  
     setHexagons(hexGeoJson);
   };
 
-  const clusterHexagons = (locationsWithCoordinates, resolution) => {
-    const clusters = locationsWithCoordinates.reduce((acc, location) => {
-      const clusterIndex = h3.geoToH3(location.lat, location.lng, resolution);
-      if (!acc[clusterIndex]) {
-        acc[clusterIndex] = { count: 0, hexes: [], center: h3.h3ToGeo(clusterIndex) };
-      }
-      acc[clusterIndex].count += 1;
-      acc[clusterIndex].hexes.push(location);
-      return acc;
-    }, {});
-
-    const clusterFeatures = Object.values(clusters).map(cluster => {
-      const boundary = h3.h3ToGeoBoundary(h3.geoToH3(cluster.center[0], cluster.center[1], resolution), true);
-      return {
-        type: 'Feature',
-        properties: {
-          count: cluster.count
-        },
-        geometry: {
-          type: 'Polygon',
-          coordinates: [boundary]
-        }
-      };
-    });
-
-    const clusterGeoJson = {
-      type: 'FeatureCollection',
-      features: clusterFeatures
-    };
-
-    setClusters(clusterGeoJson);
-  };
-
-  const handleRegionDidChange = async () => {
-    if (mapRef.current) {
-      const currentZoomLevel = await mapRef.current.getZoom();
-      console.log('Current zoom level:', currentZoomLevel);
-      setZoomLevel(currentZoomLevel);
-      const resolution = currentZoomLevel < 11.5 ? 7 : 9;
-      clusterHexagons(locationsWithCoordinates, resolution);
-      setLineWidth(currentZoomLevel < 13.5 ? 1 : 2.5);
-    }
-  };
-
   const centerMapOnUser = () => {
-    if (cameraRef.current && location) {
+    if (cameraRef.current) {
       cameraRef.current.setCamera({
         centerCoordinate: [location.longitude, location.latitude],
         zoomLevel: 14.5,
         animationDuration: 1000,
       });
+    }
+  };
+
+  const handleRegionDidChange = async () => {
+    if (mapRef.current) {
+      const zoomLevel = await mapRef.current.getZoom();
+      if (zoomLevel < 14) {
+        setLineWidth(1);
+      } else {
+        setLineWidth(3);
+      }
     }
   };
 
@@ -227,87 +209,59 @@ const Map = ({ onHexagonCaptured }) => {
           animationMode="flyTo"
           animationDuration={2000}
           maxZoomLevel={16}
+          
         />
 
-        {clusters && (
-          <ShapeSource id="clusters" shape={clusters}>
-            <FillLayer id="clusterFill" style={ {
-              fillColor: Colors.primaryGreen,
-              fillOutlineColor: Colors.secondaryGreen,
-              fillOpacity: 0.15,
-            }} />
-            <LineLayer id="clusterLine" style={{
-              lineColor: Colors.secondaryGreen,
-              lineWidth: lineWidth,
-            }} />
-            { zoomLevel <= 11.5 && (
-            <SymbolLayer 
-              id="clusterCount" 
-              style={{
-                textField: ['format', ['get', 'count'], {}],
-                textSize: 30,
-                textColor: Colors.secondaryGreen,
-                textIgnorePlacement: true,
-                textAllowOverlap: true,
-                // textField: [
-                //   'case',
-                //   ['==', ['get', 'count'], 1], '',
-                //   ['get', 'count']
-                // ],
-              }} 
-            />
-          )}
-          </ShapeSource>
-        )}
-
-        {hexagons && zoomLevel >= 11.5 && (
+        {hexagons && (
           <ShapeSource id="hexagons" shape={hexagons}>
             <FillLayer id="hexagonFill" style={ {
               fillColor: Colors.primaryGreen,
               fillOutlineColor: Colors.secondaryGreen,
-              fillOpacity: 0.15,
+              fillOpacity: 0.25,
             }} />
-            <LineLayer id="hexagonLine" style={{
+            <LineLayer id="hexagonLine"  style={{
               lineColor: Colors.secondaryGreen,
               lineWidth: lineWidth,
             }} />
           </ShapeSource>
         )}
 
-        <Mapbox.PointAnnotation
+         <Mapbox.PointAnnotation
           id="userLocation"
           coordinate={[location.longitude, location.latitude]}
           title="Your location"
           showsUserHeadingIndicator={false}
           pointerEvents="none"
         >
-          <View style={{
-            height: 30,
-            width: 30,
-            borderRadius: 50,
-            backgroundColor: Colors.secondaryGreen,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-            <View style={{
-              height: 24,
-              width: 24,
+      
+         <View style={{
+              height: 30,
+              width: 30,
               borderRadius: 50,
               backgroundColor: Colors.secondaryGreen,
-              borderColor: '#fff',
-              borderWidth: 3
-            }} />
+              justifyContent: 'center',
+              alignItems: 'center',
+          }}>
+              <View style={{
+                  height: 24, // Adjust this value as needed
+                  width: 24, // Adjust this value as needed
+                  borderRadius: 50,
+                  backgroundColor: Colors.secondaryGreen,
+                  borderColor: '#fff',
+                  borderWidth: 3
+              }} />
           </View>
-        </Mapbox.PointAnnotation>
+        </Mapbox.PointAnnotation> 
       </Mapbox.MapView>
       <TouchableOpacity style={styles.buttonContainer} onPress={centerMapOnUser}>
-        <MaterialIcons name="my-location" size={28} style={styles.navIcon} />
+        <MaterialIcons name="my-location" size={28}  style={styles.navIcon}  />
       </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -316,7 +270,7 @@ const styles = StyleSheet.create({
   },
   map: {
     width: '100%',
-    height: '115%',
+    height: '120%',
   },
   buttonContainer: {
     position: 'absolute',
@@ -329,16 +283,17 @@ const styles = StyleSheet.create({
     borderWidth: 2.5,
     shadowColor: "#000",
     shadowOffset: {
-      width: 2,
-      height: 2,
+        width: 2,
+        height: 2,
     },
     shadowOpacity: 0.05,
     shadowRadius: 2,
-    elevation: 2,
+    elevation: 2, // for Android
   },
   navIcon: {
     color: Colors.secondaryGreen,
   },
+
 });
 
 export default Map;

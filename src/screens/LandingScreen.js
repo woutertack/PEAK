@@ -9,6 +9,7 @@ import Swiper from '../components/slider/Slider';
 import slides from '../components/slider/SliderData';
 import Colors from '../consts/Colors';
 import useStatusBar from '../helpers/useStatusBar';
+import TertiaryButton from '../components/utils/buttons/TertiaryButton';
 
 const LandingScreen = ({ navigation }) => {
   useStatusBar(Colors.secondaryGreen, 'light-content');
@@ -57,7 +58,7 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
-    marginTop: 25,
+    marginTop: 35,
   },
   buttons: {
     width: '100%',

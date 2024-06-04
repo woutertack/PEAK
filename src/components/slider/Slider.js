@@ -2,27 +2,64 @@ import React, { useState, useRef } from 'react';
 import { FlatList, View, Text, StyleSheet, Dimensions } from 'react-native';
 import Colors from '../../consts/Colors';
 import SliderData from './SliderData';
-import { Icon } from 'react-native-elements';
-import  SliderIcon1 from '../utils/icons/SliderIcon1';
-import SliderIcon2 from '../utils/icons/SliderIcon2';
-import SliderIcon3 from '../utils/icons/SliderIcon3';
+import SliderIcon1 from '../utils/icons/Slider/SliderIcon1';
+import SliderIcon2 from '../utils/icons/Slider/SliderIcon2';
+import SliderIcon3 from '../utils/icons/Slider/SliderIcon3';
+import SliderButton from './SliderButtons';
+import ButtonIcon1 from '../utils/icons/Slider/ButtonIcon1';
+import ButtonIcon2 from '../utils/icons/Slider/ButtonIcon2';
+import ButtonIcon3 from '../utils/icons/Slider/ButtonIcon3';
+import ButtonIcon4 from '../utils/icons/Slider/ButtonIcon4';
+import ButtonIcon5 from '../utils/icons/Slider/ButtonIcon5';
 
 const screenWidth = Dimensions.get('window').width;
 
 const Slider = () => {
- 
   const [currentIndex, setCurrentIndex] = useState(0);
   const ref = useRef(null);
-  
+
   const renderItem = ({ item, index }) => (
-    <View style={[styles.slide, { width: screenWidth }]}>
-      {index === 0 && <SliderIcon1 />}
-      {index === 1 && <SliderIcon2 />}
-      {index === 2 && <SliderIcon3 />}
-      <Text style={styles.slideText}>{item.text}</Text>
+    <View style={[styles.slide, { width: screenWidth, height: index === 0 ? 500 : 400 }]}>
+      {index === 0 ? (
+        <View style={styles.buttonContainer}>
+          <Text style={styles.mainText}>Het verhogen van je dagelijkse stappen kan je leven veranderen</Text>
+          <SliderButton
+            label="Helpt met gewichtsverlies"
+            icon={<ButtonIcon1 />}
+            onPress={() => {}}
+          />
+          <SliderButton
+            label="Neemt amper tijd in"
+            icon={<ButtonIcon2 />}
+            onPress={() => {}}
+          />
+          <SliderButton
+            label="Beter mentaal welzijn"
+            icon={<ButtonIcon3 />}
+            onPress={() => {}}
+          />
+          <SliderButton
+            label="Beschermt je gezondheid"
+            icon={<ButtonIcon4 />}
+            onPress={() => {}}
+          />
+          <SliderButton
+            label="Geen materiaal voor nodig"
+            icon={<ButtonIcon5 />}
+            onPress={() => {}}
+          />
+        </View>
+      ) : (
+        <>
+          {index === 1 && <SliderIcon1 />}
+          {index === 2 && <SliderIcon2 />}
+          {index === 3 && <SliderIcon3 />}
+          <Text style={styles.slideText}>{item.text}</Text>
+        </>
+      )}
       <View style={styles.pagination}>
-        {SliderData.map((_, index) => (
-          <View key={index} style={[styles.dot, index === currentIndex ? styles.activeDot : null]} />
+        {SliderData.map((_, dotIndex) => (
+          <View key={dotIndex} style={[styles.dot, dotIndex === currentIndex ? styles.activeDot : null]} />
         ))}
       </View>
     </View>
@@ -51,7 +88,6 @@ const Slider = () => {
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
       />
-      
     </View>
   );
 };
@@ -63,7 +99,15 @@ const styles = StyleSheet.create({
   slide: {
     justifyContent: 'center',
     alignItems: 'center',
-    height: 300,
+    height: 500,
+  },
+  buttonContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
+    width: '100%',
+    paddingHorizontal: 25,
+    paddingBottom: 40,
   },
   slideText: {
     fontSize: 20,
@@ -73,6 +117,16 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
   },
+  mainText:{
+    fontSize: 20,
+    color: 'white',
+    maxWidth: '100%',
+    marginTop: 0,
+    marginBottom: 30,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+
   pagination: {
     flexDirection: 'row',
     position: 'absolute',
