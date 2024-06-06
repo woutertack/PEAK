@@ -9,7 +9,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import Colors from '../../consts/Colors.js';
 import { AuthContext } from '../../provider/AuthProvider';
 
-Mapbox.setAccessToken("your-mapbox-access-token");
+Mapbox.setAccessToken("pk.eyJ1Ijoid291dGVydGFjayIsImEiOiJja3A3MWV4NzcwdzVhMnRxdHJmcmJzbWZtIn0.3DtWFcL1fG0pk3JsABoTpA");
 const h3 = require("h3-reactnative");
 
 const Map = ({ onHexagonCaptured }) => {
@@ -24,12 +24,19 @@ const Map = ({ onHexagonCaptured }) => {
   const userId = session?.user.id;
   const mapRef = useRef(null);
   const cameraRef = useRef(null);
+  const locationSubscription = useRef(null);
 
   useFocusEffect(
     useCallback(() => {
       requestLocationPermission().then(() => {
         fetchLocations(); 
       });
+
+      return () => {
+        if (locationSubscription.current) {
+          locationSubscription.current.remove();
+        }
+      };
     }, [userId])
   );
 
@@ -45,12 +52,33 @@ const Map = ({ onHexagonCaptured }) => {
       console.error('Permission to access location was denied');
       return;
     }
-    // const currentLocation = await Location.getCurrentPositionAsync({});
-    const currentLocation = { coords: { latitude: 50.749999, longitude: 3.733333 } };
-    setLocation(currentLocation.coords);
-
-    console.log('Current location:', currentLocation.coords);
+    
+    locationSubscription.current = await Location.watchPositionAsync(
+      {
+        accuracy: Location.Accuracy.High,
+        timeInterval: 10000, // Update every 5 seconds
+        distanceInterval: 10, // Update every 10 meters
+      },
+      (currentLocation) => {
+        setLocation(currentLocation.coords);
+        console.log('Current location:', currentLocation.coords);
+      }
+    );
   };
+
+  // const requestLocationPermission = async () => {
+  //   const { status } = await Location.requestForegroundPermissionsAsync();
+  //   if (status !== 'granted') {
+  //     console.error('Permission to access location was denied');
+  //     return;
+  //   }
+  //   const currentLocation = await Location.getCurrentPositionAsync({});
+  //   // const currentLocation = { coords: { latitude: 50.78959999, longitude: 3.733333 } };
+  //   setLocation(currentLocation.coords);
+
+  //   console.log('Current location:', currentLocation.coords);
+  // };
+
 
   const fetchLocations = async () => {
     try {
@@ -69,9 +97,10 @@ const Map = ({ onHexagonCaptured }) => {
           return { ...location, lat, lng };
         });
         
-        console.log('Locations:', locationsWithCoordinates);
+       
         setLocationsWithCoordinates(locationsWithCoordinates);
         updateMapWithLocations(locationsWithCoordinates);
+        console.log('Locations with coordinates:', locationsWithCoordinates);
       }
     } catch (error) {
       console.error('Error fetching locations:', error.message);
@@ -191,7 +220,7 @@ const Map = ({ onHexagonCaptured }) => {
       const currentZoomLevel = await mapRef.current.getZoom();
       console.log('Current zoom level:', currentZoomLevel);
       setZoomLevel(currentZoomLevel);
-      const resolution = currentZoomLevel < 11.5 ? 7 : 9;
+      const resolution = currentZoomLevel < 9.8 ? 6 : currentZoomLevel < 11.7 ? 7 : 9;
       clusterHexagons(locationsWithCoordinates, resolution);
       setLineWidth(currentZoomLevel < 13.5 ? 1 : 2.5);
     }
@@ -201,7 +230,7 @@ const Map = ({ onHexagonCaptured }) => {
     if (cameraRef.current && location) {
       cameraRef.current.setCamera({
         centerCoordinate: [location.longitude, location.latitude],
-        zoomLevel: 14.5,
+        zoomLevel: zoomLevel,
         animationDuration: 1000,
       });
     }
@@ -234,38 +263,41 @@ const Map = ({ onHexagonCaptured }) => {
             <FillLayer id="clusterFill" style={ {
               fillColor: Colors.primaryGreen,
               fillOutlineColor: Colors.secondaryGreen,
-              fillOpacity: 0.15,
+              fillOpacity: 0.10,
             }} />
             <LineLayer id="clusterLine" style={{
               lineColor: Colors.secondaryGreen,
               lineWidth: lineWidth,
             }} />
-            { zoomLevel <= 11.5 && (
+            { zoomLevel <= 11.7 && (
             <SymbolLayer 
               id="clusterCount" 
               style={{
                 textField: ['format', ['get', 'count'], {}],
-                textSize: 30,
+                textSize: [
+                  'interpolate',
+                  ['linear'],
+                  ['zoom'],
+                  6.5, 0,
+                  7, 12,
+                  7.5, 20,
+                  10, 30
+                ],
                 textColor: Colors.secondaryGreen,
-                textIgnorePlacement: true,
+                textIgnorePlacement: false,
                 textAllowOverlap: true,
-                // textField: [
-                //   'case',
-                //   ['==', ['get', 'count'], 1], '',
-                //   ['get', 'count']
-                // ],
               }} 
             />
           )}
           </ShapeSource>
-        )}
+        )} 
 
-        {hexagons && zoomLevel >= 11.5 && (
+        {hexagons && zoomLevel >= 11.7 && (
           <ShapeSource id="hexagons" shape={hexagons}>
             <FillLayer id="hexagonFill" style={ {
               fillColor: Colors.primaryGreen,
               fillOutlineColor: Colors.secondaryGreen,
-              fillOpacity: 0.15,
+              fillOpacity: 0.10,
             }} />
             <LineLayer id="hexagonLine" style={{
               lineColor: Colors.secondaryGreen,
@@ -278,8 +310,7 @@ const Map = ({ onHexagonCaptured }) => {
           id="userLocation"
           coordinate={[location.longitude, location.latitude]}
           title="Your location"
-          showsUserHeadingIndicator={false}
-          pointerEvents="none"
+          aboveLayerID="hexagonFill"
         >
           <View style={{
             height: 30,

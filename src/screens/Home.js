@@ -30,15 +30,27 @@ export default function ({ navigation }) {
       .select('visited_at')
       .eq('user_id', session.user.id)
       .order('visited_at', { ascending: true });
-
+  
     if (error) {
       console.error(error);
       return;
     }
-
+  
     if (data) {
       const streak = calculateStreak(data);
       setCurrentStreak(streak.currentStreak);
+  
+      // Update profile with total hexagons
+      const totalHexagons = data.length;
+      console.log('Total hexagons:', totalHexagons);
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ total_hexagons: totalHexagons })
+        .eq('id', session.user.id);
+  
+      if (updateError) {
+        console.error('Error updating profile:', updateError);
+      }
     }
   };
 

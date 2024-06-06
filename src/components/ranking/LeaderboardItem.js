@@ -27,7 +27,7 @@ const LeaderboardItem = ({ user, selectedCategory , isCurrentUser, onPress  }) =
       <Avatar url={user.avatar_url} size={50} />
       <View style={styles.userInfo}>
         <Text style={styles.userName}>
-          {user.first_name} {user.last_name} {isCurrentUser && '(You)'}
+          {user.first_name} {user.last_name} {isCurrentUser && '(Jij)'}
         </Text>
       </View>
       <Text style={styles.points}>{displayedValue}</Text>

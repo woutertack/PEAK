@@ -67,7 +67,7 @@ const SelectLevelUser = ({ navigation }) => {
                 contentContainerStyle={styles.contentContainer}
             >
                 <View style={styles.logoContainer}>
-                    <Logo width={146.974} height={36.269} style={styles.logo} />
+                    
                 </View>
                 <View style={styles.wrapper}>
                     <Text style={styles.header}>Selecteer je doel</Text>

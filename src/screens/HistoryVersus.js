@@ -46,6 +46,14 @@ const HistoryVersus = ({ navigation }) => {
   const isCreator = (challenge) => challenge.creator.id === userId;
   const isWinner = (userId, challenge) => challenge.winner === userId;
 
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+  
 
 
 
@@ -73,6 +81,7 @@ const HistoryVersus = ({ navigation }) => {
               <View style={styles.goalContainer}>
                 <TrophyIcon />
                 <Text style={styles.challengeGoal}>{challenge.goal} {getChallengeTypeText(challenge.challenge_type)}</Text>
+                <Text style={styles.deadline}>{formatDate(challenge.deadline)}</Text>
               </View>
               <View style={[styles.progressContainer, isCreator(challenge) ? null : styles.rowReverse]}>
                 <View style={[styles.progressItem, isWinner(challenge.creator.id, challenge) && styles.winnerBorder]}>
@@ -206,6 +215,15 @@ const styles = StyleSheet.create({
     color: Colors.white,
     flex: 1,
   },
+  deadline:{
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginRight: 5,
+    alignContent: 'center',
+    alignItems: 'center',
+  },
+
   progressContainer: {
     alignItems: 'center',
     flexDirection: 'row',

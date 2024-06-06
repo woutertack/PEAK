@@ -10,6 +10,7 @@ import { AuthContext } from '../provider/AuthProvider';
 import SecondaryButton from '../components/utils/buttons/SecondaryButton';
 import TertiaryButton from '../components/utils/buttons/TertiaryButton';
 import Avatar from '../components/Avatar';
+import formatChallengeDescription from '../components/utils/challenges/formatChallengeDescription'
 
 const AcceptVersus = ({ navigation }) => {
   useStatusBar(Colors.secondaryGreen, 'light-content');
@@ -90,7 +91,7 @@ const AcceptVersus = ({ navigation }) => {
               </View>
               <View style={styles.challengeInfo}>
                 <Text style={styles.challengeText}>{`${challenge.creator.first_name} ${challenge.creator.last_name} heeft je uitgedaagd`}</Text>
-                <Text style={styles.challengeSubtitle}>{challenge.goal}</Text>
+                <Text style={styles.challengeSubtitle}>{formatChallengeDescription(challenge.challenge_type, challenge.goal)}</Text>
                 <View style={styles.buttonsContainer}>
                   <SecondaryButton label="Accepteer" onPress={() => handleResponse(challenge.id, 'accepted')} style={styles.acceptButton} />
                   <TertiaryButton label="Weiger" onPress={() => handleResponse(challenge.id, 'declined')} style={styles.declineButton} />

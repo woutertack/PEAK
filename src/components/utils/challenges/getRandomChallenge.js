@@ -22,9 +22,9 @@ const getRandomChallenge = (type, levelMultiplier) => {
   let goal = baseGoal * levelMultiplier;
 
   if (type === 'weekly') {
-    goal *= 3;
+    goal *= 4;
   } else if (type === 'monthly') {
-    goal *= 9;
+    goal *= 10;
   }
 
   const creationTime = new Date();

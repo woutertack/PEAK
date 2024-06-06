@@ -5,8 +5,10 @@ import { View, StyleSheet, Text } from 'react-native';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import Colors from '../../consts/Colors';
 import TimerIcon from '../utils/icons/TimerIcon';
+import SecondaryButton from '../utils/buttons/SecondaryButton';
+import TertiaryButton from '../utils/buttons/TertiaryButton';
 
-const CardChallenge = ({ title, progress, description, initialTimeLeft, creationTime, type }) => {
+const CardChallenge = ({ title, progress, description, initialTimeLeft, creationTime, type, completed, onRestart }) => {
   const [timeLeft, setTimeLeft] = useState(initialTimeLeft);
 
   useEffect(() => {
@@ -80,6 +82,9 @@ const CardChallenge = ({ title, progress, description, initialTimeLeft, creation
         <View style={styles.progressTextContainer}>
           <Text style={styles.description}>{description}</Text>
         </View>
+        {completed && (
+        <SecondaryButton label="Nieuwe uitdaging" onPress={onRestart} color={Colors.primary} />
+      )}
       </View>
     </View>
   );
@@ -124,7 +129,8 @@ const styles = StyleSheet.create({
   },
   progressTextContainer: {
     marginLeft: 0,
-    marginTop: 5
+    marginTop: 5,
+    marginBottom: 10,
   },
   progressText: {
     fontSize: 15,

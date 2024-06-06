@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Alert } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Layout, Text } from 'react-native-rapi-ui';
 import { StatusBar } from 'expo-status-bar';
 import TabBarIcon from "../components/utils/TabBarIcon";
@@ -30,8 +31,7 @@ const Challenges = ({ navigation }) => {
 
  
 
-  useEffect(() => {
-    
+ 
     const fetchChallenges = async () => {
       try {
         if (!userId) {
@@ -209,8 +209,44 @@ const Challenges = ({ navigation }) => {
     };
 
 
-    fetchChallenges();
-  }, [session, readHealthData]);
+    useEffect(() => {
+      fetchChallenges();
+    }, [session, readHealthData]);
+  
+    useFocusEffect(
+      useCallback(() => {
+        fetchChallenges();
+      }, [session, readHealthData])
+    );
+  
+
+  const restartChallenge = async (type) => {
+    try {
+      const levelMultiplier = 1; // Adjust based on user level if necessary
+      const newChallenge = getRandomChallenge(type, levelMultiplier);
+      const { error } = await supabase
+        .from('challenges')
+        .insert([{ ...newChallenge, user_id: userId }]);
+
+      if (error) {
+        Alert.alert('Error starting new challenge', error.message);
+      } else {
+        if (type === 'daily') {
+          setDailyChallenge(newChallenge);
+          calculateProgress(newChallenge, 'daily');
+        } else if (type === 'weekly') {
+          setWeeklyChallenge(newChallenge);
+          calculateProgress(newChallenge, 'weekly');
+        } else if (type === 'monthly') {
+          setMonthlyChallenge(newChallenge);
+          calculateProgress(newChallenge, 'monthly');
+        }
+        Alert.alert('New challenge started');
+      }
+    } catch (error) {
+      Alert.alert('Error starting new challenge', error.message);
+    }
+  };
 
   if (loading  || !dailyChallenge || !weeklyChallenge || !monthlyChallenge) {
     return (
@@ -246,6 +282,8 @@ const Challenges = ({ navigation }) => {
             initialTimeLeft={calculateInitialTimeLeft(dailyChallenge.creation_time, dailyChallenge.type)}
             type={dailyChallenge.type}
             creationTime={dailyChallenge.creation_time}
+            completed={dailyProgress >= 1}
+            onRestart={() => restartChallenge('daily')}
           />
           <CardChallenge
             key={`weekly-${weeklyChallenge.type}`}
@@ -255,6 +293,8 @@ const Challenges = ({ navigation }) => {
             initialTimeLeft={calculateInitialTimeLeft(weeklyChallenge.creation_time, weeklyChallenge.type)}
             type={weeklyChallenge.type}
             creationTime={weeklyChallenge.creation_time}
+            completed={weeklyProgress >= 1}
+            onRestart={() => restartChallenge('weekly')}
           />
           <CardChallenge
             key={`monthly-${monthlyChallenge.type}`}
@@ -264,6 +304,8 @@ const Challenges = ({ navigation }) => {
             initialTimeLeft={calculateInitialTimeLeft(monthlyChallenge.creation_time, monthlyChallenge.type)}
             type={monthlyChallenge.type}
             creationTime={monthlyChallenge.creation_time}
+            completed={monthlyProgress >= 1}
+            onRestart={() => restartChallenge('monthly')}
           />
         </ScrollView>
       </Layout>

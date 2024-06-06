@@ -46,6 +46,7 @@ export const HealthConnectProvider = ({ children }) => {
       // Fetch and calculate steps
       const stepsRecords = await readRecords('Steps', { timeRangeFilter });
       const totalSteps = stepsRecords.reduce((sum, cur) => sum + cur.count, 0);
+     
 
       // Fetch and calculate distance
       const distanceRecords = await readRecords('Distance', { timeRangeFilter });
@@ -85,6 +86,7 @@ export const HealthConnectProvider = ({ children }) => {
       // Update state with fetched data
       setSteps(currentSteps);
       setDistance(currentDistance);
+      
 
       // Check if the steps or distance have changed, if so, update Supabase
       const hasStepsChanged = currentSteps !== data.total_steps;
@@ -114,7 +116,7 @@ export const HealthConnectProvider = ({ children }) => {
   useEffect(() => {
     const intervalId = setInterval(() => {
       updateUserDataToSupabase();
-    }, 10000); // Update every 10 seconds
+    }, 1000); // Update every 10 seconds
 
     return () => clearInterval(intervalId); // Clear interval on unmount
   }, [session]);

@@ -8,7 +8,7 @@ const SliderButton = ({ label, onPress, isLoading, isDisabled, icon }) => {
     <TouchableOpacity
       onPress={onPress}
       disabled={isDisabled}
-      activeOpacity={0.8}
+      activeOpacity={1}
       style={styles.button}
     >
       <LinearGradient
