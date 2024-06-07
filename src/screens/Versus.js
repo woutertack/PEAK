@@ -62,12 +62,16 @@ const Versus = ({ navigation }) => {
         return healthData.totalDistance;
       } else if (challengeType === 'hexagons') {
         const { data: hexagons, error } = await supabase
-          .from('locations')
-          .select('visited_at')
-          .eq('user_id', session.user.id)
-          .gte('visited_at', acceptedTime);
+        .from('locations')
+        .select('visit_times')
+        .eq('user_id', session.user.id)
 
-        return hexagons.length;
+        const validVisits = hexagons.flatMap(location =>
+          (location.visit_times || []).filter(visitTime => new Date(visitTime) >= new Date(acceptedTime.creation_time))
+        );
+       
+
+        return validVisits.length;
         }
       return 0;
     } catch (error) {

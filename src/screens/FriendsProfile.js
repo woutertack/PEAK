@@ -38,6 +38,8 @@ const FriendsProfile = ({ navigation }) => {
   const [maxStreak, setMaxStreak] = useState(0);
   const [totalSteps, setTotalSteps] = useState(0); 
   const [totalDistance, setTotalDistance] = useState(0);
+  const [hexagons, setHexagons] = useState(0);
+  const [totalVisits, setTotalVisits] = useState(0);
   const [completedChallenges, setCompletedChallenges] = useState(0); 
   const [isFriend, setIsFriend] = useState(false);
   const [requestSent, setRequestSent] = useState(false);
@@ -55,7 +57,7 @@ const FriendsProfile = ({ navigation }) => {
     try {
       const { data, error, status } = await supabase
         .from('profiles')
-        .select(`first_name, last_name, avatar_url, created_at, total_steps, total_distance_km`)
+        .select(`first_name, last_name, avatar_url, created_at, total_steps, total_distance_km, total_hexagons, total_visits`)
         .eq('id', friendId)
         .single();
       if (error && status !== 406) {
@@ -68,6 +70,9 @@ const FriendsProfile = ({ navigation }) => {
         setCreatedAt(data.created_at);
         setTotalSteps(data.total_steps);
         setTotalDistance(data.total_distance_km);
+        setHexagons(data.total_hexagons );
+       
+        setTotalVisits(data.total_visits || 0);
 
         const createdAtDate = new Date(data.created_at);
         const currentDate = new Date();
@@ -265,9 +270,11 @@ const FriendsProfile = ({ navigation }) => {
                 <View style={styles.statsContainer}>
                   <CardStats number={totalSteps} label="Totaal stappen" />
                   <CardStats number={totalDistance} label="Totaal km" />
-                  <CardStats number={totalActiveDays} label="Dagen bezig" />
+                 
                   <CardStats number={maxStreak} label="Langste streak" />
-                  <CardStats number={currentStreak} label="Huidige streak" />
+                  <CardStats number={totalVisits} label="Totaal ontdekte gebieden" />
+                  <CardStats number={hexagons} label="Unieke gebieden ontdekt" />
+      
                   <CardStats number={completedChallenges} label="Voltooide uitdagingen" />
                 </View>
               </>
@@ -309,7 +316,7 @@ const styles = StyleSheet.create({
   },
   profileContainer: {
     alignItems: 'start',
-    marginTop: 40,
+    marginTop: 25,
   },
   avatar: {
     marginBottom: 20,

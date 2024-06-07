@@ -59,7 +59,7 @@ const Map = ({ onHexagonCaptured }) => {
   // Handle location updates without centering the map
   useEffect(() => {
     if (location) {
-      console.log('Location updated:', location);
+      // console.log('Location updated:', location);
       updateHexagons(location);
     }
   }, [location]);
@@ -74,7 +74,7 @@ const Map = ({ onHexagonCaptured }) => {
     try {
       let { data: locationsData, error } = await supabase
         .from('locations')
-        .select('hex_index')
+        .select('hex_index, visits') // Include visits column
         .eq('user_id', userId);
 
       if (error) throw error;
@@ -88,8 +88,7 @@ const Map = ({ onHexagonCaptured }) => {
           });
 
         setLocationsWithCoordinates(validLocations);
-        updateMapWithLocations(validLocations);
-        console.log('Locations with coordinates:', validLocations);
+        // console.log('Locations with coordinates:', validLocations);
       }
     } catch (error) {
       console.error('Error fetching locations:', error.message);
@@ -98,21 +97,26 @@ const Map = ({ onHexagonCaptured }) => {
 
   const checkAndAddHexIndex = useCallback(async (hexIndex) => {
     try {
+      // Check if the hex_index exists for the user
       let { data: hexData, error: hexError } = await supabase
         .from('locations')
-        .select('hex_index')
-        .eq('hex_index', hexIndex);
-
+        .select('hex_index, visits, visit_times')
+        .eq('hex_index', hexIndex)
+        .eq('user_id', userId);
+  
       if (hexError) {
         console.error('Error checking hex index:', hexError);
         return;
       }
-
+  
+      const now = new Date().toISOString();
+  
+      // If the hex_index does not exist, insert it
       if (!hexData.length) {
         const { data, error: insertError } = await supabase
           .from('locations')
-          .insert([{ hex_index: hexIndex, user_id: userId }]);
-
+          .insert([{ hex_index: hexIndex, user_id: userId, visits: 1, visit_times: [now] }]);
+  
         if (insertError) {
           console.error('Error inserting hex index:', insertError);
         } else {
@@ -121,64 +125,52 @@ const Map = ({ onHexagonCaptured }) => {
           fetchLocations();
         }
       } else {
-        console.log('Hex index already exists in the database.');
+        // Check if the last visit was more than a day ago
+        const visitTimes = hexData[0].visit_times || [];
+        const lastVisit = visitTimes.length ? new Date(visitTimes[visitTimes.length - 1]) : null;
+        const oneDayInMs = 24 * 60 * 60 * 1000;
+        
+        if (!lastVisit || (new Date() - lastVisit) > oneDayInMs) {
+          // If the last visit was more than a day ago, update the visits count and append the visit time
+          visitTimes.push(now);
+  
+          const { data, error: updateError } = await supabase
+            .from('locations')
+            .update({ visits: hexData[0].visits + 1, visit_times: visitTimes })
+            .eq('hex_index', hexIndex)
+            .eq('user_id', userId);
+  
+          if (updateError) {
+            console.error('Error updating visits count:', updateError);
+          } else {
+            console.log('Visits count updated for hex index:', hexIndex);
+            fetchLocations();
+          }
+        }
+          else {
+            console.log('Visits count update skipped for hex index:', hexIndex, );
+        }
       }
     } catch (err) {
       console.error('Unexpected error:', err);
     }
   }, [userId, onHexagonCaptured, fetchLocations]);
+  
 
   const updateHexagons = useCallback((loc) => {
     const centerIndex = h3.geoToH3(loc.latitude, loc.longitude, 9);
     checkAndAddHexIndex(centerIndex);
-
-    const hexIndices = h3.kRing(centerIndex, 0);
-    const hexagons = hexIndices.map(index => h3.h3ToGeoBoundary(index, true));
-    const hexGeoJson = {
-      type: 'FeatureCollection',
-      features: hexagons.map(hex => ({
-        type: 'Feature',
-        properties: {},
-        geometry: {
-          type: 'Polygon',
-          coordinates: [hex]
-        }
-      }))
-    };
-    setHexagons(hexGeoJson);
   }, [checkAndAddHexIndex]);
-
-  const updateMapWithLocations = useCallback((locationsWithCoordinates) => {
-    const features = locationsWithCoordinates.map(location => {
-      const boundary = h3.h3ToGeoBoundary(location.hex_index, true);
-      return {
-        type: 'Feature',
-        properties: {
-          description: location.description || "No description",
-        },
-        geometry: {
-          type: 'Polygon',
-          coordinates: [boundary]
-        }
-      };
-    });
-
-    const hexGeoJson = {
-      type: 'FeatureCollection',
-      features: features
-    };
-
-    setHexagons(hexGeoJson);
-  }, []);
 
   const clusterHexagons = useCallback((locationsWithCoordinates, resolution) => {
     const clusters = locationsWithCoordinates.reduce((acc, location) => {
       const clusterIndex = h3.geoToH3(location.lat, location.lng, resolution);
       if (!acc[clusterIndex]) {
-        acc[clusterIndex] = { count: 0, hexes: [], center: h3.h3ToGeo(clusterIndex) };
+        acc[clusterIndex] = { count: 0, hexes: [], center: h3.h3ToGeo(clusterIndex), totalVisits: 0 };
       }
       acc[clusterIndex].count += 1;
       acc[clusterIndex].hexes.push(location);
+      acc[clusterIndex].totalVisits += location.visits; // Add visits count
       return acc;
     }, {});
 
@@ -187,7 +179,8 @@ const Map = ({ onHexagonCaptured }) => {
       return {
         type: 'Feature',
         properties: {
-          count: cluster.count
+          count: cluster.count,
+          totalVisits: cluster.totalVisits, // Add total visits to properties
         },
         geometry: {
           type: 'Polygon',
@@ -209,9 +202,8 @@ const Map = ({ onHexagonCaptured }) => {
       const currentZoomLevel = await mapRef.current.getZoom();
       console.log('Current zoom level:', currentZoomLevel);
       setZoomLevel(currentZoomLevel);
-      const resolution = currentZoomLevel < 9.8 ? 6 : currentZoomLevel < 11.7 ? 7 : 9;
+      const resolution = currentZoomLevel < 9.8 ? 6 : currentZoomLevel < 12.3 ? 7 : 9;
       clusterHexagons(locationsWithCoordinates, resolution);
-      // setLineWidth(currentZoomLevel < 13.5 ? 1 : 2);
     }
   }, [locationsWithCoordinates, clusterHexagons]);
 
@@ -226,8 +218,6 @@ const Map = ({ onHexagonCaptured }) => {
     }
   };
 
-
-
   const customMapStyle = 'mapbox://styles/woutertack/clw88shyw002i01r06xjcgpwn';
 
   if (!location) {
@@ -238,7 +228,6 @@ const Map = ({ onHexagonCaptured }) => {
     );
   }
 
- 
   return (
     <View style={styles.container}>
       <Mapbox.MapView
@@ -247,8 +236,7 @@ const Map = ({ onHexagonCaptured }) => {
         ref={mapRef}
         onMapIdle={handleRegionDidChange}
       >
-
-      <Mapbox.Camera
+        <Mapbox.Camera
           ref={cameraRef}
           zoomLevel={14.5}
           centerCoordinate={[location.longitude, location.latitude]}
@@ -256,44 +244,36 @@ const Map = ({ onHexagonCaptured }) => {
           animationDuration={1000}
           maxZoomLevel={16}
         />
-       {/* Render the clusters and hexagons first */}
-       <MapLayers
-        clusters={clusters}
-        hexagons={hexagons}
-        zoomLevel={zoomLevel}
-        lineWidth={lineWidth}
-      />
-
-      {/* Render the PointAnnotation last */}
-      <Mapbox.PointAnnotation
-        id="userLocation"
-        coordinate={[location.longitude, location.latitude]}
-        title="Your location"
-      >
-        <View style={{
-          height: 30,
-          width: 30,
-          borderRadius: 50,
-          backgroundColor: Colors.secondaryGreen,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}>
+        <MapLayers
+          clusters={clusters}
+          hexagons={hexagons}
+          zoomLevel={zoomLevel}
+          lineWidth={lineWidth}
+        />
+        <Mapbox.PointAnnotation
+          id="userLocation"
+          coordinate={[location.longitude, location.latitude]}
+          title="Your location"
+        >
           <View style={{
-            height: 24,
-            width: 24,
+            height: 30,
+            width: 30,
             borderRadius: 50,
             backgroundColor: Colors.secondaryGreen,
-            borderColor: '#fff',
-            borderWidth: 3
-          }} />
-        </View>
-      </Mapbox.PointAnnotation>
-
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+            <View style={{
+              height: 24,
+              width: 24,
+              borderRadius: 50,
+              backgroundColor: Colors.secondaryGreen,
+              borderColor: '#fff',
+              borderWidth: 3
+            }} />
+          </View>
+        </Mapbox.PointAnnotation>
       </Mapbox.MapView>
-
-        
-
-      
       <LocationHandler setLocation={setLocation} />
       <TouchableOpacity style={styles.buttonContainer} onPress={centerMapOnUser}>
         <MaterialIcons name="my-location" size={28} style={styles.navIcon} />

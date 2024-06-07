@@ -52,6 +52,36 @@ export default function ({ navigation }) {
         console.error('Error updating profile:', updateError);
       }
     }
+
+    
+  };
+
+  const getTotalVisits = async () => {
+    const { data, error } = await supabase
+    .from('locations')
+    .select('visit_times')
+    .eq('user_id', session.user.id)
+  
+    if (error) {
+      console.error(error);
+      return;
+    }
+  
+    if (data) {
+      const allVisits = data.flatMap(location => location.visit_times || []);
+      const totalVisits = allVisits.length;
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ total_visits: totalVisits })
+        .eq('id', session.user.id);
+  
+      if (updateError) {
+        console.error('Error updating profile:', updateError);
+      }
+    }
+
+    
   };
 
   const fetchDailyChallenge = async () => {
@@ -94,16 +124,22 @@ export default function ({ navigation }) {
     if (challenge.challenge_type === 'hexagons') {
       const { data: hexagons, error } = await supabase
         .from('locations')
-        .select('visited_at')
-        .eq('user_id', session.user.id)
-        .gte('visited_at', challenge.creation_time);
-
-      if (error) {
-        console.error('Error fetching hexagon data:', error);
-        return;
-      }
-
-      progress = hexagons.length ;
+        .select('visit_times')
+        .eq('user_id', session.user.id);
+        
+        if (error) {
+          console.error('Error fetching hexagon data:', error);
+          return;
+        }
+       
+    
+        // Filter visit_times based on challenge.creation_time
+        const validVisits = hexagons.flatMap(location =>
+          (location.visit_times || []).filter(visitTime => new Date(visitTime) >= new Date(challenge.creation_time))
+        );
+        console.log('Valid visits:', validVisits);
+    
+        progress = validVisits.length ;
     } else {
       switch (challenge.challenge_type) {
         case 'steps':
@@ -148,6 +184,7 @@ export default function ({ navigation }) {
     useCallback(() => {
       fetchStreakData();
       fetchDailyChallenge();
+      getTotalVisits();
     }, [session.user.id, readHealthData, dailyProgress])
   );
 

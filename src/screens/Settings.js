@@ -93,7 +93,7 @@ export default function Account({navigation }) {
             size={38}
             style={styles.icon}
             onPress={() => {
-              navigation.goBack();
+              navigation.navigate('Profile');
             }}
           />
           <Text style={styles.headerText}>Settings</Text>

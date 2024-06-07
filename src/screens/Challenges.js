@@ -10,7 +10,7 @@ import CardChallenge from '../components/cards/CardChallenge';
 import { useHealthConnect } from '../provider/HealthConnectProvider';
 import { supabase } from '../lib/initSupabase';
 import { AuthContext } from '../provider/AuthProvider';
-import useLocationData from '../helpers/useLocationData';
+
 import getRandomChallenge from '../components/utils/challenges/getRandomChallenge';
 import calculateInitialTimeLeft from '../components/utils/challenges/calculateInitialTimeLeft';
 import formatChallengeDescription from '../components/utils/challenges/formatChallengeDescription';
@@ -155,23 +155,27 @@ const Challenges = ({ navigation }) => {
 
     const calculateProgress = async (challenge, type) => {
       const { totalSteps, totalDistance } = await readHealthData(challenge.creation_time);
-
+    
       let progress = 0;
-      
+    
       if (challenge.challenge_type === 'hexagons') {
-        // Fetch hexagon data
+        // Fetch hexagon data with visit_times
         const { data: hexagons, error } = await supabase
           .from('locations')
-          .select('visited_at')
-          .eq('user_id', userId)
-          .gte('visited_at', challenge.creation_time);
+          .select('visit_times')
+          .eq('user_id', userId);
     
         if (error) {
           console.error('Error fetching hexagon data:', error);
           return;
         }
     
-        progress = hexagons.length / challenge.goal;
+        // Filter visit_times based on challenge.creation_time
+        const validVisits = hexagons.flatMap(location =>
+          (location.visit_times || []).filter(visitTime => new Date(visitTime) >= new Date(challenge.creation_time))
+        );
+    
+        progress = validVisits.length / challenge.goal;
       } else {
         switch (challenge.challenge_type) {
           case 'steps':
@@ -207,7 +211,7 @@ const Challenges = ({ navigation }) => {
         }
       }
     };
-
+    
 
     useEffect(() => {
       fetchChallenges();

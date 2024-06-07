@@ -28,6 +28,8 @@ const Profile = ({ navigation }) => {
   const [createdAt, setCreatedAt] = useState('');
   const [totalActiveDays, setTotalActiveDays] = useState(0);
   const [currentStreak, setCurrentStreak] = useState(0);
+  const [hexagons, setHexagons] = useState(0);
+  const [totalVisits, setTotalVisits] = useState(0);
   const [maxStreak, setMaxStreak] = useState(0);
   const [totalSteps, setTotalSteps] = useState(0); // New state for total steps
   const [totalDistance, setTotalDistance] = useState(0); // New state for total distance
@@ -80,6 +82,8 @@ const Profile = ({ navigation }) => {
         throw error;
       }
       if (data) {
+        console.log(data.length);
+        setHexagons(data.length);
         const streak = calculateStreak(data);
         setCurrentStreak(streak.currentStreak);
         const maxStreakValue = calculateMaxStreak(data);
@@ -113,11 +117,45 @@ const Profile = ({ navigation }) => {
     }
   };
 
+  const getTotalVisits = async () => {
+    try {
+      if (!session?.user) throw new Error('No user on the session!');
+      const { data, error, status } = await supabase
+        .from('locations')
+        .select('visit_times')
+        .eq('user_id', session.user.id)
+       
+      if (error && status !== 406) {
+        throw error;
+      }
+      if (data) {
+       
+
+        const allVisits = data.flatMap(location => location.visit_times || []);
+        const totalVisits = allVisits.length;
+        
+    
+        setTotalVisits(totalVisits || 0);
+      
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        Alert.alert(error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  
+
   useFocusEffect(
     useCallback(() => {
       fetchProfile();
       fetchProfileLocations();
       fetchCompletedChallenges();
+      getTotalVisits();
     }, [session])
   );
 
@@ -167,9 +205,9 @@ const Profile = ({ navigation }) => {
           <View style={styles.statsContainer}>
             <CardStats number={totalSteps} label="Totaal stappen" />
             <CardStats number={totalDistance} label="Totaal km" />
-            <CardStats number={totalActiveDays} label="Dagen bezig" />
             <CardStats number={maxStreak} label="Langste streak" />
-            <CardStats number={currentStreak} label="Huidige streak" />
+            <CardStats number={totalVisits} label="Totaal ontdekte gebieden" />
+            <CardStats number={hexagons} label="Unieke gebieden ontdekt" />
             <CardStats number={completedChallenges} label="Voltooide uitdagingen" />
           </View>
         </View>
@@ -209,7 +247,7 @@ const styles = StyleSheet.create({
   },
   profileContainer: {
     alignItems: 'start',
-    marginTop: 40,
+    marginTop: 25,
   },
   avatar: {
     marginBottom: 20,

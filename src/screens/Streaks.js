@@ -102,7 +102,7 @@ const StreaksScreen = ({ navigation }) => {
               ))}
             </View>
             <Text style={styles.instruction}>
-              Open de app elke dag en ontdek een nieuw gebied om je streak te behouden
+              Open de app elke dag en ontdek {"\n"}5 gebieden om je streak te behouden!
             </Text>
           </View>
           <SecondaryButton
