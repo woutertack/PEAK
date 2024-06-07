@@ -92,9 +92,9 @@ const FriendsProfile = ({ navigation }) => {
     try {
       const { data, error, status } = await supabase
         .from('locations')
-        .select('visited_at')
-        .eq('user_id', friendId)
-        .order('visited_at', { ascending: true });
+        .select('visit_times')
+        .eq('user_id', friendId);
+  
       if (error && status !== 406) {
         throw error;
       }

@@ -12,7 +12,7 @@ import { AuthContext } from '../provider/AuthProvider';
 
 const Ranking = ({ navigation }) => {
   const [selectedOption, setSelectedOption] = useState('All');
-  const [selectedCategory, setSelectedCategory] = useState('km²');
+  const [selectedCategory, setSelectedCategory] = useState('Afstand');
   const [selectedTimeFrame, setSelectedTimeFrame] = useState('All Time');
   const [users, setUsers] = useState([]);
   const { session } = useContext(AuthContext);
@@ -73,7 +73,7 @@ const Ranking = ({ navigation }) => {
     return [...users].sort((a, b) => {
       if (category === 'Gebieden') {
         return b.total_hexagons - a.total_hexagons;
-      } else if (category === 'km²') {
+      } else if (category === 'Afstand') {
         return b.total_distance_km - a.total_distance_km;
       } else if (category === 'Stappen') {
         return b.total_steps - a.total_steps;
@@ -106,7 +106,7 @@ const Ranking = ({ navigation }) => {
         <View style={styles.headerTitle}>
           <Text style={styles.headerText}>Ranking</Text>
         </View>
-        <Tabs options={['Gebieden', 'km²', 'Stappen']} selectedOption={selectedCategory} setSelectedOption={setSelectedCategory} />
+        <Tabs options={['Gebieden', 'Afstand', 'Stappen']} selectedOption={selectedCategory} setSelectedOption={setSelectedCategory} />
         {/* <Tabs options={['Weekly', 'All Time', 'Monthly']} selectedOption={selectedTimeFrame} setSelectedOption={setSelectedTimeFrame} /> */}
         <View style={styles.leaderboard}>
         {currentUser && (

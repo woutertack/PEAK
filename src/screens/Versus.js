@@ -35,6 +35,7 @@ const Versus = ({ navigation }) => {
         creator:creator_id (id, first_name, last_name),
         friend:friend_id (id, first_name, last_name)
       `)
+      .or(`creator_id.eq.${userId},friend_id.eq.${userId}`) 
       .eq('status', 'accepted')
       .gt('deadline', new Date().toISOString())
       .is('winner', null);
@@ -67,9 +68,9 @@ const Versus = ({ navigation }) => {
         .eq('user_id', session.user.id)
 
         const validVisits = hexagons.flatMap(location =>
-          (location.visit_times || []).filter(visitTime => new Date(visitTime) >= new Date(acceptedTime.creation_time))
+          (location.visit_times || []).filter(visitTime => new Date(visitTime) >= new Date(acceptedTime))
         );
-       
+       console.log('validVisits', validVisits);
 
         return validVisits.length;
         }
@@ -132,7 +133,8 @@ const Versus = ({ navigation }) => {
         creator:creator_id (id, first_name, last_name, avatar_url)
       `)
       .eq('friend_id', userId)
-      .eq('status', 'pending');
+      .eq('status', 'pending')
+      .gt('deadline', new Date().toISOString());
 
     if (error) {
       Alert.alert('Error fetching challenges', error.message);
@@ -155,7 +157,8 @@ const Versus = ({ navigation }) => {
     });
   }, [challenges]);
 
-
+ 
+  
 
 
   return (
@@ -207,7 +210,8 @@ const Versus = ({ navigation }) => {
               <View style={[styles.progressContainer, isCreator(challenge) ? null : styles.rowReverse]}>
                 <View style={styles.progressItem}>
                   <Text style={styles.progressLabel}>
-                    {challenge.creator_is_user ? 'uw score' : `${challenge.creator.first_name} ${challenge.creator.last_name}`}
+                    {challenge.creator.id === userId ? 'Uw score' : `${challenge.creator.first_name} ${challenge.creator.last_name}` }
+
                   </Text>
                   <AnimatedCircularProgress
                     size={80}
@@ -231,8 +235,8 @@ const Versus = ({ navigation }) => {
                 </View>
                 <View style={styles.progressItem}>
                   <Text style={styles.progressLabel}>
-                    {challenge.creator_is_user ? `${challenge.friend.first_name} ${challenge.friend.last_name}` : 'Uw score'}
-                
+                    {challenge.creator.id === userId ? `${challenge.friend.first_name} ${challenge.friend.last_name}` : 'Uw score'}
+                    
                   </Text>
                   <AnimatedCircularProgress
                     size={80}

@@ -145,6 +145,7 @@ const Map = ({ onHexagonCaptured }) => {
           } else {
             console.log('Visits count updated for hex index:', hexIndex);
             fetchLocations();
+            onHexagonCaptured();
           }
         }
           else {
@@ -239,7 +240,7 @@ const Map = ({ onHexagonCaptured }) => {
         <Mapbox.Camera
           ref={cameraRef}
           zoomLevel={14.5}
-          centerCoordinate={[location.longitude, location.latitude]}
+          // centerCoordinate={[location.longitude, location.latitude]}
           animationMode="flyTo"
           animationDuration={1000}
           maxZoomLevel={16}

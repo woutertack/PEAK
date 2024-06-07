@@ -38,7 +38,7 @@ function BottomTabs() {
     })}
      
     >
-      <Tab.Screen name="Challenges" component={Challenges} />
+      <Tab.Screen name="Challenges" component={Challenges}  options={{ title: 'Uitdagingen' }}/>
       <Tab.Screen name="Versus" component={Versus} />
       <Tab.Screen name="Ranking" component={Ranking} />
     </Tab.Navigator>

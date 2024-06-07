@@ -1,17 +1,38 @@
-// utils/calculateMaxStreak.js
-
 export const calculateMaxStreak = (data) => {
   if (data.length === 0) {
     return 0;
   }
 
-  const visitDates = data.map(item => new Date(item.visited_at).toDateString());
+  // Flatten the visit_times arrays and group by date
+  const visitsByDate = {};
+  data.forEach(item => {
+    if (item.visit_times) {
+      item.visit_times.forEach(visit => {
+        const visitDate = new Date(visit).toDateString();
+        if (!visitsByDate[visitDate]) {
+          visitsByDate[visitDate] = new Set();
+        }
+        visitsByDate[visitDate].add(visit);
+      });
+    }
+  });
+
+  // Filter dates with at least 5 different locations
+  const validVisitDates = Object.keys(visitsByDate)
+    .filter(date => visitsByDate[date].size >= 5)
+    .sort((a, b) => new Date(a) - new Date(b));
+
+  if (validVisitDates.length === 0) {
+    return 0;
+  }
+
   let maxStreak = 0;
   let streak = 0;
   let lastDate = null;
 
-  for (let i = 0; i < visitDates.length; i++) {
-    const date = new Date(visitDates[i]);
+  // Iterate through the valid visit dates to calculate the max streak
+  for (let i = 0; i < validVisitDates.length; i++) {
+    const date = new Date(validVisitDates[i]);
 
     if (!lastDate) {
       streak = 1;

@@ -9,7 +9,7 @@ import Map from "../components/map/Map";
 import Target from "../components/utils/icons/Target";
 import User from "../components/utils/icons/User";
 import FriendsIcon from "../components/utils/icons/FriendsIcon";
-import StreakIcon from "../components/utils/streaks/StreakIcon";
+import StreakIcon from "../components/utils/icons/StreakIcon";
 import { AuthContext } from "../provider/AuthProvider";
 import { calculateStreak } from '../components/utils/streaks/CalculateStreak'; 
 import useStatusBar from "../helpers/useStatusBar";
@@ -37,8 +37,7 @@ export default function ({ navigation }) {
     }
   
     if (data) {
-      const streak = calculateStreak(data);
-      setCurrentStreak(streak.currentStreak);
+   
   
       // Update profile with total hexagons
       const totalHexagons = data.length;
@@ -68,6 +67,9 @@ export default function ({ navigation }) {
     }
   
     if (data) {
+      const streak = calculateStreak(data);
+      setCurrentStreak(streak.currentStreak);
+
       const allVisits = data.flatMap(location => location.visit_times || []);
       const totalVisits = allVisits.length;
 
@@ -195,9 +197,9 @@ export default function ({ navigation }) {
       <Layout>
         <View style={styles.topNavContainer} pointerEvents="box-none" >
           {/* Left buttons */}
-          <TouchableOpacity style={styles.menuButton} onPress={() => navigation.toggleDrawer()}>
+          {/* <TouchableOpacity style={styles.menuButton} onPress={() => navigation.toggleDrawer()}>
             <Ionicons name="menu" size={40} color={Colors.secondaryGreen} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           {/* Right button */}
 
           <View style={styles.navButtonGroup}>
@@ -251,7 +253,7 @@ const styles = StyleSheet.create({
   },
   topNavContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     paddingHorizontal: 20,
     paddingTop: 20,
     alignItems: 'top',
@@ -297,7 +299,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 20,
     left: 20,
-    right: 20,
+    width: '100%',
    
     borderRadius: 10,
     padding: 5,
@@ -326,7 +328,7 @@ const styles = StyleSheet.create({
     maxWidth: 200,
   },
   noChallengeText: {
-    fontSize: 17,
+    fontSize: 16,
     color: Colors.secondaryGreen,
     fontWeight: 'bold',
     marginBottom: 0,

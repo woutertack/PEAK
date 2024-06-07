@@ -30,7 +30,8 @@ const AcceptVersus = ({ navigation }) => {
           creator:creator_id (id, first_name, last_name, avatar_url)
         `)
         .eq('friend_id', userId)
-        .eq('status', 'pending');
+        .eq('status', 'pending')
+        .gt('deadline', new Date().toISOString());
 
       if (error) {
         Alert.alert('Error fetching challenges', error.message);

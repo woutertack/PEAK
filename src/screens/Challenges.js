@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Alert, TouchableOpacity } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Layout, Text } from 'react-native-rapi-ui';
 import { StatusBar } from 'expo-status-bar';
@@ -10,11 +10,12 @@ import CardChallenge from '../components/cards/CardChallenge';
 import { useHealthConnect } from '../provider/HealthConnectProvider';
 import { supabase } from '../lib/initSupabase';
 import { AuthContext } from '../provider/AuthProvider';
+import MedalIcon from '../components/utils/icons/MedalIcon';
 
 import getRandomChallenge from '../components/utils/challenges/getRandomChallenge';
 import calculateInitialTimeLeft from '../components/utils/challenges/calculateInitialTimeLeft';
 import formatChallengeDescription from '../components/utils/challenges/formatChallengeDescription';
-import { err } from 'react-native-svg';
+
 
 const Challenges = ({ navigation }) => {
   useStatusBar(Colors.secondaryGreen, 'light-content');
@@ -25,6 +26,7 @@ const Challenges = ({ navigation }) => {
   const [dailyProgress, setDailyProgress] = useState(0);
   const [weeklyProgress, setWeeklyProgress] = useState(0);
   const [monthlyProgress, setMonthlyProgress] = useState(0);
+  const [completedChallenges, setCompletedChallenges] = useState(0);
   const { session } = useContext(AuthContext);
   const { readHealthData } = useHealthConnect();
   const userId = session?.user?.id;
@@ -211,10 +213,30 @@ const Challenges = ({ navigation }) => {
         }
       }
     };
+
+    const fetchCompletedChallenges = async () => {
+      try {
+        if (!session?.user) throw new Error('No user on the session!');
+        const { data, error } = await supabase
+          .from('challenges')
+          .select('id')
+          .eq('user_id', session.user.id)
+          .eq('completed', true);
+        if (error) {
+          throw error;
+        }
+        setCompletedChallenges(data.length);
+      } catch (error) {
+        if (error instanceof Error) {
+          Alert.alert(error.message);
+        }
+      }
+    };
     
 
     useEffect(() => {
       fetchChallenges();
+      fetchCompletedChallenges();
     }, [session, readHealthData]);
   
     useFocusEffect(
@@ -276,7 +298,9 @@ const Challenges = ({ navigation }) => {
               }}
             />
             <Text style={styles.headerText}>Uitdagingen</Text>
-            <View style={styles.iconPlaceholder} />
+            <TouchableOpacity onPress={() => navigation.navigate('HistoryVersus')}>
+              <MedalIcon completedChallenges={completedChallenges} style={styles.iconPlaceholder} />
+            </TouchableOpacity>
           </View>
           <CardChallenge
             key={`daily-${dailyChallenge.type}`}

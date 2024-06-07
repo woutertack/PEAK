@@ -74,10 +74,9 @@ const Profile = ({ navigation }) => {
     try {
       if (!session?.user) throw new Error('No user on the session!');
       const { data, error, status } = await supabase
-        .from('locations')
-        .select('visited_at')
-        .eq('user_id', session.user.id)
-        .order('visited_at', { ascending: true });
+      .from('locations')
+      .select('visit_times')
+      .eq('user_id', session.user.id)
       if (error && status !== 406) {
         throw error;
       }

@@ -10,11 +10,7 @@ import SecondaryButton from '../components/utils/buttons/SecondaryButton';
 import TertiaryButton from '../components/utils/buttons/TertiaryButton';
 import CardStats from '../components/cards/CardStats';
 import { AuthContext } from '../provider/AuthProvider';
-import { format, differenceInDays } from 'date-fns';
-import { nl } from 'date-fns/locale';
 import { supabase } from '../lib/initSupabase';
-import { calculateStreak } from '../components/utils/streaks/CalculateStreak'; // Import the calculateStreak function
-import { calculateMaxStreak } from '../components/utils/streaks/CalculateMaxStreak';
 import useStatusBar from '../helpers/useStatusBar';
 import { useHealthConnect } from '../provider/HealthConnectProvider'; // Import the hook
 

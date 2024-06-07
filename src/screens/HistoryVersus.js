@@ -31,7 +31,8 @@ const HistoryVersus = ({ navigation }) => {
           creator:creator_id (id, first_name, last_name),
           friend:friend_id (id, first_name, last_name)
         `)
-        .or('winner.not.is.null,deadline.lte.' + new Date().toISOString());
+        .or('winner.not.is.null,deadline.lte.' + new Date().toISOString())
+        .or(`creator_id.eq.${userId},friend_id.eq.${userId}`) ;
 
       if (error) {
         Alert.alert('Error fetching challenges', error.message);

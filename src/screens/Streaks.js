@@ -26,10 +26,10 @@ const StreaksScreen = ({ navigation }) => {
   useEffect(() => {
     const fetchStreakData = async () => {
       const { data, error } = await supabase
-        .from('locations')
-        .select('visited_at')
-        .eq('user_id', session.user.id)
-        .order('visited_at', { ascending: true });
+      .from('locations')
+      .select('visit_times')
+      .eq('user_id', session.user.id)
+      .order('visit_times', { ascending: true });
 
       if (error) {
         console.error(error);
@@ -90,7 +90,9 @@ const StreaksScreen = ({ navigation }) => {
               <StreakIcon2 />
               <View style={styles.streakInfoWrapper}>
                 <Text style={styles.streakDays}>{currentStreak} </Text>
-                <Text style={styles.streakText}>dagen streak!</Text>
+                <Text style={styles.streakText}>
+                  {currentStreak === 1 ? 'dag streak!' : 'dagen streak!'}
+                </Text>
               </View>
             </View>
             <View style={styles.weekdays}>

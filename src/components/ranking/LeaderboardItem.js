@@ -11,8 +11,8 @@ const LeaderboardItem = ({ user, selectedCategory , isCurrentUser, onPress  }) =
     case 'Gebieden':
       displayedValue = user.total_hexagons;
       break;
-    case 'km²':
-      displayedValue = user.total_distance_km;
+    case 'Afstand':
+      displayedValue = user.total_distance_km + ' km';
       break;
     case 'Stappen':
       displayedValue = user.total_steps;
