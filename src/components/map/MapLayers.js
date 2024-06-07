@@ -5,8 +5,8 @@ import Colors from '../../consts/Colors';
 const MapLayers = ({ clusters, hexagons, zoomLevel, lineWidth }) => {
   return (
     <>
-      {clusters && (
-        <ShapeSource id="clusters" shape={clusters}>
+     
+        <ShapeSource id="clusters" shape={clusters} belowLayerID="userLocation">
           <FillLayer
             id="clusterFill"
             style={{
@@ -43,16 +43,16 @@ const MapLayers = ({ clusters, hexagons, zoomLevel, lineWidth }) => {
             />
           )}
         </ShapeSource>
-      )}
+   
 
-      {hexagons && zoomLevel >= 11.7 && (
+      {/* {hexagons && zoomLevel >= 11.7 && (
         <ShapeSource id="hexagons" shape={hexagons}>
           <FillLayer
             id="hexagonFill"
             style={{
               fillColor: Colors.primaryGreen,
               fillOutlineColor: Colors.secondaryGreen,
-              fillOpacity: 0.10,
+              fillOpacity: 0.80,
             }}
           />
           <LineLayer
@@ -63,7 +63,7 @@ const MapLayers = ({ clusters, hexagons, zoomLevel, lineWidth }) => {
             }}
           />
         </ShapeSource>
-      )}
+      )} */}
     </>
   );
 };

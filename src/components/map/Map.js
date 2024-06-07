@@ -226,45 +226,7 @@ const Map = ({ onHexagonCaptured }) => {
     }
   };
 
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: Colors.white,
-    },
-    map: {
-      width: '100%',
-      height: '115%',
-    },
-    buttonContainer: {
-      position: 'absolute',
-      bottom: 0,
-      right: 20,
-      backgroundColor: "rgba(255, 255, 255, 1)",
-      padding: 12,
-      borderRadius: 30,
-      borderColor: Colors.secondaryGreen,
-      borderWidth: 2.5,
-      shadowColor: "#000",
-      shadowOffset: {
-        width: 2,
-        height: 2,
-      },
-      shadowOpacity: 0.05,
-      shadowRadius: 2,
-      elevation: 2,
-    },
-    navIcon: {
-      color: Colors.secondaryGreen,
-    },
-    icon:{
-      iconImage: 'pin',
-      iconSize: 0.5,
-      iconAllowOverlap: true,
-      iconIgnorePlacement: true,
-    }
-  }), []);
+
 
   const customMapStyle = 'mapbox://styles/woutertack/clw88shyw002i01r06xjcgpwn';
 
@@ -276,18 +238,7 @@ const Map = ({ onHexagonCaptured }) => {
     );
   }
 
-  const userLocationSource = {
-    type: 'FeatureCollection',
-    features: [{
-      type: 'Feature',
-      geometry: {
-        type: 'Point',
-        coordinates: [location.longitude, location.latitude],
-      },
-      properties: {},
-    }],
-  };
-
+ 
   return (
     <View style={styles.container}>
       <Mapbox.MapView
@@ -305,37 +256,38 @@ const Map = ({ onHexagonCaptured }) => {
           animationDuration={1000}
           maxZoomLevel={16}
         />
-        <MapLayers
-          clusters={clusters}
-          hexagons={hexagons}
-          zoomLevel={zoomLevel}
-          lineWidth={lineWidth}
-        />
+       {/* Render the clusters and hexagons first */}
+       <MapLayers
+        clusters={clusters}
+        hexagons={hexagons}
+        zoomLevel={zoomLevel}
+        lineWidth={lineWidth}
+      />
 
+      {/* Render the PointAnnotation last */}
       <Mapbox.PointAnnotation
-          id="userLocation"
-          coordinate={[location.longitude, location.latitude]}
-          title="Your location"
-    
-        >
+        id="userLocation"
+        coordinate={[location.longitude, location.latitude]}
+        title="Your location"
+      >
+        <View style={{
+          height: 30,
+          width: 30,
+          borderRadius: 50,
+          backgroundColor: Colors.secondaryGreen,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
           <View style={{
-            height: 30,
-            width: 30,
+            height: 24,
+            width: 24,
             borderRadius: 50,
             backgroundColor: Colors.secondaryGreen,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-            <View style={{
-              height: 24,
-              width: 24,
-              borderRadius: 50,
-              backgroundColor: Colors.secondaryGreen,
-              borderColor: '#fff',
-              borderWidth: 3
-            }} />
-          </View>
-        </Mapbox.PointAnnotation>
+            borderColor: '#fff',
+            borderWidth: 3
+          }} />
+        </View>
+      </Mapbox.PointAnnotation>
 
       </Mapbox.MapView>
 
@@ -349,5 +301,39 @@ const Map = ({ onHexagonCaptured }) => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.white,
+  },
+  map: {
+    width: '100%',
+    height: '115%',
+  },
+  buttonContainer: {
+    position: 'absolute',
+    bottom: 0,
+    right: 20,
+    backgroundColor: "rgba(255, 255, 255, 1)",
+    padding: 12,
+    borderRadius: 30,
+    borderColor: Colors.secondaryGreen,
+    borderWidth: 2.5,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 2,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  navIcon: {
+    color: Colors.secondaryGreen,
+  },
+});
 
 export default Map;

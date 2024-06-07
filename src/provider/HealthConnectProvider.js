@@ -116,7 +116,7 @@ export const HealthConnectProvider = ({ children }) => {
   useEffect(() => {
     const intervalId = setInterval(() => {
       updateUserDataToSupabase();
-    }, 1000); // Update every 10 seconds
+    }, 10000); // Update every 10 seconds
 
     return () => clearInterval(intervalId); // Clear interval on unmount
   }, [session]);
