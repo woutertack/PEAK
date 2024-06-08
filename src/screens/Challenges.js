@@ -298,7 +298,7 @@ const Challenges = ({ navigation }) => {
               }}
             />
             <Text style={styles.headerText}>Uitdagingen</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('HistoryVersus')}>
+            <TouchableOpacity onPress={() => navigation.navigate('CompletedChallenges')}>
               <MedalIcon completedChallenges={completedChallenges} style={styles.iconPlaceholder} />
             </TouchableOpacity>
           </View>

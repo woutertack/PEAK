@@ -5,11 +5,11 @@ import Colors from '../../consts/Colors';
 import Avatar from '../Avatar';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
-const LeaderboardItem = ({ user, selectedCategory , isCurrentUser, onPress  }) => {
+const LeaderboardItem = ({ user, selectedCategory, selectedSubCategory, isCurrentUser, onPress }) => {
   let displayedValue;
   switch (selectedCategory) {
     case 'Gebieden':
-      displayedValue = user.total_hexagons;
+      displayedValue = selectedSubCategory === 'Alle gebieden' ? user.total_visits : user.total_hexagons;
       break;
     case 'Afstand':
       displayedValue = user.total_distance_km + ' km';
@@ -44,6 +44,7 @@ const LeaderboardItem = ({ user, selectedCategory , isCurrentUser, onPress  }) =
     );
   }
 };
+
 const styles = StyleSheet.create({
   leaderboardItem: {
     flexDirection: 'row',
@@ -57,7 +58,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     alignContent: 'center',
     alignItems: 'center',
-
   },
   rank: {
     color: '#fff',
@@ -66,8 +66,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   avatar: {
-   paddingTop: 10,
-    
+    paddingTop: 10,
   },
   userInfo: {
     flex: 1,
@@ -82,6 +81,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginRight: 10,
   },
+ 
 });
 
 export default LeaderboardItem;

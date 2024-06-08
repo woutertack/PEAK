@@ -62,6 +62,14 @@
           "mainActivityLanguage": "kotlin",
           "permissionsRationaleActivityPath": "android/app/src/main/java/com/woutertack/RNexpo/PermissionsRationaleActivity.kt"
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./local/assets/PeakIcon.png",
+          "color": "#127780"
+          
+        }
       ]
     ],
     "extra": {

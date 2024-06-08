@@ -1,4 +1,3 @@
-// Ranking.js
 import React, { useState, useEffect, useContext } from 'react';
 import { View, StyleSheet, ScrollView, Text } from 'react-native';
 import { Layout } from 'react-native-rapi-ui';
@@ -9,10 +8,12 @@ import LeaderboardItem from '../components/ranking/LeaderboardItem';
 import Tabs from '../components/ranking/Tabs';
 import { supabase } from '../lib/initSupabase';
 import { AuthContext } from '../provider/AuthProvider';
+import TopThree from '../components/ranking/TopThree';
 
 const Ranking = ({ navigation }) => {
   const [selectedOption, setSelectedOption] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('Afstand');
+  const [selectedSubCategory, setSelectedSubCategory] = useState('Alle gebieden');
   const [selectedTimeFrame, setSelectedTimeFrame] = useState('All Time');
   const [users, setUsers] = useState([]);
   const { session } = useContext(AuthContext);
@@ -24,6 +25,17 @@ const Ranking = ({ navigation }) => {
       getFriends();
     }
   }, [selectedOption]);
+
+  useEffect(() => {
+    // Re-fetch users when subcategory changes for 'Gebieden'
+    if (selectedCategory === 'Gebieden') {
+      if (selectedOption === 'All') {
+        getAllUsers();
+      } else {
+        getFriends();
+      }
+    }
+  }, [selectedCategory, selectedSubCategory]);
 
   const getAllUsers = async () => {
     const { data, error } = await supabase.from('profiles').select('*');
@@ -40,8 +52,8 @@ const Ranking = ({ navigation }) => {
       .select(`
         requester_id,
         requestee_id,
-        requester_profile:profiles!requester_id(id, first_name, last_name, avatar_url, total_hexagons, total_distance_km, total_steps),
-        requestee_profile:profiles!requestee_id(id, first_name, last_name, avatar_url, total_hexagons, total_distance_km, total_steps)
+        requester_profile:profiles!requester_id(id, first_name, last_name, avatar_url, total_hexagons, total_distance_km, total_steps, total_visits),
+        requestee_profile:profiles!requestee_id(id, first_name, last_name, avatar_url, total_hexagons, total_distance_km, total_steps, total_visits)
       `)
       .or(`requester_id.eq.${session.user.id},requestee_id.eq.${session.user.id}`)
       .eq('status', 'accepted');
@@ -68,11 +80,15 @@ const Ranking = ({ navigation }) => {
     }
   };
 
-  const sortUsers = (users, category) => {
+  const sortUsers = (users, category, subCategory) => {
     if (!users || !users.length) return [];
     return [...users].sort((a, b) => {
       if (category === 'Gebieden') {
-        return b.total_hexagons - a.total_hexagons;
+        if (subCategory === 'Alle gebieden') {
+          return b.total_visits - a.total_visits;
+        } else {
+          return b.total_hexagons - a.total_hexagons;
+        }
       } else if (category === 'Afstand') {
         return b.total_distance_km - a.total_distance_km;
       } else if (category === 'Stappen') {
@@ -82,11 +98,12 @@ const Ranking = ({ navigation }) => {
     });
   };
 
-  const sortedUsers = sortUsers(users, selectedCategory);
+  const sortedUsers = sortUsers(users, selectedCategory, selectedSubCategory);
 
-  // Find current user and rank
+  // Find and separate the current user
   const currentUser = sortedUsers.find(user => user.id === session.user.id);
   const currentUserRank = sortedUsers.findIndex(user => user.id === session.user.id) + 1;
+  const otherUsers = sortedUsers.filter(user => user.id !== session.user.id);
 
   return (
     <Layout>
@@ -106,28 +123,31 @@ const Ranking = ({ navigation }) => {
         <View style={styles.headerTitle}>
           <Text style={styles.headerText}>Ranking</Text>
         </View>
+        <TopThree users={sortedUsers.slice(0, 3)} selectedCategory={selectedCategory} />
         <Tabs options={['Gebieden', 'Afstand', 'Stappen']} selectedOption={selectedCategory} setSelectedOption={setSelectedCategory} />
-        {/* <Tabs options={['Weekly', 'All Time', 'Monthly']} selectedOption={selectedTimeFrame} setSelectedOption={setSelectedTimeFrame} /> */}
-        <View style={styles.leaderboard}>
-        {currentUser && (
-          <LeaderboardItem
-            key={currentUser.id}
-            user={{ ...currentUser, rank: currentUserRank }}
-            selectedCategory={selectedCategory}
-            isCurrentUser
-          />
+        {selectedCategory === 'Gebieden' && (
+          <Tabs options={['Alle gebieden', 'Unieke gebieden']} selectedOption={selectedSubCategory} setSelectedOption={setSelectedSubCategory} />
         )}
-
-      
-          {sortedUsers.map((user, index) => (
-            user.id !== session.user.id && (
-              <LeaderboardItem
-                key={user.id}
-                user={{ ...user, rank: index + 1 }}
-                selectedCategory={selectedCategory}
-                onPress={() => navigation.navigate('FriendsProfile', { friendId: user.id })}
-              />
-            )
+        <View style={styles.leaderboard}>
+          {currentUser && (
+            <LeaderboardItem
+              key={currentUser.id}
+              user={{ ...currentUser, rank: currentUserRank }}
+              selectedCategory={selectedCategory}
+              selectedSubCategory={selectedSubCategory}
+              isCurrentUser={true}
+              onPress={() => navigation.navigate('Profile')}
+            />
+          )}
+          {otherUsers.map((user, index) => (
+            <LeaderboardItem
+              key={user.id}
+              user={{ ...user, rank: index < currentUserRank - 1 ? index + 1 : index + 2 }} // Adjust rank considering the current user
+              selectedCategory={selectedCategory}
+              selectedSubCategory={selectedSubCategory}
+              isCurrentUser={false}
+              onPress={() => navigation.navigate('FriendsProfile', { friendId: user.id })}
+            />
           ))}
         </View>
       </ScrollView>

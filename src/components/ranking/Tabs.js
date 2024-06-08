@@ -4,6 +4,8 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Colors from '../../consts/Colors';
 
 const Tabs = ({ options, selectedOption, setSelectedOption }) => {
+  const tabWidth = options.length === 2 ? '52%' : '35%';
+
   return (
     <View style={styles.tabs}>
       {options.map((option, index) => (
@@ -11,6 +13,7 @@ const Tabs = ({ options, selectedOption, setSelectedOption }) => {
           key={option}
           style={[
             styles.tab,
+            { width: tabWidth }, // Apply dynamic width
             selectedOption === option && styles.activeTab,
             index === 0 && styles.leftTab,
             index === options.length - 1 && styles.rightTab,
@@ -32,7 +35,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginVertical: 10,
     marginHorizontal: 10,
-  
     borderRadius: 20,
     textAlign: 'center',
     alignContent: 'center',
@@ -42,7 +44,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     backgroundColor: Colors.secondaryGreen,
-    width: '35%',
     alignItems: 'center',
     borderColor: Colors.white,
     borderWidth: 1,

@@ -19,7 +19,8 @@ const StreaksScreen = ({ navigation }) => {
   const { session } = useContext(AuthContext);
   const [streakData, setStreakData] = useState([]);
   const [currentStreak, setCurrentStreak] = useState(0);
-  const [maxStreak, setMaxStreak] = useState(0);
+  const [todayVisits, setTodayVisits] = useState(0);
+  const [timeLeft, setTimeLeft] = useState('');
 
   useStatusBar(Colors.secondaryGreen, 'light-content');
   
@@ -42,14 +43,46 @@ const StreaksScreen = ({ navigation }) => {
         setCurrentStreak(streak.currentStreak);
         setStreakData(streak.visitDates);
 
-        const maxStreakValue = calculateMaxStreak(data);
-        setMaxStreak(maxStreakValue);
-        console.log('Max streak:', maxStreakValue);
+        // const maxStreakValue = calculateMaxStreak(data);
+        // setMaxStreak(maxStreakValue);
+        // console.log('Max streak:', maxStreakValue);
+
+        // Calculate today's visits
+        const today = new Date().toDateString();
+        const todayVisitsCount = data
+          .flatMap(location => location.visit_times || [])
+          .filter(visitTime => new Date(visitTime).toDateString() === today).length;
+        setTodayVisits(todayVisitsCount);
+
+        // Calculate time left for today
+        const now = new Date();
+        const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+        const timeDiff = endOfDay - now;
+
+        const hoursLeft = Math.floor(timeDiff / (1000 * 60 * 60));
+        const minutesLeft = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+        const secondsLeft = Math.floor((timeDiff % (1000 * 60)) / 1000);
+
+        setTimeLeft(`${hoursLeft}h ${minutesLeft}m ${secondsLeft}s`);
       }
     };
 
     fetchStreakData();
-  }, []);
+
+    const interval = setInterval(() => {
+      const now = new Date();
+      const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+      const timeDiff = endOfDay - now;
+
+      const hoursLeft = Math.floor(timeDiff / (1000 * 60 * 60));
+      const minutesLeft = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+      const secondsLeft = Math.floor((timeDiff % (1000 * 60)) / 1000);
+
+      setTimeLeft(`${hoursLeft}h ${minutesLeft}m ${secondsLeft}s`);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [session]);
 
   const getLast7Days = () => {
     const days = ['Z', 'M', 'D', 'W', 'D', 'V', 'Z'];
@@ -103,14 +136,28 @@ const StreaksScreen = ({ navigation }) => {
                 </View>
               ))}
             </View>
-            <Text style={styles.instruction}>
-              Open de app elke dag en ontdek {"\n"}5 gebieden om je streak te behouden!
-            </Text>
+            {todayVisits < 5 ? (
+              
+                <Text style={styles.instruction}>
+                  Ontdek nog {5 - todayVisits} gebieden binnen de {"\n"}{timeLeft} om je streak te behouden!
+                </Text>
+              
+            ) : (
+              <Text style={styles.instruction}>
+                Open de app elke dag en ontdek {"\n"}5 gebieden om je streak te behouden!
+              </Text>
+            )}
+          
           </View>
+          <View>
+      
+
           <SecondaryButton
             label={'Ga verder met ontdekken'}
             onPress={() => navigation.navigate('Home')}
           />
+          </View>
+        
         </ScrollView>
       </Layout>
     </>
@@ -212,7 +259,29 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 18,
     color: '#127780',
-  }
+  },
+  todayInfo: {
+    color: '#fff',
+    fontSize: 14,
+    paddingHorizontal: 5,
+    fontWeight: '500',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  timeLeft: {
+    color: '#fff',
+    fontSize: 15,
+    paddingHorizontal: 5,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  visitsLeft: {
+    color: '#fff',
+    fontSize: 15,
+    paddingHorizontal: 5,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
 });
 
 export default StreaksScreen;
