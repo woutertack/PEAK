@@ -25,6 +25,8 @@
         "backgroundColor": "#127780"
       },
       "package": "com.woutertack.RNexpo",
+      "googleServicesFile": "./android/app/google-services.json",
+      
       "permissions": [
         "android.permission.ACTIVITY_RECOGNITION",
         "android.permission.BODY_SENSORS",
@@ -66,7 +68,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./local/assets/PeakIcon.png",
+          "icon": "./assets/PeakIcon.png",
           "color": "#127780"
           
         }

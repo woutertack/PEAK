@@ -172,7 +172,7 @@ const Profile = ({ navigation }) => {
             size={38}
             style={styles.icon}
             onPress={() => {
-              navigation.goBack();
+              navigation.navigate('Home');
             }}
           />
           <Text style={styles.headerText}>Profiel</Text>

@@ -15,12 +15,18 @@ import { calculateMaxStreak } from '../components/utils/streaks/CalculateMaxStre
 import useStatusBar from '../helpers/useStatusBar';
 import TertiaryButton from '../components/utils/buttons/TertiaryButton';
 import SecondaryButton from '../components/utils/buttons/SecondaryButton';
+import { usePushNotifications } from '../helpers/usePushNotifications';
+import * as Notifications from 'expo-notifications';
+
+
 const StreaksScreen = ({ navigation }) => {
   const { session } = useContext(AuthContext);
   const [streakData, setStreakData] = useState([]);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [todayVisits, setTodayVisits] = useState(0);
   const [timeLeft, setTimeLeft] = useState('');
+  const { expoPushToken } = usePushNotifications();
+  console.log(expoPushToken)
 
   useStatusBar(Colors.secondaryGreen, 'light-content');
   
@@ -38,7 +44,7 @@ const StreaksScreen = ({ navigation }) => {
       }
 
       if (data) {
-        console.log(data);
+        
         const streak = calculateStreak(data);
         setCurrentStreak(streak.currentStreak);
         setStreakData(streak.visitDates);
@@ -64,6 +70,10 @@ const StreaksScreen = ({ navigation }) => {
         const secondsLeft = Math.floor((timeDiff % (1000 * 60)) / 1000);
 
         setTimeLeft(`${hoursLeft}h ${minutesLeft}m ${secondsLeft}s`);
+
+        if (hoursLeft <= 8 && expoPushToken) {
+          await scheduleNotification(expoPushToken);
+        }
       }
     };
 
@@ -82,7 +92,20 @@ const StreaksScreen = ({ navigation }) => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [session]);
+  }, [session, expoPushToken]);
+
+
+  const scheduleNotification = async (token) => {
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Streak Alert!",
+        body: "You have only 3 hours left to complete your streak!",
+      },
+      trigger: {
+        seconds: 1,
+      },
+    });
+  };
 
   const getLast7Days = () => {
     const days = ['Z', 'M', 'D', 'W', 'D', 'V', 'Z'];

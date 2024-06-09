@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "659170013459",
+    "project_id": "exponotif-7a269",
+    "storage_bucket": "exponotif-7a269.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:659170013459:android:d8dc54f692ded7f607eae6",
+        "android_client_info": {
+          "package_name": "com.woutertack.RNexpo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSED3ilcSX_qh0XjbSAJjW0DrDNKoq7mI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

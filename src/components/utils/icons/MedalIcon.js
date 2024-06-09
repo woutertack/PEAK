@@ -1,8 +1,8 @@
 import React from 'react';
 import Svg, { G, Path, Circle, Text, TSpan } from 'react-native-svg';
 
-const MedalIcon = () => {
-  const completedChallenges = 50;
+const MedalIcon = ({completedChallenges}) => {
+
   const fontSize = completedChallenges >= 10 ? 14 : 16;
 
   return (
