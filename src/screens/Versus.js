@@ -41,7 +41,7 @@ const Versus = ({ navigation }) => {
       .is('winner', null);
 
     if (error) {
-      Alert.alert('Error fetching challenges', error.message);
+      console.log('Error fetching challenges', error.message);
     } else {
       const challengesWithProgress = await Promise.all(data.map(async (challenge) => {
         const userProgress = await getUserProgress(challenge.accepted_time, challenge.challenge_type);
@@ -70,7 +70,7 @@ const Versus = ({ navigation }) => {
         const validVisits = hexagons.flatMap(location =>
           (location.visit_times || []).filter(visitTime => new Date(visitTime) >= new Date(acceptedTime))
         );
-       console.log('validVisits', validVisits);
+      //  console.log('validVisits', validVisits);
 
         return validVisits.length;
         }
@@ -93,7 +93,7 @@ const Versus = ({ navigation }) => {
       .eq('id', challenge.id);
 
     if (error) {
-      Alert.alert('Error updating progress', error.message);
+      console.log(error)
     }
   };
 
@@ -119,7 +119,7 @@ const Versus = ({ navigation }) => {
         .eq('id', challenge.id);
 
       if (error) {
-        Alert.alert('Error updating winner', error.message);
+        console.log('Error updating winner', error.message);
       }
     }
   };
@@ -137,7 +137,7 @@ const Versus = ({ navigation }) => {
       .gt('deadline', new Date().toISOString());
 
     if (error) {
-      Alert.alert('Error fetching challenges', error.message);
+      console.log('Error fetching challenges', error.message);
     } else {
       setChallengesAccept(data);
     }

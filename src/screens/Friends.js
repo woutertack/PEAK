@@ -23,12 +23,15 @@ const Friends = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchQueryModal, setSearchQueryModal] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const [pendingRequests, setPendingRequests] = useState([]);
+
 
   useEffect(() => {
     if (session) {
       getAllUsers();
       getFriends();
       getIncomingRequests();
+      getPendingRequestsSent(); 
     }
   }, [session]);
 
@@ -95,6 +98,21 @@ const Friends = ({ navigation }) => {
         last_name: request.profiles.last_name,
         avatar_url: request.profiles.avatar_url,
       })));
+      setPendingRequests(data.map(request => request.requester_id));
+    }
+  };
+
+  const getPendingRequestsSent = async () => {
+    const { data, error } = await supabase
+      .from('friend_requests')
+      .select('requestee_id')
+      .eq('requester_id', session.user.id)
+      .eq('status', 'pending');
+  
+    if (error) {
+      console.log(error.message);
+    } else {
+      setPendingRequests(prev => [...prev, ...data.map(request => request.requestee_id)]); // Add sent pending request IDs
     }
   };
 
@@ -103,17 +121,18 @@ const Friends = ({ navigation }) => {
     const { error } = await supabase.from('friend_requests').insert([
       { requester_id: session.user.id, requestee_id: requesteeId, status: 'pending' }
     ]);
-
+  
     if (error) {
-      Alert.alert('Error', error.message);
+      console.log('Error', error.message);
     } else {
-      Alert.alert('Friend request sent!');
-      setModalVisible(false);
-      setSearchResults([]);
-      setSearchQueryModal('');
+      Alert.alert('Vriendschapsverzoek verstuurd');
+      setPendingRequests(prev => [...prev, requesteeId]); // Add the user to pending requests
+      setSearchResults(prev => prev.filter(user => user.id !== requesteeId)); // Remove the user from search results
+      setSearchQueryModal(''); // Clear the search input
+      setModalVisible(false); // Optionally close the modal
     }
   };
-
+  
   const handleAccept = async (requesterId) => {
     const { error } = await supabase
       .from('friend_requests')
@@ -122,9 +141,9 @@ const Friends = ({ navigation }) => {
       .eq('requestee_id', session.user.id);
 
     if (error) {
-      Alert.alert('Error', error.message);
+      console.log('Error', error.message);
     } else {
-      Alert.alert('Friend request accepted!');
+   
       setIncomingRequests((prev) => prev.filter((request) => request.id !== requesterId));
       getFriends();
     }
@@ -138,9 +157,8 @@ const Friends = ({ navigation }) => {
       .eq('requestee_id', session.user.id);
 
     if (error) {
-      Alert.alert('Error', error.message);
+       console.log('Error', error.message);
     } else {
-      Alert.alert('Friend request declined!');
       setIncomingRequests((prev) => prev.filter((request) => request.id !== requesterId));
     }
   };
@@ -170,7 +188,7 @@ const Friends = ({ navigation }) => {
         <Text style={styles.friendNameModal}>{`${item.first_name} ${item.last_name}`}</Text>
         <View style={styles.buttonProfileModal}>
           <TouchableOpacity onPress={() => handleAddFriend(item.id)} style={styles.buttonAcceptModal}>
-            <Text style={styles.buttonAcceptTextModal}>Add</Text>
+            <Text style={styles.buttonAcceptTextModal}>Toevoegen</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -186,13 +204,18 @@ const Friends = ({ navigation }) => {
 
 
   const filteredUsers = searchQueryModal.length > 0
-    ? users.filter(user =>
-        (user.first_name.toLowerCase().includes(searchQueryModal.toLowerCase()) ||
-        user.last_name.toLowerCase().includes(searchQueryModal.toLowerCase())) &&
-        !friendsIds.includes(user.id) && // Exclude friends
-        user.id !== session.user.id // Exclude current user
-      )
-    : users.filter(user => !friendsIds.includes(user.id) && user.id !== session.user.id);
+  ? users.filter(user =>
+      (user.first_name.toLowerCase().includes(searchQueryModal.toLowerCase()) ||
+      user.last_name.toLowerCase().includes(searchQueryModal.toLowerCase())) &&
+      !friendsIds.includes(user.id) && // Exclude friends
+      !pendingRequests.includes(user.id) && // Exclude users with pending requests
+      user.id !== session.user.id // Exclude current user
+    )
+  : users.filter(user => 
+      !friendsIds.includes(user.id) && 
+      !pendingRequests.includes(user.id) && 
+      user.id !== session.user.id
+    );
 
 
   return (
@@ -216,11 +239,10 @@ const Friends = ({ navigation }) => {
             </View>
           </View>
           
-            {incomingRequests.map((request) => (
-              <>
-              <View style={styles.section}>
-               <Text style={styles.sectionTitle}>Inkomende vriendschapsverzoek(en)</Text>
-              
+          {incomingRequests.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Inkomende vriendschapsverzoek(en)</Text>
+              {incomingRequests.map((request) => (
                 <View key={request.id} style={styles.friendRequest}>
                   <View style={styles.avatar}>
                     <Avatar url={request.avatar_url} size={70} />
@@ -237,9 +259,10 @@ const Friends = ({ navigation }) => {
                     </View>
                   </View>
                 </View>
-              </View>
-              </>
-            ))}
+              ))}
+            </View>
+          )}
+
        
 
           <View style={styles.section}>
@@ -360,6 +383,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.lightGreen,
     padding: 10,
     borderRadius: 10,
+    marginBottom: 15
   },
   avatar: {
     justifyContent: 'center',
@@ -479,7 +503,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 10,
     marginBottom: 20,
-    width: '100%',
+    
   },
   searchInputModal: {
     flex: 1,
@@ -488,7 +512,8 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 10,
     borderBottomLeftRadius: 10,
     padding: 12,
-    paddingLeft: 20,
+    paddingLeft: 10,
+    marginLeft: 5
   },
   searchButtonModal: {
     padding: 10,
@@ -505,17 +530,23 @@ const styles = StyleSheet.create({
     marginTop: 0,
   },
   friendRequestModal: {
-    flexGrow: 1,
+
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: Colors.lightGreen,
-    padding: 20,
+ 
     borderRadius: 10,
     width: '100%',
     minHeight: 100,
-    minWidth: 285,
+    minWidth: 300,
     marginBottom: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    marginLeft: 0
+
+
+
   },
   avatarModal: {
     justifyContent: 'center',
@@ -552,7 +583,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    width: '50%',
+    width: '100%',
   },
   buttonAcceptTextModal: {
     color: Colors.secondaryGreen,

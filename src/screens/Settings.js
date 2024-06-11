@@ -73,7 +73,6 @@ export default function Account({navigation }) {
       
     } catch (error) {
       console.log('Error logging out:', error.message);
-      Alert.alert('Error logging out', error.message);
     }
   };
 

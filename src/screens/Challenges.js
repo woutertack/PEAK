@@ -277,7 +277,7 @@ const Challenges = ({ navigation }) => {
   if (loading  || !dailyChallenge || !weeklyChallenge || !monthlyChallenge) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={{color: Colors.white}}>Loading...</Text>
+        <Text style={{color: Colors.white}}>Laden...</Text>
       </View>
     );
   }

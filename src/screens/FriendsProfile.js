@@ -261,7 +261,7 @@ const FriendsProfile = ({ navigation }) => {
               <>
                 <View style={styles.buttonsContainer}>
                   <View style={styles.viewBadgesButton} pointerEvents='none'>
-                    <TertiaryButton label={`${winLossRecord.userWins}(Jij) vs ${winLossRecord.friendWins}`} />
+                    <TertiaryButton label={`${winLossRecord.userWins} (Jij) vs ${winLossRecord.friendWins}`} />
                   </View>
                   <View style={styles.viewBadgesButton}>
                     <PrimaryButton label={'Nu uitdagen'} onPress={() => navigation.navigate('CreateVersus', { friendId })} />

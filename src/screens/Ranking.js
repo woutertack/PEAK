@@ -14,7 +14,7 @@ const Ranking = ({ navigation }) => {
   const [selectedOption, setSelectedOption] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('Afstand');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Alle gebieden');
-  const [selectedTimeFrame, setSelectedTimeFrame] = useState('All Time');
+
   const [users, setUsers] = useState([]);
   const { session } = useContext(AuthContext);
 

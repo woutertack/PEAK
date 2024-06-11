@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useContext, useCallback } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import Mapbox, { ShapeSource, FillLayer, LineLayer, SymbolLayer } from '@rnmapbox/maps';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -21,6 +21,7 @@ const Map = ({ onHexagonCaptured }) => {
   const [lineWidth, setLineWidth] = useState(2);
   const [locationsWithCoordinates, setLocationsWithCoordinates] = useState([]);
   const [zoomLevel, setZoomLevel] = useState(14.5);
+  const [mapCentered, setMapCentered] = useState(false); // Track if the map has been centered
 
   const userId = session?.user.id;
   const mapRef = useRef(null);
@@ -38,16 +39,6 @@ const Map = ({ onHexagonCaptured }) => {
 
         const currentLocation = await Location.getCurrentPositionAsync({});
         setLocation(currentLocation.coords);
-        console.log('Initial location:', currentLocation.coords);
-
-        // Center map on initial load
-        if (cameraRef.current) {
-          cameraRef.current.setCamera({
-            centerCoordinate: [currentLocation.coords.longitude, currentLocation.coords.latitude],
-            zoomLevel: zoomLevel,
-            animationDuration: 1000,
-          });
-        }
       } catch (error) {
         console.error('Error fetching initial location:', error);
       }
@@ -56,10 +47,21 @@ const Map = ({ onHexagonCaptured }) => {
     fetchInitialLocation();
   }, []);
 
+  // Center map on user when location is fetched for the first time
+  useEffect(() => {
+    let timeout;
+    if (location && !mapCentered) {
+      timeout = setTimeout(() => {
+        centerMapOnUser();
+        setMapCentered(true);
+      }, 200); // 1-second delay
+    }
+    return () => clearTimeout(timeout); // Clear timeout if component unmounts
+  }, [location, mapCentered]);
+
   // Handle location updates without centering the map
   useEffect(() => {
     if (location) {
-      // console.log('Location updated:', location);
       updateHexagons(location);
     }
   }, [location]);
@@ -103,20 +105,21 @@ const Map = ({ onHexagonCaptured }) => {
         .select('hex_index, visits, visit_times')
         .eq('hex_index', hexIndex)
         .eq('user_id', userId);
-  
+
       if (hexError) {
         console.error('Error checking hex index:', hexError);
         return;
       }
-  
-      const now = new Date().toISOString();
-  
+
+      const now = new Date();
+      const today = now.toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+
       // If the hex_index does not exist, insert it
       if (!hexData.length) {
         const { data, error: insertError } = await supabase
           .from('locations')
-          .insert([{ hex_index: hexIndex, user_id: userId, visits: 1, visit_times: [now] }]);
-  
+          .insert([{ hex_index: hexIndex, user_id: userId, visits: 1, visit_times: [now.toISOString()] }]);
+
         if (insertError) {
           console.error('Error inserting hex index:', insertError);
         } else {
@@ -125,21 +128,22 @@ const Map = ({ onHexagonCaptured }) => {
           fetchLocations();
         }
       } else {
-        // Check if the last visit was more than a day ago
+        // Check if the last visit was on a different date
         const visitTimes = hexData[0].visit_times || [];
         const lastVisit = visitTimes.length ? new Date(visitTimes[visitTimes.length - 1]) : null;
-        const oneDayInMs = 24 * 60 * 60 * 1000;
-        
-        if (!lastVisit || (new Date() - lastVisit) > oneDayInMs) {
-          // If the last visit was more than a day ago, update the visits count and append the visit time
-          visitTimes.push(now);
-  
+        const lastVisitDate = lastVisit ? lastVisit.toISOString().split('T')[0] : null;
+        console.log(lastVisitDate == today)
+
+        if (!lastVisitDate || lastVisitDate !== today) {
+          // If the last visit was on a different date, update the visits count and append the visit time
+          visitTimes.push(now.toISOString());
+
           const { data, error: updateError } = await supabase
             .from('locations')
             .update({ visits: hexData[0].visits + 1, visit_times: visitTimes })
             .eq('hex_index', hexIndex)
             .eq('user_id', userId);
-  
+
           if (updateError) {
             console.error('Error updating visits count:', updateError);
           } else {
@@ -147,16 +151,14 @@ const Map = ({ onHexagonCaptured }) => {
             fetchLocations();
             onHexagonCaptured();
           }
-        }
-          else {
-            console.log('Visits count update skipped for hex index:', hexIndex, );
+        } else {
+          console.log('Visits count update skipped for hex index:', hexIndex);
         }
       }
     } catch (err) {
       console.error('Unexpected error:', err);
     }
   }, [userId, onHexagonCaptured, fetchLocations]);
-  
 
   const updateHexagons = useCallback((loc) => {
     const centerIndex = h3.geoToH3(loc.latitude, loc.longitude, 9);
@@ -201,7 +203,6 @@ const Map = ({ onHexagonCaptured }) => {
   const handleRegionDidChange = useCallback(async () => {
     if (mapRef.current) {
       const currentZoomLevel = await mapRef.current.getZoom();
-      console.log('Current zoom level:', currentZoomLevel);
       setZoomLevel(currentZoomLevel);
       const resolution = currentZoomLevel < 9.8 ? 6 : currentZoomLevel < 12.3 ? 7 : 9;
       clusterHexagons(locationsWithCoordinates, resolution);
@@ -215,7 +216,6 @@ const Map = ({ onHexagonCaptured }) => {
         zoomLevel: 14.5,
         animationDuration: 1000,
       });
-      console.log('Map centered on user location:', location);
     }
   };
 
@@ -224,7 +224,7 @@ const Map = ({ onHexagonCaptured }) => {
   if (!location) {
     return (
       <View style={styles.container}>
-        <Text style={{ color: Colors.black }}>Loading map...</Text>
+        <Text style={{ color: Colors.black }}>Map laden...</Text>
       </View>
     );
   }
@@ -240,9 +240,6 @@ const Map = ({ onHexagonCaptured }) => {
         <Mapbox.Camera
           ref={cameraRef}
           zoomLevel={14.5}
-          // centerCoordinate={[location.longitude, location.latitude]}
-          animationMode="flyTo"
-          animationDuration={1000}
           maxZoomLevel={16}
         />
         <MapLayers

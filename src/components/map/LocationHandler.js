@@ -20,7 +20,7 @@ const LocationHandler = ({ setLocation }) => {
         {
           accuracy: Location.Accuracy.High,
           timeInterval: 5000,
-          distanceInterval: 10,
+          distanceInterval: 2,
         },
         debounce((currentLocation) => {
           setLocation(currentLocation.coords);

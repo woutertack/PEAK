@@ -1,26 +1,27 @@
-// File path: CreateVersus.js
-
 import React, { useState, useEffect, useContext } from 'react';
-import { View, StyleSheet, ScrollView, KeyboardAvoidingView, TouchableOpacity, Alert, Platform } from 'react-native';
-import { Layout, Text, Button, TextInput, Picker } from 'react-native-rapi-ui';
+import { View, StyleSheet, ScrollView, KeyboardAvoidingView, TouchableOpacity, Alert } from 'react-native';
+import { Layout, Text, TextInput } from 'react-native-rapi-ui';
 import { StatusBar } from 'expo-status-bar';
+import { Picker } from '@react-native-picker/picker';
 import TabBarIcon from '../components/utils/TabBarIcon';
 import Colors from '../consts/Colors';
 import useStatusBar from '../helpers/useStatusBar';
-import { supabase } from '../lib/initSupabase'
+import { supabase } from '../lib/initSupabase';
 import PrimaryButton from '../components/utils/buttons/PrimaryButton';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { AuthContext } from '../provider/AuthProvider';
+import { useRoute } from '@react-navigation/native';
 
 const CreateVersus = ({ navigation }) => {
   useStatusBar(Colors.secondaryGreen, 'light-content');
   const { session } = useContext(AuthContext);
+  const route = useRoute();
 
   const [challengeType, setChallengeType] = useState('steps');
   const [goal, setGoal] = useState('');
   const [timeslotDate, setTimeslotDate] = useState(new Date());
   const [timeslotTime, setTimeslotTime] = useState(new Date());
-  const [friendId, setFriendId] = useState('');
+  const [friendId, setFriendId] = useState(route.params?.friendId || ''); // Set initial state from route params
   const [friends, setFriends] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
@@ -88,16 +89,16 @@ const CreateVersus = ({ navigation }) => {
 
   const validateForm = () => {
     if (!goal) {
-      Alert.alert('Error', 'Geef een goal in!');
+      Alert.alert('Geen geldige gegevens', 'Geef een goal in!');
       return false;
     }
 
     if (!challengeType) {
-      Alert.alert('Error', 'Please select a challenge type.');
+      Alert.alert('Geen geldige gegevens', 'Geef een uitdagins type mee.');
       return false;
     }
     if (!friendId) {
-      Alert.alert('Error', 'Please select a friend to challenge.');
+      Alert.alert('Geen geldige gegevens', 'Selecteer een vriend!');
       return false;
     }
     const combinedTimeslot = new Date(
@@ -109,7 +110,7 @@ const CreateVersus = ({ navigation }) => {
       timeslotTime.getSeconds()
     );
     if (combinedTimeslot <= new Date()) {
-      Alert.alert('Error', 'The timeslot must be in the future.');
+      Alert.alert('Geen geldige gegevens', 'Selecteer een tijd in de toekomst!');
       return false;
     }
     return true;
@@ -170,16 +171,19 @@ const CreateVersus = ({ navigation }) => {
 
           <View style={styles.formGroup}>
             <Text style={styles.label}>Uitdaging Type</Text>
-            <Picker
-              items={[
-                { label: 'Stappen', value: 'steps' },
-                { label: 'Afstand', value: 'distance' },
-                { label: 'Gebieden', value: 'hexagons' },
-              ]}
-              value={challengeType}
-              onValueChange={(value) => setChallengeType(value)}
-            />
+            <View style={styles.pickerWrapper}>
+              <Picker
+                selectedValue={challengeType}
+                onValueChange={(value) => setChallengeType(value)}
+                style={styles.picker}
+              >
+                <Picker.Item label="Stappen" value="steps" />
+                <Picker.Item label="Afstand" value="distance" />
+                <Picker.Item label="Gebieden" value="hexagons" />
+              </Picker>
+            </View>
           </View>
+
 
           <View style={styles.formGroup}>
             <Text style={styles.label}>Goal
@@ -189,11 +193,12 @@ const CreateVersus = ({ navigation }) => {
               value={goal}
               onChangeText={(value) => setGoal(value)}
               keyboardType="numeric"
+              style={styles.TextInput}
             />
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Kies hoelang uitdaging loopt</Text>
+            <Text style={styles.label}>Kies hoelang je uitdaging loopt</Text>
             <View style={{ flexDirection: 'row', gap: 20, marginTop: 5 }}>
               <TouchableOpacity onPress={showDatePicker}>
                 <View style={styles.datumWrapper}>
@@ -236,14 +241,18 @@ const CreateVersus = ({ navigation }) => {
 
           <View style={styles.formGroup}>
             <Text style={styles.label}>Kies een vriend</Text>
-            <Picker
-              items={friends.map(friend => ({
-                label: `${friend.first_name} ${friend.last_name}`,
-                value: friend.id,
-              }))}
-              value={friendId}
-              onValueChange={(value) => setFriendId(value)}
-            />
+            <View style={styles.pickerWrapper}>
+              <Picker
+                selectedValue={friendId}
+                onValueChange={(value) => setFriendId(value)}
+                style={styles.picker}
+              >
+                <Picker.Item label="Selecteer een vriend" value="" />
+                {friends.map(friend => (
+                  <Picker.Item key={friend.id} label={`${friend.first_name} ${friend.last_name}`} value={friend.id} />
+                ))}
+              </Picker>
+            </View>
           </View>
 
         </ScrollView>
@@ -290,7 +299,8 @@ const styles = StyleSheet.create({
   },
   formGroup: {
     marginVertical: 10,
-    marginTop: 10
+    marginTop: 10,
+    overflow: 'hidden'
   },
   label: {
     marginBottom: 5,
@@ -324,6 +334,23 @@ const styles = StyleSheet.create({
     left: 20,
     right: 20,
   },
+  pickerWrapper: {
+    backgroundColor: '#fff',
+    borderColor: '#fff',
+    borderWidth: 1,
+    borderRadius: 5,
+    overflow: 'hidden',
+  },
+  picker: {
+    color: '#000',
+  },
+  TextInput:{
+    backgroundColor: '#fff',
+    borderColor: '#fff',
+    borderWidth: 1,
+    borderRadius: 5,
+    overflow: 'hidden',
+  }
 });
 
 export default CreateVersus;

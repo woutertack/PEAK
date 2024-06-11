@@ -11,9 +11,9 @@ import { usePushNotifications } from "./src/helpers/usePushNotifications";
 
 export default function App() {
 
-  const { expoPushToken, notification } = usePushNotifications();
-    const data = JSON.stringify(notification, undefined, 2);
-    console.log(expoPushToken)
+  // const { expoPushToken, notification } = usePushNotifications();
+  //   const data = JSON.stringify(notification, undefined, 2);
+  //   console.log(expoPushToken)
 
 
   return (

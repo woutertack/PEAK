@@ -37,7 +37,7 @@ const SelectLevel = ({navigation}) => {
             setFirstLogin(false);
             
         } catch (error) {
-            Alert.alert('Error', 'Failed to update level');
+            console.log('Error', 'Failed to update level');
         }
         console.log('Level updated:', selectedLevel);
     
