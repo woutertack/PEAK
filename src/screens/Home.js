@@ -41,7 +41,6 @@ export default function ({ navigation }) {
   
       // Update profile with total hexagons
       const totalHexagons = data.length;
-      console.log('Total hexagons:', totalHexagons);
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ total_hexagons: totalHexagons })
@@ -91,7 +90,7 @@ export default function ({ navigation }) {
       const { data: dailyData, error: dailyError } = await supabase
         .from('challenges')
         .select('*')
-        .eq('user_id', session.user.id)
+        .eq('user_id', session?.user.id)
         .eq('type', 'daily')
         .order('creation_time', { ascending: false })
         .limit(1)
@@ -109,6 +108,8 @@ export default function ({ navigation }) {
         if (isToday) {
           setDailyChallenge(dailyData);
           calculateDailyProgress(dailyData);
+
+        
         } else {
           setDailyChallenge(null);
         }
@@ -120,29 +121,31 @@ export default function ({ navigation }) {
   };
 
   const calculateDailyProgress = async (challenge) => {
-    const { totalSteps, totalDistance } = await readHealthData(challenge.creation_time);
+   
     let progress = 0;
 
     if (challenge.challenge_type === 'hexagons') {
       const { data: hexagons, error } = await supabase
         .from('locations')
         .select('visit_times')
-        .eq('user_id', session.user.id);
+        .eq('user_id', session?.user.id);
         
         if (error) {
           console.error('Error fetching hexagon data:', error);
           return;
         }
-       
+
     
         // Filter visit_times based on challenge.creation_time
         const validVisits = hexagons.flatMap(location =>
           (location.visit_times || []).filter(visitTime => new Date(visitTime) >= new Date(challenge.creation_time))
         );
-        console.log('Valid visits:', validVisits);
+        // console.log('Valid visits:', validVisits);
     
         progress = validVisits.length ;
     } else {
+
+      const { totalSteps, totalDistance } = await readHealthData(challenge.creation_time);
       switch (challenge.challenge_type) {
         case 'steps':
           progress = totalSteps;
@@ -153,6 +156,8 @@ export default function ({ navigation }) {
         default:
           progress = 0;
       }
+
+      
     }
 
     setDailyProgress(progress);
@@ -182,12 +187,21 @@ export default function ({ navigation }) {
     }
   };
 
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     fetchStreakData();
+  //     fetchDailyChallenge();
+  //     getTotalVisits();
+  //   }, [session?.user.id, readHealthData, dailyProgress])
+  // );
+
   useFocusEffect(
     useCallback(() => {
-      fetchStreakData();
-      fetchDailyChallenge();
-      getTotalVisits();
-    }, [session.user.id, readHealthData, dailyProgress])
+      const fetchData = async () => {
+        await Promise.all([fetchStreakData(), fetchDailyChallenge(), getTotalVisits()]);
+      };
+      fetchData();
+    }, [session?.user.id, readHealthData])
   );
 
   useStatusBar('transparent', 'dark-content');

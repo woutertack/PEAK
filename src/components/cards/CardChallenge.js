@@ -20,7 +20,7 @@ const CardChallenge = ({ title, progress, description, initialTimeLeft, creation
       switch (type) {
         case 'daily':
           endTime = new Date(creationDate);
-          endTime.setHours(24, 0, 0, 0); // Set time to midnight of the creation date
+          endTime.setDate(creationDate.getDate() + 1); // Set time to midnight of the creation date
           break;
         case 'weekly':
           endTime = new Date(creationDate);

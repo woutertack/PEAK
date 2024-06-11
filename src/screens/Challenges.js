@@ -32,134 +32,136 @@ const Challenges = ({ navigation }) => {
   const userId = session?.user?.id;
 
  
+  let isFetchingChallenges = false;
 
- 
-    const fetchChallenges = async () => {
-      try {
-        if (!userId) {
-          throw new Error('User not logged in');
-        }
+  const fetchChallenges = async () => {
+    if (isFetchingChallenges) return;
+    isFetchingChallenges = true;
 
-        // Fetch user profile to get the level
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('level')
-          .eq('id', userId)
-          .single();
-
-        if (profileError) {
-          throw new Error('Error fetching user profile');
-        }
-
-        let levelMultiplier = 1;
-        switch (profileData.level) {
-          case 'medium':
-            levelMultiplier = 2;
-            break;
-          case 'hard':
-            levelMultiplier = 3;
-            break;
-        }
-
-        // Fetch existing daily challenge
-        const { data: dailyData, error: dailyError } = await supabase
-          .from('challenges')
-          .select('*')
-          .eq('user_id', userId)
-          .eq('type', 'daily')
-          .order('creation_time', { ascending: false })
-          .limit(1)
-          .single();
-
-        const { data: weeklyData, error: weeklyError } = await supabase
-          .from('challenges')
-          .select('*')
-          .eq('user_id', userId)
-          .eq('type', 'weekly')
-          .order('creation_time', { ascending: false })
-          .limit(1)
-          .single();
-
-        const { data: monthlyData, error: monthlyError } = await supabase
-          .from('challenges')
-          .select('*')
-          .eq('user_id', userId)
-          .eq('type', 'monthly')
-          .order('creation_time', { ascending: false })
-          .limit(1)
-          .single();
-
-        if ((dailyError && dailyError.code !== 'PGRST116') ||
-            (weeklyError && weeklyError.code !== 'PGRST116') ||
-            (monthlyError && monthlyError.code !== 'PGRST116')) {
-          throw new Error('Error fetching challenges');
-        }
-
-        const now = new Date();
-        const dailyCreationTime = dailyData ? new Date(dailyData.creation_time) : null;
-        const weeklyCreationTime = weeklyData ? new Date(weeklyData.creation_time) : null;
-        const monthlyCreationTime = monthlyData ? new Date(monthlyData.creation_time) : null;
-
-        // If no daily challenge exists or it has expired, create a new one
-        if (!dailyData || (now - dailyCreationTime) > (24 * 60 * 60 * 1000)) {
-          const newDailyChallenge = getRandomChallenge('daily', levelMultiplier);
-          const { error } = await supabase
-            .from('challenges')
-            .insert([{ ...newDailyChallenge, user_id: userId }]);
-
-          if (error) throw error;
-
-          setDailyChallenge(newDailyChallenge);
-          calculateProgress(newDailyChallenge, 'daily');
-        } else {
-          setDailyChallenge(dailyData);
-          calculateProgress(dailyData, 'daily');
-        }
-
-        // If no weekly challenge exists or it has expired, create a new one
-        if (!weeklyData || (now - weeklyCreationTime) > (7 * 24 * 60 * 60 * 1000)) {
-          const newWeeklyChallenge = getRandomChallenge('weekly', levelMultiplier);
-          const { error } = await supabase
-            .from('challenges')
-            .insert([{ ...newWeeklyChallenge, user_id: userId }]);
-
-          if (error) throw error;
-
-          setWeeklyChallenge(newWeeklyChallenge);
-          calculateProgress(newWeeklyChallenge, 'weekly');
-        } else {
-          setWeeklyChallenge(weeklyData);
-          calculateProgress(weeklyData, 'weekly');
-        }
-
-        // If no monthly challenge exists or it has expired, create a new one
-        if (!monthlyData || (now - monthlyCreationTime) > (30 * 24 * 60 * 60 * 1000)) {
-          const newMonthlyChallenge = getRandomChallenge('monthly', levelMultiplier);
-          const { error } = await supabase
-            .from('challenges')
-            .insert([{ ...newMonthlyChallenge, user_id: userId }]);
-
-          if (error) throw error;
-
-          setMonthlyChallenge(newMonthlyChallenge);
-          calculateProgress(newMonthlyChallenge, 'monthly');
-        } else {
-          setMonthlyChallenge(monthlyData);
-          calculateProgress(monthlyData, 'monthly');
-        }
-
-        setLoading(false);
-      } catch (error) {
-        Alert.alert('Error fetching challenges', error.message);
-        setLoading(false);
+    try {
+      if (!userId) {
+        throw new Error('User not logged in');
       }
-    };
+
+      // Fetch user profile to get the level
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('level')
+        .eq('id', userId)
+        .single();
+
+      if (profileError) {
+        throw new Error('Error fetching user profile');
+      }
+
+      let levelMultiplier = 1;
+      switch (profileData.level) {
+        case 'medium':
+          levelMultiplier = 2;
+          break;
+        case 'hard':
+          levelMultiplier = 3;
+          break;
+      }
+
+      // Fetch existing daily challenge
+      const { data: dailyData, error: dailyError } = await supabase
+        .from('challenges')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('type', 'daily')
+        .order('creation_time', { ascending: false })
+        .limit(1)
+        .single();
+
+      const { data: weeklyData, error: weeklyError } = await supabase
+        .from('challenges')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('type', 'weekly')
+        .order('creation_time', { ascending: false })
+        .limit(1)
+        .single();
+
+      const { data: monthlyData, error: monthlyError } = await supabase
+        .from('challenges')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('type', 'monthly')
+        .order('creation_time', { ascending: false })
+        .limit(1)
+        .single();
+
+      if ((dailyError && dailyError.code !== 'PGRST116') ||
+          (weeklyError && weeklyError.code !== 'PGRST116') ||
+          (monthlyError && monthlyError.code !== 'PGRST116')) {
+        throw new Error('Error fetching challenges');
+      }
+
+      const now = new Date();
+      const dailyCreationTime = dailyData ? new Date(dailyData.creation_time) : null;
+      const weeklyCreationTime = weeklyData ? new Date(weeklyData.creation_time) : null;
+      const monthlyCreationTime = monthlyData ? new Date(monthlyData.creation_time) : null;
+
+      // If no daily challenge exists or it has expired, create a new one
+      if (!dailyData || (now - dailyCreationTime) > (24 * 60 * 60 * 1000)) {
+        const newDailyChallenge = getRandomChallenge('daily', levelMultiplier);
+        const { error } = await supabase
+          .from('challenges')
+          .insert([{ ...newDailyChallenge, user_id: userId }]);
+
+        if (error) throw error;
+
+        setDailyChallenge(newDailyChallenge);
+        calculateProgress(newDailyChallenge, 'daily');
+      } else {
+        setDailyChallenge(dailyData);
+        calculateProgress(dailyData, 'daily');
+      }
+
+      // If no weekly challenge exists or it has expired, create a new one
+      if (!weeklyData || (now - weeklyCreationTime) > (7 * 24 * 60 * 60 * 1000)) {
+        const newWeeklyChallenge = getRandomChallenge('weekly', levelMultiplier);
+        const { error } = await supabase
+          .from('challenges')
+          .insert([{ ...newWeeklyChallenge, user_id: userId }]);
+
+        if (error) throw error;
+
+        setWeeklyChallenge(newWeeklyChallenge);
+        calculateProgress(newWeeklyChallenge, 'weekly');
+      } else {
+        setWeeklyChallenge(weeklyData);
+        calculateProgress(weeklyData, 'weekly');
+      }
+
+      // If no monthly challenge exists or it has expired, create a new one
+      if (!monthlyData || (now - monthlyCreationTime) > (30 * 24 * 60 * 60 * 1000)) {
+        const newMonthlyChallenge = getRandomChallenge('monthly', levelMultiplier);
+        const { error } = await supabase
+          .from('challenges')
+          .insert([{ ...newMonthlyChallenge, user_id: userId }]);
+
+        if (error) throw error;
+
+        setMonthlyChallenge(newMonthlyChallenge);
+        calculateProgress(newMonthlyChallenge, 'monthly');
+      } else {
+        setMonthlyChallenge(monthlyData);
+        calculateProgress(monthlyData, 'monthly');
+      }
+
+      setLoading(false);
+    } catch (error) {
+      Alert.alert('Error fetching challenges', error.message);
+      setLoading(false);
+    } finally {
+      isFetchingChallenges = false;
+    }
+  };
 
     const calculateProgress = async (challenge, type) => {
-      const { totalSteps, totalDistance } = await readHealthData(challenge.creation_time);
-    
-      console.log('Total steps:', totalSteps);
-      console.log('Total distance:', totalDistance);
+
       let progress = 0;
     
       if (challenge.challenge_type === 'hexagons') {
@@ -181,6 +183,7 @@ const Challenges = ({ navigation }) => {
     
         progress = validVisits.length / challenge.goal;
       } else {
+        const { totalSteps, totalDistance } = await readHealthData(challenge.creation_time);
         switch (challenge.challenge_type) {
           case 'steps':
             progress = totalSteps / challenge.goal;
@@ -201,8 +204,9 @@ const Challenges = ({ navigation }) => {
         setMonthlyProgress(progress);
       }
     
+    
       // Update the completed state in Supabase if the goal is reached
-      if (progress >= 1) {
+      if (progress >= 1 && !challenge.completed) {
         const { error } = await supabase
           .from('challenges')
           .update({ completed: true })
@@ -239,7 +243,7 @@ const Challenges = ({ navigation }) => {
     useEffect(() => {
       fetchChallenges();
       fetchCompletedChallenges();
-    }, [session, readHealthData]);
+    }, [session, readHealthData, dailyProgress]);
   
     useFocusEffect(
       useCallback(() => {
@@ -251,13 +255,13 @@ const Challenges = ({ navigation }) => {
   const restartChallenge = async (type) => {
     try {
       const levelMultiplier = 1; // Adjust based on user level if necessary
-      const newChallenge = getRandomChallenge(type, levelMultiplier);
+      const newChallenge = getRandomChallenge(type, levelMultiplier, true);
       const { error } = await supabase
         .from('challenges')
         .insert([{ ...newChallenge, user_id: userId }]);
 
       if (error) {
-        Alert.alert('Error starting new challenge', error.message);
+        console.log('Error starting new challenge', error.message);
       } else {
         if (type === 'daily') {
           setDailyChallenge(newChallenge);
@@ -269,7 +273,7 @@ const Challenges = ({ navigation }) => {
           setMonthlyChallenge(newChallenge);
           calculateProgress(newChallenge, 'monthly');
         }
-        Alert.alert('New challenge started');
+        Alert.alert('Nieuwe uitdaging gestart', 'Veel succes! 🎉');
       }
     } catch (error) {
       Alert.alert('Error starting new challenge', error.message);

@@ -83,10 +83,9 @@ export const HealthConnectProvider = ({ children }) => {
       const createdAt = new Date(data.created_at);
       createdAt.setHours(0, 0, 0, 0); // Set time to midnight
       const creationTimeISO = createdAt.toISOString();
-      console.log('createdAt:', createdAt);
+
       const { totalSteps: currentSteps, totalDistance: currentDistance } = await readHealthData(creationTimeISO);
-      console.log('currentSteps:', currentSteps);
-      console.log('currentDistance:', currentDistance);
+      
 
       // Update state with fetched data
       setSteps(currentSteps);

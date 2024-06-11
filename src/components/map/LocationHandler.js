@@ -24,7 +24,7 @@ const LocationHandler = ({ setLocation }) => {
         },
         debounce((currentLocation) => {
           setLocation(currentLocation.coords);
-          console.log('Updated location:', currentLocation.coords);
+          // console.log('Updated location:', currentLocation.coords);
         }, 1000)
       );
     };

@@ -132,7 +132,7 @@ const Map = ({ onHexagonCaptured }) => {
         const visitTimes = hexData[0].visit_times || [];
         const lastVisit = visitTimes.length ? new Date(visitTimes[visitTimes.length - 1]) : null;
         const lastVisitDate = lastVisit ? lastVisit.toISOString().split('T')[0] : null;
-        console.log(lastVisitDate == today)
+
 
         if (!lastVisitDate || lastVisitDate !== today) {
           // If the last visit was on a different date, update the visits count and append the visit time
@@ -152,7 +152,7 @@ const Map = ({ onHexagonCaptured }) => {
             onHexagonCaptured();
           }
         } else {
-          console.log('Visits count update skipped for hex index:', hexIndex);
+          // console.log('Visits count update skipped for hex index:', hexIndex);
         }
       }
     } catch (err) {

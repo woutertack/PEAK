@@ -59,6 +59,10 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     alignItems: 'center',
   },
+  currentUser: {
+    borderColor: Colors.white,
+    borderWidth: 2,
+  },
   rank: {
     color: '#fff',
     fontWeight: 'bold',

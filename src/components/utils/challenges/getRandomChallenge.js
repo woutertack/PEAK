@@ -11,24 +11,26 @@ const challengeTemplates = [
   },
   {
     challenge_type: 'hexagons',
-    goalRange: [1, 3],
+    goalRange: [3, 6],
   },
 ];
 
-const getRandomChallenge = (type, levelMultiplier) => {
+const getRandomChallenge = (type, levelMultiplier, useCurrentTime = false) => {
   const randomIndex = Math.floor(Math.random() * challengeTemplates.length);
   const challenge = challengeTemplates[randomIndex];
   const baseGoal = Math.floor(Math.random() * (challenge.goalRange[1] - challenge.goalRange[0] + 1)) + challenge.goalRange[0];
   let goal = baseGoal * levelMultiplier;
 
   if (type === 'weekly') {
-    goal *= 4;
+    goal *= 5;
   } else if (type === 'monthly') {
-    goal *= 10;
+    goal *= 15;
   }
 
   const creationTime = new Date();
-  creationTime.setHours(0, 0, 0, 0); // Set time to midnight
+  if (!useCurrentTime) {
+    creationTime.setHours(0, 0, 0, 0); // Set time to midnight
+  }
   const creationTimeISO = creationTime.toISOString();
 
   return {
