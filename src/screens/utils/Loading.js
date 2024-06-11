@@ -51,7 +51,7 @@ export default function () {
          
           <Logo  width={300} height={48.5}/>
          
-          <Text style={styles.text}>ELKE STAP TELT NAAR JOUW TOP</Text>
+          <Text style={styles.text}>ELKE STAP NAAR JOUW TOP TELT</Text>
         </View>
 
       </View>

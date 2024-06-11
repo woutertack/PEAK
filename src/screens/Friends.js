@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, FlatList, StyleSheet, KeyboardAvoidingView, TouchableOpacity, TextInput, Modal, Alert } from 'react-native';
+import { View, FlatList,ScrollView, StyleSheet, KeyboardAvoidingView, TouchableOpacity, TextInput, Modal, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Layout, Text } from 'react-native-rapi-ui';
 import { StatusBar } from 'expo-status-bar';
@@ -129,7 +129,7 @@ const Friends = ({ navigation }) => {
       setPendingRequests(prev => [...prev, requesteeId]); // Add the user to pending requests
       setSearchResults(prev => prev.filter(user => user.id !== requesteeId)); // Remove the user from search results
       setSearchQueryModal(''); // Clear the search input
-      setModalVisible(false); // Optionally close the modal
+      // setModalVisible(false); // Optionally close the modal
     }
   };
   
@@ -296,47 +296,50 @@ const Friends = ({ navigation }) => {
         </View>
 
         <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => setModalVisible(!modalVisible)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalView}>
-              <Text style={styles.modalTitle}>Voeg een vriend toe</Text>
-              <View style={styles.searchContainerModal}>
-                <TextInput
-                  style={[styles.searchInput, styles.searchInputModal]}
-                  placeholder="Zoek een vriend..."
-                  placeholderTextColor={Colors.gray}
-                  onChangeText={text => setSearchQueryModal(text)}
-                  value={searchQueryModal}
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(!modalVisible)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>Voeg een vriend toe</Text>
+            <View style={styles.searchContainerModal}>
+              <TextInput
+                style={[styles.searchInput, styles.searchInputModal]}
+                placeholder="Zoek een vriend..."
+                placeholderTextColor={Colors.gray}
+                onChangeText={text => setSearchQueryModal(text)}
+                value={searchQueryModal}
+              />
+              <TouchableOpacity style={[styles.searchButton, styles.searchButtonModal]} >
+                <TabBarIcon
+                  library="AntDesign"
+                  icon="search1"
+                  size={24}
+                  color={Colors.white}
+                  style={styles.searchIcon}
                 />
-                <TouchableOpacity style={[styles.searchButton, styles.searchButtonModal]} >
-                  <TabBarIcon
-                    library="AntDesign"
-                    icon="search1"
-                    size={24}
-                    color={Colors.white}
-                    style={styles.searchIcon}
-                  />
-                </TouchableOpacity>
-              </View>
+              </TouchableOpacity>
+            </View>
+            {/* Use ScrollView with fixed height for search results */}
+            <View style={{ height: 500 }}> 
               <FlatList
                 data={filteredUsers}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={renderSearchResultItem}
                 contentContainerStyle={{ paddingBottom: 20 }}
               />
-              <TouchableOpacity
-                style={[styles.buttonClose, styles.buttonAccept]}
-                onPress={() => setModalVisible(!modalVisible)}
-              >
-                <Text style={styles.buttonAcceptText}>Sluit</Text>
-              </TouchableOpacity>
             </View>
+            <TouchableOpacity
+              style={[styles.buttonClose, styles.buttonAccept]}
+              onPress={() => setModalVisible(!modalVisible)}
+            >
+              <Text style={styles.buttonAcceptText}>Sluit</Text>
+            </TouchableOpacity>
           </View>
-        </Modal>
+        </View>
+      </Modal>
       </Layout>
     </KeyboardAvoidingView>
   );
@@ -483,6 +486,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    maxHeight: '100%',
+    
   },
   modalView: {
     width: '90%',
@@ -490,6 +495,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     alignItems: 'center',
+
+   
   },
   modalTitle: {
     fontSize: 24,

@@ -1,8 +1,8 @@
 const SliderData = [
   { id: '1', text: 'Het verhogen van je dagelijkse stappen kan je leven veranderen' },
-  { id: '2', text: 'Zet de stap naar een actiever leven met dagelijkse uitdagingen en beloningen.' },
-  { id: '3', text: 'Volg je vooruitgang op een interactieve kaart die je beweging visualiseert en nieuwe gebieden onthult.' },
-  { id: '4', text: 'Verbind en concurreer met vrienden voor extra motivatie en plezier.' },
+  { id: '2', title:'Boost je dag met onze app!', text: 'Doe elke dag mee aan leuke challenges en maak van beweging je nieuwe gewoonte!' },
+  { id: '3', title: 'Ontdek & Beweeg', text: 'Zie je bewegingen tot leven komen op onze interactieve kaart en onthul coole nieuwe plekken terwijl je de wereld verkent met elke stap!' },
+  { id: '4', title: 'Samen Sterker' ,text: 'Ontketen je innerlijke atleet en daag je vrienden uit voor leuke uitdagingen' },
   
 ];
 

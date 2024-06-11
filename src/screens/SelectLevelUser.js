@@ -57,7 +57,7 @@ const SelectLevelUser = ({ navigation }) => {
             Alert.alert('Error', 'Failed to update level');
         }
         console.log('Level updated:', selectedLevel);
-        navigation.navigate('Settings');
+        navigation.navigate('Profile');
     };
 
     return (

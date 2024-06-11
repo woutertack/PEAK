@@ -23,6 +23,7 @@ const Slider = () => {
       {index === 0 ? (
         <View style={styles.buttonContainer}>
           <Text style={styles.mainText}>Het verhogen van je dagelijkse stappen kan je leven veranderen</Text>
+          <View style={styles.sliderButton} >
           <SliderButton
             label="Helpt met gewichtsverlies"
             icon={<ButtonIcon1 />}
@@ -34,7 +35,7 @@ const Slider = () => {
             onPress={() => {}}
           />
           <SliderButton
-            label="Beter mentaal welzijn"
+            label="Betere mentaal welzijn"
             icon={<ButtonIcon3 />}
             onPress={() => {}}
           />
@@ -47,13 +48,17 @@ const Slider = () => {
             label="Geen materiaal voor nodig"
             icon={<ButtonIcon5 />}
             onPress={() => {}}
+            noLine={true}
           />
+          </View>
         </View>
       ) : (
         <>
           {index === 1 && <SliderIcon1 />}
           {index === 2 && <SliderIcon2 />}
           {index === 3 && <SliderIcon3 />}
+
+          {item.title && <Text style={styles.title}>{item.title}</Text>}
           <Text style={styles.slideText}>{item.text}</Text>
         </>
       )}
@@ -108,21 +113,31 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 25,
     paddingBottom: 40,
+  
   },
   slideText: {
-    fontSize: 20,
+    fontSize: 18,
     color: 'white',
-    maxWidth: '75%',
-    marginTop: 20,
-    marginBottom: 20,
+    maxWidth: '78.5%',
+    marginTop: 7,
+    marginBottom: 0,
+    textAlign: 'center',
+  },
+  title:{
+    fontSize: 22,
+    color: 'white',
+    maxWidth: '100%',
+    marginTop: 35,
+    marginBottom: 0,
+    fontWeight: 'bold',
     textAlign: 'center',
   },
   mainText:{
-    fontSize: 20,
+    fontSize: 19,
     color: 'white',
     maxWidth: '100%',
-    marginTop: 0,
-    marginBottom: 30,
+    marginTop: 15,
+    marginBottom: 25,
     fontWeight: 'bold',
     textAlign: 'center',
   },
@@ -142,7 +157,14 @@ const styles = StyleSheet.create({
   },
   activeDot: {
     backgroundColor: Colors.primaryGreen,
-  }
+  },
+  sliderButton: { 
+    marginBottom: 10, 
+    backgroundColor: Colors.darkGreen, 
+    paddingTop: 12,
+    paddingHorizontal: 25,
+    borderRadius: 8,
+  },
 });
 
 export default Slider;

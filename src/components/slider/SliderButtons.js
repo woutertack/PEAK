@@ -1,9 +1,8 @@
 import React from 'react';
-import { Text, TouchableOpacity, View, StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Text, TouchableOpacity, View, StyleSheet, ActivityIndicator } from 'react-native';
 import Colors from '../../consts/Colors';
 
-const SliderButton = ({ label, onPress, isLoading, isDisabled, icon }) => {
+const SliderButton = ({ label, onPress, isLoading, isDisabled, icon, noLine  }) => {
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -11,16 +10,13 @@ const SliderButton = ({ label, onPress, isLoading, isDisabled, icon }) => {
       activeOpacity={1}
       style={styles.button}
     >
-      <LinearGradient
-        colors={['rgba(0, 0, 0, 0.1)', 'transparent']}
-        start={{ x: 0.5, y: 1 }}
-        end={{ x: 0.5, y: 0 }}
-        style={styles.innerShadow}
-      />
       {!isLoading ? (
         <>
-          {icon && <View style={styles.iconContainer}>{icon}</View>}
-          <Text style={styles.buttonText}>{label}</Text>
+          <View style={styles.contentContainer}>
+            {icon && <View style={styles.iconContainer}>{icon}</View>}
+            <Text style={styles.buttonText}>{label}</Text>
+          </View>
+          {!noLine && <View style={styles.line}></View>}
         </>
       ) : (
         <ActivityIndicator color="#FFF" />
@@ -33,44 +29,38 @@ export default SliderButton;
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: '#05454A',
+
     paddingVertical: 13,
     paddingHorizontal: 15,
-    borderRadius: 8,
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
+   
+    flexDirection: 'column',
+    justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
     marginBottom: 12,
     position: 'relative',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
+  },
+  contentContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '500',
-    zIndex: 1,
-    textShadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    textShadowRadius: 2,
-    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+
     marginLeft: 10,
   },
-  innerShadow: {
+  line: {
     position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-    borderRadius: 8,
+    bottom: -4, // 4px offset from the content
+    left: 0, // Align with the left padding of the button
+    right: 15, // Align with the right padding of the button
+    height: 1,
+    backgroundColor: Colors.primaryGreen,
+    opacity: 0.5,
+    width: '105%',
   },
   iconContainer: {
     marginRight: 10,

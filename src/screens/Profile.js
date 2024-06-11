@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Layout } from 'react-native-rapi-ui';
 import { StatusBar } from 'expo-status-bar';
@@ -17,6 +17,8 @@ import { calculateStreak } from '../components/utils/streaks/CalculateStreak'; /
 import { calculateMaxStreak } from '../components/utils/streaks/CalculateMaxStreak';
 import useStatusBar from '../helpers/useStatusBar';
 import { useHealthConnect } from '../provider/HealthConnectProvider'; // Import the hook
+import LogoutIcon from '../components/utils/icons/LogoutIcon';
+import DeleteIcon from '../components/utils/icons/DeleteIcon';
 
 const Profile = ({ navigation }) => {
   const { session } = useContext(AuthContext);
@@ -146,6 +148,73 @@ const Profile = ({ navigation }) => {
     }
   };
 
+  const signOut = async () => {
+    try {
+      if (!session || !session.user) {
+        throw new Error('No user session available!');
+      }
+      
+      // Show an alert to confirm sign-out
+      Alert.alert(
+        'Uitloggen',
+       'Weet je zeker dat je wilt uitloggen?',
+        [
+          {
+            text: 'Annuleer',
+            style: 'cancel',
+          },
+          {
+            text: 'Uitloggen',
+            onPress: async () => {
+              // If user confirms, sign out
+              await supabase.auth.signOut();
+            },
+            style: 'destructive',
+          },
+        ],
+        { cancelable: true }
+      );
+    } catch (error) {
+      console.log('Error logging out:', error.message);
+    }
+  };
+
+
+const deleteUser = async (userId) => {
+  try {
+    // Perform your delete operation here, for example:
+    await supabase.from('profiles').delete().eq('id', userId);
+    await supabase.auth.admin.deleteUser(userId)
+
+    // Optionally, you can perform any additional actions after deletion
+    console.log('User deleted successfully');
+  } catch (error) {
+    console.log('Error deleting user:', error.message);
+  }
+};
+
+const handleDeleteUser = (userId) => {
+  // Show an alert to confirm deletion
+  Alert.alert(
+    'Account verwijderen',
+    'Weet je zeker dat je uw account wilt verwijderen? Dit kan niet ongedaan worden gemaakt.',
+    [
+      {
+        text: 'Annuleer',
+        style: 'cancel',
+      },
+      {
+        text: 'Verwijder account',
+        onPress: async () => {
+          // If user confirms, delete the user
+          await deleteUser(userId);
+        },
+        style: 'destructive',
+      },
+    ],
+    { cancelable: true }
+  );
+};
 
   
 
@@ -176,26 +245,29 @@ const Profile = ({ navigation }) => {
             }}
           />
           <Text style={styles.headerText}>Profiel</Text>
-          <TabBarIcon
-            library="Ionicons"
-            icon="settings-sharp"
-            size={32}
-            style={styles.settingsIcon}
-            onPress={() => {
-              navigation.navigate('Settings');
-            }}
-          />
+         
+            <TouchableOpacity onPress={() => signOut()}>
+              <LogoutIcon  />
+          </TouchableOpacity>
         </View>
         <View style={styles.profileContainer}>
           <View pointerEvents='none'>
             <Avatar rounded url={avatarUrl} size={180} containerStyle={styles.avatar} />
           </View>
-          <Text style={styles.nameText}>{`${firstName} ${lastName}`}</Text>
+          <View style={styles.nameWrapper}>
+            <Text style={styles.nameText}>{`${firstName} ${lastName}`}</Text>
+            <TouchableOpacity onPress={() => handleDeleteUser(session.user.id) } style={styles.delete}>
+              <DeleteIcon />
+            </TouchableOpacity>
+          </View>
           {/* TO DO ADD AGE */}
           <Text style={styles.memberSinceText}>{formattedDate}</Text>
           <View style={styles.buttonsContainer}>
             <View style={styles.viewBadgesButton}>
               <TertiaryButton label={'Wijzig profiel'} onPress={() => navigation.navigate('EditProfile')} />
+            </View>
+            <View style={styles.viewBadgesButton}>
+              <PrimaryButton label={'Verander niveau'} onPress={() => navigation.navigate('SelectLevelUser')} />
             </View>
             <View style={styles.viewBadgesButton}>
               
@@ -253,6 +325,16 @@ const styles = StyleSheet.create({
   
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  nameWrapper: {
+    flexDirection: 'row',
+   
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  delete: {
+    marginLeft: 10,
+    marginTop: 2
   },
   nameText: {
     fontSize: 28,

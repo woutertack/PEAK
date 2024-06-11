@@ -24,6 +24,12 @@ export default function Register({ navigation }) {
   const [error, setError] = useState("");
 
   const handleSignUp = async () => {
+    // Check if all required fields are filled in
+    if (!email || !password || !firstName || !lastName) {
+      setError("Vul alle gegevens in alstublieft.");
+      return;
+    }
+  
     setLoading(true);
     setError("");
     try {
@@ -37,21 +43,22 @@ export default function Register({ navigation }) {
           }
         }
       });
-
+  
       if (error) {
         throw error;
       }
-
+  
       navigation.navigate("Login");
-
+  
     } catch (error) {
-      console.error("Error signing up:", error);
+      console.error("Vul alle gegevens correct in alstublieft.");
       setError(error.message);
-      Alert.alert("Error", error.message);
+     
     } finally {
       setLoading(false);
     }
   };
+  
 
   return (
     <KeyboardAvoidingView behavior="height" enabled style={{ flex: 1 }}>
@@ -74,9 +81,9 @@ export default function Register({ navigation }) {
             <Text style={styles.labelText}>Voornaam</Text>
             <TextInput
               containerStyle={{ marginTop: 5 }}
-              placeholder="Enter your first name"
+              placeholder="John"
               value={firstName}
-              autoCapitalize="none"
+              autoCapitalize="words"
               autoCompleteType="off"
               autoCorrect={false}
               onChangeText={(text) => setFirstName(text)}
@@ -84,7 +91,7 @@ export default function Register({ navigation }) {
             <Text style={styles.labelText}>Achternaam</Text>
             <TextInput
               containerStyle={{ marginTop: 5 }}
-              placeholder="Enter your last name"
+              placeholder="Doe"
               value={lastName}
               autoCapitalize="none"
               autoCompleteType="off"
@@ -94,7 +101,7 @@ export default function Register({ navigation }) {
             <Text style={styles.labelText}>Email</Text>
             <TextInput
               containerStyle={{ marginTop: 5 }}
-              placeholder="Enter your email"
+              placeholder="JohnDoe@hotmail.com"
               value={email}
               autoCapitalize="none"
               autoCompleteType="off"
@@ -105,7 +112,7 @@ export default function Register({ navigation }) {
             <Text style={styles.labelText}>Wachtwoord</Text>
             <TextInput
               containerStyle={{ marginTop: 5, marginBottom: 20 }}
-              placeholder="Enter your password"
+              placeholder="********"
               value={password}
               autoCapitalize="none"
               autoCompleteType="off"
@@ -113,27 +120,31 @@ export default function Register({ navigation }) {
               secureTextEntry={true}
               onChangeText={(text) => setPassword(text)}
             />
+            <View style={{ height: 15 }}></View>
             <PrimaryButton
-              label={loading ? "Loading" : "Registreer"}
+              label={loading ? "Laden" : "Registreer"}
               onPress={handleSignUp}
               isLoading={loading}
               isDisabled={loading}
             />
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
-            <View style={styles.loginPrompt}>
-              <Text size="sm" style={{ color: Colors.white }}>
-                Al een account?
-              </Text>
-              <TouchableOpacity
+            
+               <TouchableOpacity
                 onPress={() => {
                   navigation.navigate("Login");
                 }}
               >
+                <View style={styles.loginPrompt}>
+                <Text size="sm" style={{ color: Colors.white }}>
+                  Al een account?
+                </Text>
+             
                 <Text size="sm" fontWeight="bold" style={styles.loginText}>
                   Login hier
                 </Text>
+                </View>
               </TouchableOpacity>
-            </View>
+          
           </View>
         </ScrollView>
       </Layout>

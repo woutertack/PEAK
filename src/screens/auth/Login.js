@@ -23,7 +23,6 @@ import {
 import Colors from "../../consts/Colors";
 
 export default function Login({ navigation }) {
-  const { isDarkmode, setTheme } = useTheme();
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -35,7 +34,7 @@ export default function Login({ navigation }) {
       password: password,
     })
 
-    if (error) Alert.alert(error.message)
+    if (error) Alert.alert('Foutieve inloggegevens', 'Probeer het opnieuw.')
     setLoading(false)
   }
 
@@ -81,7 +80,7 @@ export default function Login({ navigation }) {
             <Text style={{marginTop: 20, color: Colors.white}} size="h5">Email</Text>
             <TextInput
               containerStyle={{ marginTop: 5 }}
-              placeholder="Enter your email"
+              placeholder="JohnDoe@hotmail.com"
               value={email}
               autoCapitalize="none"
               autoCompleteType="off"
@@ -93,7 +92,7 @@ export default function Login({ navigation }) {
             <Text style={{ marginTop: 20, color: Colors.white }} size="h5">Wachtwoord</Text>
             <TextInput
               containerStyle={{ marginTop: 5, marginBottom: 40}}
-              placeholder="Enter your password"
+              placeholder="********"
               value={password}
               autoCapitalize="none"
               autoCompleteType="off"
@@ -103,7 +102,7 @@ export default function Login({ navigation }) {
             />
            
             <PrimaryButton
-              label={loading ? "Loading" : "Login"}
+              label={loading ? "Laden" : "Login"}
               onPress={() => {
                 signInWithEmail();
               }}
@@ -111,6 +110,11 @@ export default function Login({ navigation }) {
               isDisabled={loading}
             />
 
+            <TouchableOpacity
+                            onPress={() => {
+                              navigation.navigate("Register");
+                            }}
+                          >
             <View
               style={{
                 flexDirection: "row",
@@ -120,11 +124,7 @@ export default function Login({ navigation }) {
               }}
             >
               <Text size="sm" style={{color: Colors.white}}>Al een account?</Text>
-              <TouchableOpacity
-                onPress={() => {
-                  navigation.navigate("Register");
-                }}
-              >
+             
                 <Text
                   size="sm"
                   fontWeight="bold"
@@ -135,8 +135,9 @@ export default function Login({ navigation }) {
                 >
                   Registreer hier
                 </Text>
-              </TouchableOpacity>
+              
             </View>
+            </TouchableOpacity>
             
           </View>
         </ScrollView>
