@@ -101,15 +101,7 @@ const EditProfile = ({navigation}) => {
               }}
             />
             <Text style={styles.headerText}>Profiel</Text>
-            <TabBarIcon
-              library="Ionicons"
-              icon="settings-sharp"
-              size={32}
-              style={styles.settingsIcon}
-              onPress={() => {
-                navigation.navigate('Settings');
-              }}
-            />
+            <View style={{ width: 38 }} />
           </View>
           {/* TO DO: make avatar load in faster */}
           <View style={styles.profileContainer}>
@@ -178,10 +170,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     flex: 1,
     textAlign: 'center',
-  },
-  settingsIcon: {
-    marginLeft: 'auto',
-    color: '#fff',
   },
   profileContainer: {
     alignItems: 'start',

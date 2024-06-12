@@ -306,11 +306,6 @@ const styles = StyleSheet.create({
   backIcon: {
     marginRight: 10,
   },
-  settingsIcon: {
-    marginLeft: 'auto',
-    color: '#fff',
-    
-  },
   headerText: {
     fontSize: 24,
     color: '#fff',

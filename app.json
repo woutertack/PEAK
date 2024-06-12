@@ -81,7 +81,8 @@
     },
     "androidStatusBar": {
       "backgroundColor": "#127780",
-      "translucent": true
+      "translucent": false,
+      "barStyle": "light-content"
     },
     "owner": "woutertack"
   }

@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/initSupabase'
-import { StyleSheet, View, Alert, Image, Button } from 'react-native'
+import { StyleSheet, View, Alert, Image, Text } from 'react-native'
 import * as ImagePicker from 'expo-image-picker'
 import TabBarIcon from './utils/TabBarIcon'
 import TertiaryButton from './utils/buttons/TertiaryButton'
 
-
-
-export default function AvatarUpload({ url, size , onUpload }) {
+export default function AvatarUpload({ url, size, onUpload }) {
   const [uploading, setUploading] = useState(false)
   const [avatarUrl, setAvatarUrl] = useState(null)
   const avatarSize = { height: size, width: size }
@@ -27,7 +25,7 @@ export default function AvatarUpload({ url, size , onUpload }) {
       const fr = new FileReader()
       fr.readAsDataURL(data)
       fr.onload = () => {
-        setAvatarUrl(fr.result )
+        setAvatarUrl(fr.result)
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -95,21 +93,28 @@ export default function AvatarUpload({ url, size , onUpload }) {
           style={[avatarSize, styles.avatar, styles.image]}
         />
       ) : (
-        <TabBarIcon
-        library="FontAwesome"
-        icon="user-circle"
-        size={size}
-        style={styles.avatar}
-        
-      />
+        <View pointerEvents="none">
+          <TabBarIcon
+            library="FontAwesome"
+            icon="user-circle"
+            size={size}
+            style={styles.avatar}
+          />
+        </View>
       )}
       <View style={styles.uploadImg}>
-       
-        <TertiaryButton 
-          label={'Wijzig foto'}
-          onPress={uploadAvatar}
-          disabled={uploading}
-        />
+        {uploading ? (
+           <TertiaryButton
+           label={'Foto aan het uploaden...'}
+           disabled={uploading}
+         />
+        ) : (
+          <TertiaryButton
+            label={'Wijzig foto'}
+            onPress={uploadAvatar}
+            disabled={uploading}
+          />
+        )}
       </View>
     </View>
   )
@@ -135,5 +140,10 @@ const styles = StyleSheet.create({
   },
   uploadImg: {
     marginTop: 15,
+  },
+  loadingText: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: 'gray',
   },
 })

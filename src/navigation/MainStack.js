@@ -8,7 +8,7 @@ import Profile from "../screens/Profile";
 import Home from "../screens/Home";
 import Colors from "../consts/Colors";
 import Streaks from "../screens/Streaks";
-import Settings from "../screens/Settings";
+
 import EditProfile from "../screens/EditProfile";
 import Challenges from "../screens/Challenges";
 import Friends from "../screens/Friends";
@@ -20,6 +20,7 @@ import HistoryVersus from "../screens/HistoryVersus";
 import SelectLevelUser from "../screens/SelectLevelUser";
 import LandingScreen from "../screens/LandingScreen";
 import CompletedChallenges from "../screens/CompletedChallenges";
+import MapFriend from "../screens/MapFriend";
 
 // Create Stack Navigator
 const Stack = createNativeStackNavigator();
@@ -62,7 +63,6 @@ function Main() {
         <Stack.Screen name="Profile" component={Profile} options={{ title: 'Profiel' }}/>
         <Stack.Screen name="Challenges" component={BottomTabs} options={{ title: 'Uitdagingen' }}/>
         <Stack.Screen name="Friends" component={Friends} options={{ title: 'Vrienden' }}/>
-        <Stack.Screen name="Settings" component={Settings} />
         <Stack.Screen name="Streaks" component={Streaks} />
         <Stack.Screen name="EditProfile" component={EditProfile} />
         <Stack.Screen name="FriendsProfile" component={FriendsProfile} />
@@ -71,7 +71,7 @@ function Main() {
         <Stack.Screen name="HistoryVersus" component={HistoryVersus} />
         <Stack.Screen name="SelectLevelUser" component={SelectLevelUser} />
         <Stack.Screen name="CompletedChallenges" component={CompletedChallenges} />
-
+        <Stack.Screen name="MapFriend" component={MapFriend} />
       </Stack.Navigator>
     </NavigationContainer>
     </GestureHandlerRootView>

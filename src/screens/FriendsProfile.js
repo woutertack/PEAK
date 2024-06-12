@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity } from 'react-native';
 import { useFocusEffect, useRoute } from '@react-navigation/native';
 import { Layout } from 'react-native-rapi-ui';
 import { StatusBar } from 'expo-status-bar';
@@ -17,6 +17,7 @@ import { calculateStreak } from '../components/utils/streaks/CalculateStreak';
 import { calculateMaxStreak } from '../components/utils/streaks/CalculateMaxStreak';
 import { AuthContext } from '../provider/AuthProvider';
 import useStatusBar from '../helpers/useStatusBar';
+import FriendMapIcon from '../components/utils/icons/FriendMapIcon';
 
 
 const FriendsProfile = ({ navigation }) => {
@@ -100,13 +101,12 @@ const FriendsProfile = ({ navigation }) => {
       }
     
       if (data) {
-        console.log(data);
+
         const streak = calculateStreak(data);
         setCurrentStreak(streak.currentStreak);
-        console.log('Current streak:', streak.currentStreak);
+
         const maxStreakValue = calculateMaxStreak(data);
         setMaxStreak(maxStreakValue);
-        console.log('Max streak:', maxStreakValue);
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -130,7 +130,7 @@ const FriendsProfile = ({ navigation }) => {
       }
 
       if (data) {
-        console.log(data)
+
         const userWins = data.filter(challenge => challenge.winner === userId).length;
         const friendWins = data.filter(challenge => challenge.winner === friendId).length;
         setWinLossRecord({ userWins, friendWins });
@@ -254,7 +254,17 @@ const FriendsProfile = ({ navigation }) => {
             <View pointerEvents='none'>
               <Avatar rounded url={avatarUrl} size={180} containerStyle={styles.avatar} />
             </View>
-            <Text style={styles.nameText}>{`${firstName} ${lastName}`}</Text>
+           
+            <View style={styles.nameWrapper}>
+              <Text style={styles.nameText}>{`${firstName} ${lastName}`}</Text>
+              {isFriend ? (
+              <TouchableOpacity onPress={() => navigation.navigate("MapFriend", {friendId}) } style={styles.mapIcon}>
+                <FriendMapIcon />
+              </TouchableOpacity>
+              ) : (
+                <></>
+              )}
+            </View>
             <Text style={styles.memberSinceText}>{formattedDate}</Text>
            
             {isFriend ? (
@@ -328,9 +338,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
   },
-  locationText: {
-    fontSize: 18,
-    color: '#d1e8e2',
+  nameWrapper: {
+    flexDirection: 'row',
+   
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  mapIcon: {
+    marginLeft: 10,
   },
   memberSinceText: {
     fontSize: 16,

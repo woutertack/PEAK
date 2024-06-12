@@ -123,7 +123,7 @@ const Ranking = ({ navigation }) => {
         <View style={styles.headerTitle}>
           <Text style={styles.headerText}>Ranking</Text>
         </View>
-        <TopThree users={sortedUsers.slice(0, 3)} selectedCategory={selectedCategory} />
+        <TopThree users={sortedUsers.slice(0, 3)} selectedCategory={selectedCategory} selectedSubCategory={selectedSubCategory}/>
         <Tabs options={['Gebieden', 'Afstand', 'Stappen']} selectedOption={selectedCategory} setSelectedOption={setSelectedCategory} />
         {selectedCategory === 'Gebieden' && (
           <Tabs options={['Alle gebieden', 'Unieke gebieden']} selectedOption={selectedSubCategory} setSelectedOption={setSelectedSubCategory} />

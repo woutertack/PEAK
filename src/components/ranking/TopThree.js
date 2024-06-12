@@ -5,19 +5,24 @@ import Colors from '../../consts/Colors';
 import PlaceIcon from '../utils/icons/PlaceIcon'; // Assuming you have this component
 import Avatar from '../Avatar';
 
-const TopThree = ({ users, selectedCategory }) => {
+const TopThree = ({ users, selectedCategory, selectedSubCategory }) => {
   
   const getDisplayedValue = (user) => {
+    let displayedValue;
     switch (selectedCategory) {
       case 'Gebieden':
-        return user.total_hexagons;
+        displayedValue = selectedSubCategory === 'Alle gebieden' ? user.total_visits : user.total_hexagons;
+        break;
       case 'Afstand':
-        return `${user.total_distance_km} km`;
+        displayedValue = `${user.total_distance_km} km`;
+        break;
       case 'Stappen':
-        return user.total_steps;
+        displayedValue = user.total_steps;
+        break;
       default:
-        return 0;
+        displayedValue = 0;
     }
+    return displayedValue;
   };
 
   return (
@@ -32,7 +37,7 @@ const TopThree = ({ users, selectedCategory }) => {
             index === 2 && styles.thirdPlace
           ]}
         >
-          <View style={styles.avatar}>
+          <View style={styles.avatar} pointerEvents='none'>
             <Avatar url={user.avatar_url} size={70} />
           </View>
           <View style={styles.place}>

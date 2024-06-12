@@ -1,7 +1,7 @@
 const formatChallengeDescription = (type, goal) => {
   switch (type) {
     case 'hexagons':
-      return `Ontdek ${goal} nieuwe gebieden`;
+      return `Ontdek ${goal} gebieden`;
     case 'steps':
       return `Leg ${goal} stappen af`;
     case 'distance':

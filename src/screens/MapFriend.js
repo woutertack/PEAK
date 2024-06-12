@@ -2,28 +2,33 @@ import React, { useState, useEffect, useRef, useContext, useCallback } from 'rea
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import Mapbox, { ShapeSource, FillLayer, LineLayer, SymbolLayer } from '@rnmapbox/maps';
 import { MaterialIcons } from '@expo/vector-icons';
-import { AuthContext } from '../../provider/AuthProvider';
-import LocationHandler from './LocationHandler';
-import MapLayers from './MapLayers';
-import * as Location from 'expo-location'; // Import Location directly for initial fetching
-import { supabase } from '../../lib/initSupabase.js';
-import Colors from '../../consts/Colors.js';
-
+import { useRoute } from '@react-navigation/native';
+import * as Location from 'expo-location';
+import { supabase } from '../lib/initSupabase.js'
+import Colors from '../consts/Colors';
+// import { AuthContext } from '../../provider/AuthProvider';
+// import LocationHandler from './LocationHandler';
+import MapLayers from '../components/map/MapLayers.js';
+import useStatusBar from '../helpers/useStatusBar.js';
+import TabBarIcon from '../components/utils/TabBarIcon.js';
 
 Mapbox.setAccessToken("pk.eyJ1Ijoid291dGVydGFjayIsImEiOiJja3A3MWV4NzcwdzVhMnRxdHJmcmJzbWZtIn0.3DtWFcL1fG0pk3JsABoTpA");
 const h3 = require("h3-reactnative");
 
-const Map = ({ onHexagonCaptured }) => {
-  const { session } = useContext(AuthContext);
+const MapFriend = ({navigation}) => {
+  const route = useRoute();
+  const friendId = route.params?.friendId || '';
   const [location, setLocation] = useState(null);
   const [hexagons, setHexagons] = useState(null);
   const [clusters, setClusters] = useState(null);
   const [lineWidth, setLineWidth] = useState(2);
-  const [locationsWithCoordinates, setLocationsWithCoordinates] = useState([]);
   const [zoomLevel, setZoomLevel] = useState(14.5);
-  const [mapCentered, setMapCentered] = useState(false); // Track if the map has been centered
+  const [mapCentered, setMapCentered] = useState(false);
+  const [friendLocations, setFriendLocations] = useState([]);
 
-  const userId = session?.user.id;
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+
   const mapRef = useRef(null);
   const cameraRef = useRef(null);
 
@@ -59,25 +64,20 @@ const Map = ({ onHexagonCaptured }) => {
     return () => clearTimeout(timeout); // Clear timeout if component unmounts
   }, [location, mapCentered]);
 
-  // Handle location updates without centering the map
+  // Fetch friend's hexagon locations
   useEffect(() => {
-    if (location) {
-      updateHexagons(location);
+    if (friendId) {
+      fetchFriendLocations();
+      getFriendProfile();
     }
-  }, [location]);
+  }, [friendId]);
 
-  useEffect(() => {
-    if (userId) {
-      fetchLocations();
-    }
-  }, [userId]);
-
-  const fetchLocations = useCallback(async () => {
+  const fetchFriendLocations = useCallback(async () => {
     try {
       let { data: locationsData, error } = await supabase
         .from('locations')
-        .select('hex_index, visits') // Include visits column
-        .eq('user_id', userId);
+        .select('hex_index, visits')
+        .eq('user_id', friendId);
 
       if (error) throw error;
 
@@ -89,81 +89,12 @@ const Map = ({ onHexagonCaptured }) => {
             return { ...location, lat, lng };
           });
 
-        setLocationsWithCoordinates(validLocations);
-        // console.log('Locations with coordinates:', validLocations);
+        setFriendLocations(validLocations);
       }
     } catch (error) {
-      console.error('Error fetching locations:', error.message);
+      console.error('Error fetching friend locations:', error.message);
     }
-  }, [userId]);
-
-  const checkAndAddHexIndex = useCallback(async (hexIndex) => {
-    try {
-      // Check if the hex_index exists for the user
-      let { data: hexData, error: hexError } = await supabase
-        .from('locations')
-        .select('hex_index, visits, visit_times')
-        .eq('hex_index', hexIndex)
-        .eq('user_id', userId);
-
-      if (hexError) {
-        console.error('Error checking hex index:', hexError);
-        return;
-      }
-
-      const now = new Date();
-      const today = now.toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
-
-      // If the hex_index does not exist, insert it
-      if (!hexData.length) {
-        const { data, error: insertError } = await supabase
-          .from('locations')
-          .insert([{ hex_index: hexIndex, user_id: userId, visits: 1, visit_times: [now.toISOString()] }]);
-
-        if (insertError) {
-          console.error('Error inserting hex index:', insertError);
-        } else {
-          console.log('Hex index added:', hexIndex);
-          onHexagonCaptured();
-          fetchLocations();
-        }
-      } else {
-        // Check if the last visit was on a different date
-        const visitTimes = hexData[0].visit_times || [];
-        const lastVisit = visitTimes.length ? new Date(visitTimes[visitTimes.length - 1]) : null;
-        const lastVisitDate = lastVisit ? lastVisit.toISOString().split('T')[0] : null;
-
-
-        if (!lastVisitDate || lastVisitDate !== today) {
-          // If the last visit was on a different date, update the visits count and append the visit time
-          visitTimes.push(now.toISOString());
-
-          const { data, error: updateError } = await supabase
-            .from('locations')
-            .update({ visits: hexData[0].visits + 1, visit_times: visitTimes })
-            .eq('hex_index', hexIndex)
-            .eq('user_id', userId);
-
-          if (updateError) {
-            console.error('Error updating visits count:', updateError);
-          } else {
-            console.log('Visits count updated for hex index:', hexIndex);
-            fetchLocations();
-            onHexagonCaptured();
-          }
-        } else {
-          // console.log('Visits count update skipped for hex index:', hexIndex);
-        }
-      }
-    } catch (err) {
-      console.error('Unexpected error:', err);
-    }
-  }, [userId, onHexagonCaptured, fetchLocations]);
-
-  const updateHexagons = useCallback((loc) => {
-    const centerIndex = h3.geoToH3(loc.latitude, loc.longitude, 9);
-    checkAndAddHexIndex(centerIndex);
-  }, [checkAndAddHexIndex]);
+  }, [friendId]);
 
   const clusterHexagons = useCallback((locationsWithCoordinates, resolution) => {
     const clusters = locationsWithCoordinates.reduce((acc, location) => {
@@ -205,9 +136,9 @@ const Map = ({ onHexagonCaptured }) => {
       const currentZoomLevel = await mapRef.current.getZoom();
       setZoomLevel(currentZoomLevel);
       const resolution = currentZoomLevel < 9.8 ? 6 : currentZoomLevel < 12.3 ? 7 : 9;
-      clusterHexagons(locationsWithCoordinates, resolution);
+      clusterHexagons(friendLocations, resolution);
     }
-  }, [locationsWithCoordinates, clusterHexagons]);
+  }, [friendLocations, clusterHexagons]);
 
   const centerMapOnUser = () => {
     if (cameraRef.current && location) {
@@ -219,7 +150,32 @@ const Map = ({ onHexagonCaptured }) => {
     }
   };
 
+  async function getFriendProfile() {
+    try {
+      const { data, error, status } = await supabase
+        .from('profiles')
+        .select(`first_name, last_name`)
+        .eq('id', friendId)
+        .single();
+      if (error && status !== 406) {
+        throw error;
+      }
+      if (data) {
+        setFirstName(data.first_name);
+        setLastName(data.last_name);
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        Alert.alert(error.message);
+      }
+    } finally {
+      
+    }
+  }
+
   const customMapStyle = 'mapbox://styles/woutertack/clw88shyw002i01r06xjcgpwn';
+
+  useStatusBar(Colors.secondaryGreen, 'light-content');
 
   if (!location) {
     return (
@@ -242,7 +198,7 @@ const Map = ({ onHexagonCaptured }) => {
           zoomLevel={14.5}
           maxZoomLevel={16}
         />
-        <MapLayers
+          <MapLayers
           clusters={clusters}
           hexagons={hexagons}
           zoomLevel={zoomLevel}
@@ -272,7 +228,17 @@ const Map = ({ onHexagonCaptured }) => {
           </View>
         </Mapbox.PointAnnotation>
       </Mapbox.MapView>
-      <LocationHandler setLocation={setLocation} />
+      <View style={styles.header}>
+        <TabBarIcon
+              library="AntDesign"
+              icon="arrowleft"
+              size={45}
+              style={styles.iconBack}
+              onPress={() => navigation.goBack()}
+            />
+        <Text style={styles.friendName}>{firstName} {lastName}</Text>
+        <View style={{ width: 38 }} />
+      </View>
       <TouchableOpacity style={styles.buttonContainer} onPress={centerMapOnUser}>
         <MaterialIcons name="my-location" size={28} style={styles.navIcon} />
       </TouchableOpacity>
@@ -293,7 +259,7 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     position: 'absolute',
-    bottom: 0,
+    bottom: 30,
     right: 20,
     backgroundColor: "rgba(255, 255, 255, 1)",
     padding: 12,
@@ -312,6 +278,32 @@ const styles = StyleSheet.create({
   navIcon: {
     color: Colors.secondaryGreen,
   },
+  header: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingTop: 35,
+    paddingBottom:15,
+    paddingHorizontal: 20,
+    backgroundColor: Colors.secondaryGreen, // Adjust opacity as needed
+    zIndex: 1000,
+  },
+  iconBack: {
+    position: 'relative',
+    left: 12,
+    color: Colors.white,
+  },
+  friendName: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    top: 5,
+    color: Colors.white,
+    maxWidth: '80%',
+    textAlign: 'center',
+  },
 });
 
-export default Map;
+export default MapFriend;

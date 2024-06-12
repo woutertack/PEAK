@@ -11,7 +11,7 @@ const challengeTemplates = [
   },
   {
     challenge_type: 'hexagons',
-    goalRange: [3, 6],
+    goalRange: [3, 5],
   },
 ];
 
