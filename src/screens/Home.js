@@ -1,5 +1,5 @@
 import React, { useContext, useState, useCallback, useRef, useEffect } from "react";
-import { View, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, SafeAreaView, Modal } from 'react-native';
 import { StatusBar } from "expo-status-bar";
 import { supabase } from "../lib/initSupabase";
 import { Layout, Text } from "react-native-rapi-ui";
@@ -10,6 +10,7 @@ import Target from "../components/utils/icons/Target";
 import User from "../components/utils/icons/User";
 import FriendsIcon from "../components/utils/icons/FriendsIcon";
 import StreakIcon from "../components/utils/icons/StreakIcon";
+import IconStreakModal from "../components/utils/icons/IconStreakModal"
 import { AuthContext } from "../provider/AuthProvider";
 import { calculateStreak } from '../components/utils/streaks/CalculateStreak'; 
 import useStatusBar from "../helpers/useStatusBar";
@@ -18,15 +19,55 @@ import DailyChallengeCard from "../components/cards/DailyChallengeCard";
 import { useFocusEffect } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 
+import { tutorialTexts } from "./../components/utils/TutorialTexts"; 
+
 export default function ({ navigation }) {
   const { session } = useContext(AuthContext);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [dailyChallenge, setDailyChallenge] = useState(null);
   const [dailyProgress, setDailyProgress] = useState(0);
 
+
   const [showAnimation, setShowAnimation] = useState(false); // State to show the animation
+  const [showTutorial, setShowTutorial] = useState(false); 
+  const [currentTutorialIndex, setCurrentTutorialIndex] = useState(0);
   const animation = useRef(null);  // Ref for the animation
   const { readHealthData } = useHealthConnect();
+
+  
+
+  const getFirstLogin = async () => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('tutorial_seen')
+      .eq('id', session.user.id)
+      .single();
+
+    if (error) {
+      console.error('Error fetching tutorial_seen status:', error);
+      return;
+    }
+
+    if (data) {
+      setShowTutorial(!data.tutorial_seen);
+    }
+  };
+
+  const updateTutorial = async () => {
+    const { data, error } = await supabase
+    .from('profiles')
+    .update({tutorial_seen: true})
+    .eq('id', session.user.id)
+
+  if (error) {
+    console.error('Error fetching tutorial_seen status:', error);
+    return;
+  }
+  }
+
+  useEffect(() => {
+    getFirstLogin();
+  }, []);
 
   const fetchStreakData = async () => {
     const { data, error } = await supabase
@@ -215,6 +256,16 @@ export default function ({ navigation }) {
     }
   }, [showAnimation]);
 
+  const nextTutorial = () => {
+    if (currentTutorialIndex < tutorialTexts.length - 1) {
+      setCurrentTutorialIndex(currentTutorialIndex + 1);
+    } else {
+      setShowTutorial(false);
+      updateTutorial();
+    }
+  };
+
+
   useStatusBar('transparent', 'dark-content');
 
   return (
@@ -290,6 +341,67 @@ export default function ({ navigation }) {
           
         </View>
       )}
+
+        <Modal
+          visible={showTutorial}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowTutorial(false)}
+        >
+
+                
+         
+          <View style={styles.tutorialContainer}>
+            {currentTutorialIndex == 3 ? (
+                <TouchableOpacity style={[styles.profileIconModal, { top: '2.6%', right: '5.1%'}]} pointerEvents="none">
+                  <User />
+                </TouchableOpacity>
+                 ) : (
+                  <></>
+                )}
+
+            {currentTutorialIndex == 4 ? (
+                <TouchableOpacity style={[styles.profileIconModal, { top: '9.6%', right: '5.1%'}]} pointerEvents="none">
+                   <Target />
+                </TouchableOpacity>
+                 ) : (
+                  <></>
+                )}
+
+            {currentTutorialIndex == 5 ? (
+                <TouchableOpacity style={[styles.profileIconModal, { top: '16.6%', right: '5.1%'}]} pointerEvents="none">
+                  <FriendsIcon />
+                </TouchableOpacity>
+                 ) : (
+                  <></>
+                )}
+
+            {currentTutorialIndex == 6 ? (
+                <TouchableOpacity style={[styles.streakIconModal, { top: '23.5%', right: '5.2%'}]} pointerEvents="none">
+                  <IconStreakModal  />
+                </TouchableOpacity>
+                 ) : (
+                  <></>
+                )}
+
+
+
+            <View style={styles.tutorialBox}>
+            <Text style={styles.tutorialTitle}>
+              {currentTutorialIndex == 7 ? 'Einde' : 'Hoe werkt het'}
+            </Text>
+
+              <Text style={styles.tutorialText}>{tutorialTexts[currentTutorialIndex].text}</Text>
+              <Text style={styles.tutorialProgress}>
+                 {currentTutorialIndex + 1} / {tutorialTexts.length}
+              </Text>
+              <TouchableOpacity style={styles.nextButton} onPress={nextTutorial}>
+                <Text style={styles.nextButtonText}>Volgende</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+     
       </Layout>
     </SafeAreaView>
   );
@@ -408,4 +520,91 @@ const styles = StyleSheet.create({
       height: '40%', // One third of the height
       backgroundColor: 'transparent',
     },
+    tutorialContainer: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingBottom: 0,
+      
+    },
+    tutorialBox: {
+      backgroundColor: 'white',
+      padding: 20,
+      borderRadius: 10,
+      elevation: 5,
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      alignItems: 'center',
+      maxWidth: 350,
+      justifyContent: 'space-between',
+      height: '42%',
+      width: '75%'
+    },
+    tutorialTitle: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      marginBottom: 10,
+      color: Colors.secondaryGreen, 
+    },
+    tutorialText: {
+      textAlign: 'center',
+      color: Colors.secondaryGreen,
+      marginHorizontal: 0,
+      fontSize: 18,
+      marginBottom: 10
+    },
+    nextButton: {
+      padding: 4,
+      paddingHorizontal: 8,
+      borderWidth: 2,
+      borderColor: Colors.secondaryGreen,
+      borderRadius: 15,
+      marginTop: 0
+    },
+    nextButtonText:{
+      color: Colors.secondaryGreen,
+    },
+    tutorialProgress:{
+      color: Colors.secondaryGreen,
+      fontWeight: 'bold',
+      marginTop: 15
+    },
+
+
+    profileIconModal:{
+      backgroundColor: Colors.secondaryGreen, 
+    borderRadius: 12, 
+    borderColor: Colors.primaryGreen,
+    borderWidth: 1.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 45,
+    height: 42,
+    shadowColor: "#000",
+    shadowOffset: {
+        width: 5,
+        height: 5,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
+    elevation: 5,
+
+    position: 'absolute',
+    
+    },
+    streakIconModal: {
+      justifyContent: 'center',
+    alignItems: 'center',
+    paddingLeft: 5,
+    width: 45,
+    height: 42,
+    position: 'absolute',
+    
+    }
 });
