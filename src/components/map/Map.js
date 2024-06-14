@@ -10,7 +10,7 @@ import { supabase } from '../../lib/initSupabase.js';
 import Colors from '../../consts/Colors.js';
 
 
-Mapbox.setAccessToken("pk.eyJ1Ijoid291dGVydGFjayIsImEiOiJja3A3MWV4NzcwdzVhMnRxdHJmcmJzbWZtIn0.3DtWFcL1fG0pk3JsABoTpA");
+Mapbox.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_KEY);
 const h3 = require("h3-reactnative");
 
 const Map = ({ onHexagonCaptured }) => {

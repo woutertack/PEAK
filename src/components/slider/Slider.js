@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 25,
     paddingBottom: 40,
-  
+
   },
   slideText: {
     fontSize: 18,
@@ -164,6 +164,9 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingHorizontal: 25,
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.white,
+  
   },
 });
 

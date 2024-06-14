@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { View, StyleSheet, ScrollView, KeyboardAvoidingView, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect, useContext, useRef } from 'react';
+import { View, StyleSheet, ScrollView, KeyboardAvoidingView, TouchableOpacity, Alert, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Layout, Text } from 'react-native-rapi-ui';
 import { StatusBar } from 'expo-status-bar';
@@ -12,13 +12,19 @@ import { AuthContext } from '../provider/AuthProvider';
 import calculateTime from '../components/utils/versus/calculateTime';
 import TimerIcon from '../components/utils/icons/TimerIcon';
 import useStatusBar from '../helpers/useStatusBar';
-import getChallengeTypeText  from '../components/utils/getChallengeTypeText';
+import getChallengeTypeText from '../components/utils/getChallengeTypeText';
+import LottieView from 'lottie-react-native';
+
+import SadIcon from '../components/utils/icons/SadIcon';
+
+
 
 const HistoryVersus = ({ navigation }) => {
   useStatusBar(Colors.secondaryGreen, 'light-content');
   const { session } = useContext(AuthContext);
   const userId = session?.user.id; 
 
+  const animationRef = useRef(null);
   const [challenges, setChallenges] = useState([]);
 
   useEffect(() => {
@@ -55,8 +61,14 @@ const HistoryVersus = ({ navigation }) => {
     return `${day}-${month}-${year}`;
   };
   
+  const handleAnimationFinish = () => {
+    if (animationRef.current) {
+      animationRef.current.reset();
+      animationRef.current.play();
+    }
+  };
 
-
+ 
 
   return (
     <KeyboardAvoidingView behavior="height" enabled style={{ flex: 1 }}>
@@ -77,7 +89,7 @@ const HistoryVersus = ({ navigation }) => {
             <View style={styles.iconPlaceholder} />
           </View>
 
-          {challenges.map((challenge) => (
+          {challenges.map((challenge, index) => (
             <View key={challenge.id} style={styles.challengeContainer}>
               <View style={styles.goalContainer}>
                 <TrophyIcon />
@@ -137,8 +149,15 @@ const HistoryVersus = ({ navigation }) => {
             </View>
           ))}
 
+          {challenges.length === 0 && ( 
+            <View style={styles.animation}>
+              <SadIcon />
+
+              </View>
+         
+           )} 
+
         </ScrollView>
-       
       </Layout>
     </KeyboardAvoidingView>
   );
@@ -152,6 +171,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     padding: 20,
     paddingBottom: 100, // Make room for the button
+    flexGrow: 1,
   },
   header: {
     flexDirection: 'row',
@@ -261,6 +281,17 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginTop: 5,
     fontSize: 16,
+  },
+  animation: {
+  
+    flex: 1,
+  
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  lottieAnimation: {
+    width: 200,
+    height: 200,
   },
 });
 

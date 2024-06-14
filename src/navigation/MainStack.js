@@ -21,38 +21,11 @@ import SelectLevelUser from "../screens/SelectLevelUser";
 import LandingScreen from "../screens/LandingScreen";
 import CompletedChallenges from "../screens/CompletedChallenges";
 import MapFriend from "../screens/MapFriend";
+import Test from "../screens/Test";
 
 // Create Stack Navigator
 const Stack = createNativeStackNavigator();
 
-// Create Drawer Navigator
-// const Drawer = createDrawerNavigator();
-
-// function DrawerContent() {
-//   return (
-//     <Drawer.Navigator 
-//       initialRouteName="Home"
-//       screenOptions={{
-//         headerShown: false,
-//         drawerStyle: {
-//           backgroundColor: Colors.secondaryGreen,
-//           paddingTop: 20,
-//           margin: 0,
-//           width: 240,
-//         },
-//         drawerType: 'slide',
-//         overlayColor: 'transparent',
-//         drawerActiveTintColor: Colors.primaryGreen,
-//         drawerInactiveTintColor: Colors.white,
-//       }}>
-//       <Drawer.Screen name="Home" component={Home} />
-//       <Drawer.Screen name="Profile" component={Profile} options={{ title: 'Profiel' }}/>
-//       <Drawer.Screen name="Challenges" component={BottomTabs} options={{ title: 'Uitdagingen' }}/>
-//       <Drawer.Screen name="Friends" component={Friends} options={{ title: 'Vrienden' }}/>
-//       <Drawer.Screen name="Settings" component={Settings} />
-//     </Drawer.Navigator>
-//   );
-// }
 
 function Main() {
   return (
@@ -72,6 +45,7 @@ function Main() {
         <Stack.Screen name="SelectLevelUser" component={SelectLevelUser} />
         <Stack.Screen name="CompletedChallenges" component={CompletedChallenges} />
         <Stack.Screen name="MapFriend" component={MapFriend} />
+        <Stack.Screen name="Test" component={Test} />
       </Stack.Navigator>
     </NavigationContainer>
     </GestureHandlerRootView>

@@ -58,8 +58,8 @@ const styles = StyleSheet.create({
     left: 0, // Align with the left padding of the button
     right: 15, // Align with the right padding of the button
     height: 1,
-    backgroundColor: Colors.primaryGreen,
-    opacity: 0.5,
+    backgroundColor: Colors.secondaryGreen,
+    opacity: 1,
     width: '105%',
   },
   iconContainer: {

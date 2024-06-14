@@ -15,22 +15,14 @@ export default function Test() {
         autoPlay
         ref={animation}
         style={{
-          width: 200,
-          height: 200,
+          width: '100%',
+          height: '100%',
           backgroundColor: '#eee',
         }}
 
         source={require('./../components/utils/animations/confetti.json')}
       />
-      <View style={styles.buttonContainer}>
-        <Button
-          title="Restart Animation"
-          onPress={() => {
-            animation.current?.reset();
-            animation.current?.play();
-          }}
-        />
-      </View>
+     
     </View>
   );
 }

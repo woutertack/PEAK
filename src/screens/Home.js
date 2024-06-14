@@ -1,4 +1,4 @@
-import React, { useContext, useState, useCallback } from "react";
+import React, { useContext, useState, useCallback, useRef, useEffect } from "react";
 import { View, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import { StatusBar } from "expo-status-bar";
 import { supabase } from "../lib/initSupabase";
@@ -16,12 +16,16 @@ import useStatusBar from "../helpers/useStatusBar";
 import { useHealthConnect } from "../provider/HealthConnectProvider";
 import DailyChallengeCard from "../components/cards/DailyChallengeCard";
 import { useFocusEffect } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
 
 export default function ({ navigation }) {
   const { session } = useContext(AuthContext);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [dailyChallenge, setDailyChallenge] = useState(null);
   const [dailyProgress, setDailyProgress] = useState(0);
+
+  const [showAnimation, setShowAnimation] = useState(false); // State to show the animation
+  const animation = useRef(null);  // Ref for the animation
   const { readHealthData } = useHealthConnect();
 
   const fetchStreakData = async () => {
@@ -101,11 +105,15 @@ export default function ({ navigation }) {
       }
 
       if (dailyData) {
-        const today = new Date();
-        const creationDate = new Date(dailyData.creation_time);
-        const isToday = today.toDateString() === creationDate.toDateString();
 
-        if (isToday) {
+        const creationDate = new Date(dailyData.creation_time);
+        const deadline = new Date(creationDate.getTime() + 24 * 60 * 60 * 1000);
+        const now = new Date();
+        
+        const isValid = now <= deadline;
+        
+        if (isValid) {
+          console.log('Today is the same as the creation date');
           setDailyChallenge(dailyData);
           calculateDailyProgress(dailyData);
 
@@ -173,7 +181,8 @@ export default function ({ navigation }) {
   };
 
   const updateChallengeCompletionStatus = async (challenge, progress) => {
-    if (progress >= challenge.goal) {
+    
+    if (progress >= challenge.goal && !challenge.completed) {
       const { error } = await supabase
         .from('challenges')
         .update({ completed: true })
@@ -183,17 +192,10 @@ export default function ({ navigation }) {
         console.error('Error updating challenge completion status:', error);
       } else {
         console.log('Challenge marked as completed');
+        setShowAnimation(true);  // Show the animation
       }
     }
   };
-
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     fetchStreakData();
-  //     fetchDailyChallenge();
-  //     getTotalVisits();
-  //   }, [session?.user.id, readHealthData, dailyProgress])
-  // );
 
   useFocusEffect(
     useCallback(() => {
@@ -204,18 +206,22 @@ export default function ({ navigation }) {
     }, [session?.user.id, readHealthData])
   );
 
+  useEffect(() => {
+    if (showAnimation && animation.current) {
+      animation.current.play();
+      setTimeout(() => {
+        setShowAnimation(false);
+      }, 3000);  // Adjust the duration based on your animation length
+    }
+  }, [showAnimation]);
+
   useStatusBar('transparent', 'dark-content');
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <Layout>
         <View style={styles.topNavContainer} pointerEvents="box-none" >
-          {/* Left buttons */}
-          {/* <TouchableOpacity style={styles.menuButton} onPress={() => navigation.toggleDrawer()}>
-            <Ionicons name="menu" size={40} color={Colors.secondaryGreen} />
-          </TouchableOpacity> */}
-          {/* Right button */}
-
+        
           <View style={styles.navButtonGroup}>
            
               <TouchableOpacity style={styles.profileIcon} onPress={() => navigation.navigate("Profile")}>
@@ -254,6 +260,36 @@ export default function ({ navigation }) {
               <Text style={styles.noChallengeText}>Klik hier voor nieuwe uitdaging</Text>
           </TouchableOpacity>
         )}
+         {showAnimation && (
+        <View style={styles.lottieContainer}>
+          <LottieView
+            autoPlay
+            loop={false}
+            ref={animation}
+            style={styles.lottieAnimation}
+            source={require('./../components/utils/animations/confetti.json')}
+            speed={0.5}
+
+          />
+          <LottieView
+            autoPlay
+            loop={false}
+            style={styles.lottieAnimation}
+            source={require('./../components/utils/animations/confetti.json')}
+            speed={0.5}
+            
+          />
+          <LottieView
+            autoPlay
+            loop={false}
+            style={styles.lottieAnimation}
+            source={require('./../components/utils/animations/confetti.json')}
+            speed={0.5}
+           
+          />
+          
+        </View>
+      )}
       </Layout>
     </SafeAreaView>
   );
@@ -353,5 +389,23 @@ const styles = StyleSheet.create({
     height: 3,  // 3px width
     backgroundColor: Colors.secondaryGreen,
     marginBottom: 10,
+    },
+    lottieContainer: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      width: '100%',
+      height: '100%',
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'transparent',
+      zIndex: 2,
+    },
+    lottieAnimation: {
+      width: '100%',
+      height: '40%', // One third of the height
+      backgroundColor: 'transparent',
     },
 });

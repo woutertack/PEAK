@@ -169,13 +169,13 @@ const MapFriend = ({navigation}) => {
         Alert.alert(error.message);
       }
     } finally {
-      
+      setLoading(false);
     }
   }
 
   const customMapStyle = 'mapbox://styles/woutertack/clw88shyw002i01r06xjcgpwn';
 
-  useStatusBar(Colors.secondaryGreen, 'light-content');
+  useStatusBar('transparent', 'dark-content');
 
   if (!location) {
     return (
