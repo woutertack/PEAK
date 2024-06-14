@@ -8,6 +8,7 @@ import {
   Image,
 } from "react-native";
 import { supabase } from "../../lib//initSupabase";
+import * as Linking from "expo-linking";
 
 
 import {
@@ -19,6 +20,8 @@ import {
   themeColor,
 } from "react-native-rapi-ui";
 import Colors from "../../consts/Colors";
+import TabBarIcon from "../../components/utils/TabBarIcon";
+import PrimaryButton from "../../components/utils/buttons/PrimaryButton";
 
 export default function ({
   navigation,
@@ -27,23 +30,25 @@ export default function ({
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const resetPasswordURL = Linking.createURL("/ForgetPassword");
+
   async function forget() {
     setLoading(true);
-    const { data, error } = await supabase.auth.api.resetPasswordForEmail(
-      email
-    );
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: resetPasswordURL,
+    });
+    setLoading(false);
     if (!error) {
-      setLoading(false);
-      alert("Check your email to reset your password!");
-    }
-    if (error) {
-      setLoading(false);
+      alert("Email is verstuurd, check je inbox!");
+    } else {
       alert(error.message);
     }
   }
+
+
   return (
     <KeyboardAvoidingView behavior="height" enabled style={{ flex: 1 }}>
-    <StatusBar  backgroundColor={Colors.black} style="light" />
+    <StatusBar  backgroundColor={Colors.secondaryGreen} style="light" />
       <Layout>
         <ScrollView
          style={{
@@ -58,26 +63,29 @@ export default function ({
               flex: 1,
               justifyContent: "center",
               alignItems: "center",
-              backgroundColor: Colors.black,
+              backgroundColor: Colors.secondaryGreen,
             }}
           >
-            <Image
-              resizeMode="contain"
-              style={{
-                height: 220,
-                width: 220,
-              }}
-              source={require("../../../assets/images/forget.png")}
-            />
+           
           </View>
+         
+          <View style={{ position: 'absolute', top: 10, left: 20 }}>
+             <TabBarIcon library="AntDesign" icon="arrowleft" size={32} style={{marginTop: 20}} 
+              onPress={() => {
+                navigation.goBack();   
+              }}
+            />
+            </View>
           <View
             style={{
               flex: 3,
               paddingHorizontal: 20,
               paddingBottom: 20,
-              backgroundColor: Colors.black,
+              backgroundColor: Colors.secondaryGreen,
             }}
           >
+           
+            
             <Text
               size="h3"
               fontWeight="bold"
@@ -87,12 +95,12 @@ export default function ({
                 color: Colors.white,
               }}
             >
-              Forget Password
+              Reset wachtwoord
             </Text>
             <Text style={{color: Colors.white}} size="h5">Email</Text>
             <TextInput
-              containerStyle={{ marginTop: 15 }}
-              placeholder="Enter your email"
+              containerStyle={{ marginTop: 15, marginBottom: 25}}
+              placeholder="JohnDoe@hotmail.com"
               value={email}
               autoCapitalize="none"
               autoCompleteType="off"
@@ -100,44 +108,15 @@ export default function ({
               keyboardType="email-address"
               onChangeText={(text) => setEmail(text)}
             />
-            <Button
-              text={loading ? "Loading" : "Send email"}
-              onPress={() => {
-                forget();
-              }}
-              style={{
-                marginTop: 20,
-              }}
-              color={Colors.primaryGreen}
-              disabled={loading}
+              
+              <PrimaryButton
+              label={loading ? "Laden" : "Verstuur email"}
+              onPress={forget}
+              isLoading={loading}
+              isDisabled={loading}
             />
 
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginTop: 15,
-                justifyContent: "center",
-              }}
-            >
-              <Text size="md" style={{color: Colors.white}}>Already have an account?</Text>
-              <TouchableOpacity
-                onPress={() => {
-                  navigation.navigate("Login");
-                }}
-              >
-                <Text
-                  size="md"
-                  fontWeight="bold"
-                  style={{
-                    marginLeft: 5,
-                    color: Colors.white
-                  }}
-                >
-                  Login here
-                </Text>
-              </TouchableOpacity>
-            </View>
+          
             
           </View>
         </ScrollView>

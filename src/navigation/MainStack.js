@@ -21,7 +21,7 @@ import SelectLevelUser from "../screens/SelectLevelUser";
 import LandingScreen from "../screens/LandingScreen";
 import CompletedChallenges from "../screens/CompletedChallenges";
 import MapFriend from "../screens/MapFriend";
-import Test from "../screens/Test";
+
 
 // Create Stack Navigator
 const Stack = createNativeStackNavigator();
@@ -45,7 +45,6 @@ function Main() {
         <Stack.Screen name="SelectLevelUser" component={SelectLevelUser} />
         <Stack.Screen name="CompletedChallenges" component={CompletedChallenges} />
         <Stack.Screen name="MapFriend" component={MapFriend} />
-        <Stack.Screen name="Test" component={Test} />
       </Stack.Navigator>
     </NavigationContainer>
     </GestureHandlerRootView>

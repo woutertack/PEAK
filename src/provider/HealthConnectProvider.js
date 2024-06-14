@@ -3,7 +3,8 @@ import { Platform } from 'react-native';
 import { 
   initialize, 
   requestPermission, 
-  readRecords 
+  readRecords, 
+  getGrantedPermissions 
 } from 'react-native-health-connect';
 import { supabase } from '../lib/initSupabase'; // Import Supabase
 import { AuthContext } from './AuthProvider';
@@ -14,6 +15,7 @@ export const HealthConnectProvider = ({ children }) => {
   const [steps, setSteps] = useState(0);
   const [distance, setDistance] = useState(0); 
   const { session } = useContext(AuthContext);
+  const [permissionsGranted, setPermissionsGranted] = useState(false);
 
   const readHealthData = async (startDate) => {
     if (Platform.OS !== 'android') {
@@ -27,13 +29,53 @@ export const HealthConnectProvider = ({ children }) => {
         throw new Error('Health Connect initialization failed');
       }
 
-      // Request permissions
-      await requestPermission([
+      // Check if permissions have been granted using getGrantedPermissions
+      const grantedPermissionsResponse = await getGrantedPermissions();
+            
+      // Extract granted permissions
+      const grantedPermissions = new Set(grantedPermissionsResponse.map(permission => `${permission.accessType}_${permission.recordType}`));
+
+      const requiredPermissions = [
         { accessType: 'read', recordType: 'Steps' },
         { accessType: 'read', recordType: 'Distance' },
         { accessType: 'read', recordType: 'FloorsClimbed' },
         { accessType: 'read', recordType: 'ActiveCaloriesBurned' }
-      ]);
+      ];
+
+      // Check if all required permissions are granted
+      const allPermissionsGranted = requiredPermissions.every(
+        perm => grantedPermissions.has(`${perm.accessType}_${perm.recordType}`)
+      );
+
+      if (!allPermissionsGranted) {
+        // Request permissions for missing ones
+        await requestPermission(requiredPermissions);
+
+        // Permissions are now granted
+        setPermissionsGranted(true);
+      } else {
+        // Permissions were already granted
+        setPermissionsGranted(true);
+      }
+
+    // if (Platform.OS !== 'android') {
+    //   return { totalSteps: 0, totalDistance: 0 };
+    // }
+
+    // try {
+    //   // Initialize the client
+    //   const isInitialized = await initialize();
+    //   if (!isInitialized) {
+    //     throw new Error('Health Connect initialization failed');
+    //   }
+
+    //   // Request permissions
+    //   await requestPermission([
+    //     { accessType: 'read', recordType: 'Steps' },
+    //     { accessType: 'read', recordType: 'Distance' },
+    //     { accessType: 'read', recordType: 'FloorsClimbed' },
+    //     { accessType: 'read', recordType: 'ActiveCaloriesBurned' }
+    //   ]);
 
       // Ensure startDate is a valid ISO string
       const startDateString = new Date(startDate).toISOString();
@@ -117,13 +159,62 @@ export const HealthConnectProvider = ({ children }) => {
     }
   };
 
+
+  useEffect(() => {
+    const fetchPermissionsAndData = async () => {
+      try {
+        // Fetch current granted permissions
+        const grantedPermissionsResponse = await getGrantedPermissions();
+        const grantedPermissions = new Set(grantedPermissionsResponse.map(permission => `${permission.accessType}_${permission.recordType}`));
+
+        console.log('grantedPermissions', grantedPermissions);
+        const requiredPermissions = [
+          { accessType: 'read', recordType: 'Steps' },
+          { accessType: 'read', recordType: 'Distance' },
+          { accessType: 'read', recordType: 'FloorsClimbed' },
+          { accessType: 'read', recordType: 'ActiveCaloriesBurned' }
+        ];
+
+        // Check if all required permissions are granted
+        const allPermissionsGranted = requiredPermissions.every(
+          perm => grantedPermissions.has(`${perm.accessType}_${perm.recordType}`)
+        );
+
+        if (!allPermissionsGranted) {
+          // Permissions are not yet granted, request them
+          await requestPermission(requiredPermissions);
+
+          // Permissions are now granted
+          setPermissionsGranted(true);
+        } else {
+          // Permissions were already granted
+          setPermissionsGranted(true);
+        }
+
+        // If permissions are granted, fetch health data
+        if (permissionsGranted) {
+          const startDateString = new Date().toISOString(); // Adjust as needed
+          const { totalSteps, totalDistance } = await readHealthData(startDateString);
+          setSteps(totalSteps);
+          setDistance(totalDistance);
+        }
+      } catch (error) {
+        console.error('Error fetching or requesting permissions:', error);
+      }
+    };
+
+    if (session) {
+      fetchPermissionsAndData();
+    }
+  }, [session]); // Execute on session change
+
   useEffect(() => {
     const intervalId = setInterval(() => {
       updateUserDataToSupabase();
     }, 10000); // Update every 10 seconds
 
     return () => clearInterval(intervalId); // Clear interval on unmount
-  }, [session]);
+  }, [session, permissionsGranted]);
 
   return (
     <HealthConnectContext.Provider value={{ steps, distance, readHealthData }}>

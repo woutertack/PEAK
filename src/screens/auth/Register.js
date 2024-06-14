@@ -30,6 +30,22 @@ export default function Register({ navigation }) {
       return;
     }
   
+    // Check if firstName and lastName meet length requirements
+    if (firstName.length > 10) {
+      setError("Voornaam mag maximaal 10 karakters lang zijn.");
+      return;
+    }
+
+    if (lastName.length > 15) {
+      setError("Achternaam mag maximaal 15 karakters lang zijn.");
+      return;
+    }
+
+    if (password.length < 7) {
+      setError("Wachtwoord moet minimum 7 karakters lang zijn.");
+      return;
+    }
+
     setLoading(true);
     setError("");
     try {
@@ -52,7 +68,7 @@ export default function Register({ navigation }) {
   
     } catch (error) {
       console.error("Vul alle gegevens correct in alstublieft.");
-      setError(error.message);
+      // setError("Wachtwoord moet minimum 7 karakters lang zijn.");
      
     } finally {
       setLoading(false);
