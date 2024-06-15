@@ -11,6 +11,8 @@ import { supabase } from '../lib/initSupabase';
 import { AuthContext } from '../provider/AuthProvider';
 import CardChallengeCompleted from '../components/cards/CardChallengeCompleted';
 import formatChallengeDescription from '../components/utils/challenges/formatChallengeDescription';
+import SadIcon from '../components/utils/icons/SadIcon';
+import SecondaryButton from '../components/utils/buttons/SecondaryButton';
 
 const CompletedChallenges = ({ navigation }) => {
   useStatusBar(Colors.secondaryGreen, 'light-content');
@@ -116,7 +118,21 @@ const CompletedChallenges = ({ navigation }) => {
             <Text style={styles.filterButtonText}>Maandelijks</Text>
           </TouchableOpacity>
         </View>
-        {completedChallenges.map((challenge) => (
+
+        {completedChallenges.length === 0 ? (
+          <>
+          <Text style={styles.noChallengesText}>
+          U heeft nog geen {filter === 'daily' ? 'dagelijkse' : filter === 'weekly' ? 'wekelijkse' : 'maandelijkse'} uitdagingen voltooid, zit niet stil en probeer er vandaag nog te voltooien !
+          </Text>
+          <SecondaryButton
+              label={`Bekijk uw uitdagingen`}
+              onPress={() => navigation.navigate('Challenges')}
+            />
+            
+          
+          </>
+        ) : (
+        completedChallenges.map((challenge) => (
           <CardChallengeCompleted
             key={challenge.id}
         
@@ -127,7 +143,7 @@ const CompletedChallenges = ({ navigation }) => {
             creationTime={challenge.creation_time}
     
           />
-        ))}
+        )))}
       </ScrollView>
     </Layout>
   );
@@ -176,6 +192,14 @@ const styles = StyleSheet.create({
   filterButtonText: {
     color: Colors.white,
     fontWeight: 'bold',
+  },
+  noChallengesText: {
+    color: '#fff',
+    fontSize: 17,
+    textAlign: 'center',
+    marginTop: 30,
+    marginBottom: 13,
+    marginHorizontal: 0
   },
 });
 

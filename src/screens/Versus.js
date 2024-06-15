@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import TabBarIcon from "../components/utils/TabBarIcon";
 import Colors from '../consts/Colors';
 import PrimaryButton from '../components/utils/buttons/PrimaryButton';
+import SecondaryButton from '../components/utils/buttons/SecondaryButton';
 import { supabase } from '../lib/initSupabase';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import TrophyIcon from '../components/utils/icons/TrophyIcon';
@@ -16,6 +17,7 @@ import { useHealthConnect } from '../provider/HealthConnectProvider';
 import HistoryIcon from '../components/utils/icons/HistoryIcon';
 import useStatusBar from '../helpers/useStatusBar';
 import  getChallengeTypeText  from '../components/utils/getChallengeTypeText';
+import SadIcon from '../components/utils/icons/SadIcon';
 
 const Versus = ({ navigation }) => {
   useStatusBar(Colors.secondaryGreen, 'light-content');
@@ -182,7 +184,7 @@ const Versus = ({ navigation }) => {
             </TouchableOpacity>
           </View>
           {challengesAccept.length === 0 ? (
-          // <Text style={styles.noChallengesText}>Geen uitnodigingen op dit moment</Text>
+        
           <></>
         ) : (
           
@@ -195,8 +197,17 @@ const Versus = ({ navigation }) => {
 
         {challenges.length === 0 ? (
           <>
-          <Text style={styles.noChallengesText}>Geen actieve uitdagingen op dit moment</Text>
-          <Text onPress={() => navigation.navigate('CreateVersus')} style={styles.noChallengesBold}>Maak nu een nieuwe uitdaging</Text>
+          <Text style={styles.noChallengesText}>U heeft nog geen versus uitdagingen, zit niet stil en maak er nu één aan!</Text>
+          <View style={{marginBottom: 60}}>
+            <SecondaryButton
+              label={`Maak nu een nieuwe uitdaging`}
+              onPress={() => navigation.navigate('CreateVersus')}
+            />
+          </View>
+          <TouchableOpacity style={{flexDirection: 'row',justifyContent: 'center', alignContent: 'center'}}
+          onPress={() => navigation.navigate('CreateVersus')}>
+            <SadIcon/>
+          </TouchableOpacity>
           </>
         ) : (
           challenges.map((challenge) => (
@@ -263,13 +274,15 @@ const Versus = ({ navigation }) => {
            ))
           )}
 
+          
+
         </ScrollView>
         <TouchableOpacity onPress={() => navigation.navigate('CreateVersus')}>
           <View style={styles.addButton}>
             <TabBarIcon
               library="AntDesign"
               icon="plus"
-              size={48}
+              size={72}
               style={styles.icon}
               onPress={() => {
                 navigation.navigate('CreateVersus');
@@ -314,9 +327,11 @@ const styles = StyleSheet.create({
   },
   noChallengesText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 17,
     textAlign: 'center',
     marginTop: 30,
+    marginBottom: 13,
+    marginHorizontal: 12
   },
   noChallengesBold: {
     color: '#fff',

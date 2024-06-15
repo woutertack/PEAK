@@ -91,7 +91,7 @@ export default function Login({ navigation }) {
 
             <Text style={{ marginTop: 20, color: Colors.white }} size="h5">Wachtwoord</Text>
             <TextInput
-              containerStyle={{ marginTop: 5, marginBottom: 0, textAlign: "left"}}
+              containerStyle={{ marginTop: 5, marginBottom: 25, textAlign: "left"}}
               placeholder="********"
               value={password}
               autoCapitalize="none"
@@ -100,12 +100,12 @@ export default function Login({ navigation }) {
               secureTextEntry={true}
               onChangeText={(text) => setPassword(text)}
             />
-            <TouchableOpacity style={{ marginTop: 5, marginBottom: 30, flexDirection: 'row'}} onPress={() => {
+            {/* <TouchableOpacity style={{ marginTop: 5, marginBottom: 30, flexDirection: 'row'}} onPress={() => {
               navigation.navigate("ForgetPassword");
             }}>
               <Text style={{color: Colors.white, alignSelf: "flex-start", marginTop: 1.5, fontSize: 13 }} >Wachtwoord vergeten?</Text>
               <Text style={{color: Colors.white, alignSelf: "flex-start", fontWeight: 'bold', fontSize: 13 }} > Klik hier</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             
             

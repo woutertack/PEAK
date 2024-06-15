@@ -16,6 +16,7 @@ import getChallengeTypeText from '../components/utils/getChallengeTypeText';
 import LottieView from 'lottie-react-native';
 
 import SadIcon from '../components/utils/icons/SadIcon';
+import SecondaryButton from '../components/utils/buttons/SecondaryButton';
 
 
 
@@ -150,11 +151,19 @@ const HistoryVersus = ({ navigation }) => {
           ))}
 
           {challenges.length === 0 && ( 
-            <View style={styles.animation}>
-              <SadIcon />
-
+              <>
+              <Text style={styles.noChallengesText}>U heeft nog geen voltooide of verlopen uitdagingen, zit niet stil en maak er nu één aan!</Text>
+              <View style={{marginBottom: 60}}>
+                <SecondaryButton
+                  label={`Maak nu een nieuwe uitdaging`}
+                  onPress={() => navigation.navigate('CreateVersus')}
+                />
               </View>
-         
+              <TouchableOpacity style={{flexDirection: 'row',justifyContent: 'center', alignContent: 'center'}}
+              onPress={() => navigation.navigate('CreateVersus')}>
+                <SadIcon/>
+              </TouchableOpacity>
+              </>
            )} 
 
         </ScrollView>
@@ -282,16 +291,13 @@ const styles = StyleSheet.create({
     marginTop: 5,
     fontSize: 16,
   },
-  animation: {
-  
-    flex: 1,
-  
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  lottieAnimation: {
-    width: 200,
-    height: 200,
+  noChallengesText: {
+    color: '#fff',
+    fontSize: 17,
+    textAlign: 'center',
+    marginTop: 30,
+    marginBottom: 13,
+    marginHorizontal: 12
   },
 });
 

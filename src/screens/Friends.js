@@ -164,6 +164,7 @@ const Friends = ({ navigation }) => {
   };
 
   const renderFriendItem = ({ item }) => (
+
     <View style={[styles.friendRequest, { marginBottom: 15 }]}>
       <View style={styles.avatar} pointerEvents='none'>
         <Avatar url={item.avatar_url} size={70} />
@@ -177,6 +178,7 @@ const Friends = ({ navigation }) => {
         </View>
       </View>
     </View>
+    
   );
 
   const renderSearchResultItem = ({ item }) => (
@@ -289,7 +291,7 @@ const Friends = ({ navigation }) => {
               data={filteredFriends}
               keyExtractor={(item) => item.id.toString()}
               renderItem={renderFriendItem}
-              contentContainerStyle={{ paddingBottom: 20 }}
+              contentContainerStyle={{ paddingBottom: 40 }}
             />
             
           </View>

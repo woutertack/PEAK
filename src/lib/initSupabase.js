@@ -17,6 +17,13 @@ export const supabase = createClient(apiUrl, apiKey,{
   },
 })
 
+// Admin Supabase client initialization
+const adminApiUrl = process.env.EXPO_PUBLIC_API_URL;
+const adminApiKey = process.env.EXPO_PUBLIC_SUPABASE_SERVICE_ROLE_KEY;
+
+
+export const supabaseAdmin = createClient(adminApiUrl, adminApiKey);
+
 // Tells Supabase Auth to continuously refresh the session automatically
 // if the app is in the foreground. When this is added, you will continue
 // to receive `onAuthStateChange` events with the `TOKEN_REFRESHED` or

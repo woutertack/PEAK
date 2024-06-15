@@ -12,7 +12,7 @@ import CardStats from '../components/cards/CardStats';
 import { AuthContext } from '../provider/AuthProvider';
 import { format, differenceInDays } from 'date-fns';
 import { nl } from 'date-fns/locale';
-import { supabase } from '../lib/initSupabase';
+import { supabase, supabaseAdmin } from '../lib/initSupabase';
 import { calculateStreak } from '../components/utils/streaks/CalculateStreak'; // Import the calculateStreak function
 import { calculateMaxStreak } from '../components/utils/streaks/CalculateMaxStreak';
 import useStatusBar from '../helpers/useStatusBar';
@@ -36,6 +36,8 @@ const Profile = ({ navigation }) => {
   const [totalSteps, setTotalSteps] = useState(0); // New state for total steps
   const [totalDistance, setTotalDistance] = useState(0); // New state for total distance
   const [completedChallenges, setCompletedChallenges] = useState(0); 
+
+
 
   const fetchProfile = async () => {
     try {
@@ -180,19 +182,40 @@ const Profile = ({ navigation }) => {
   };
 
 
-const deleteUser = async (userId) => {
-  try {
-    // Perform your delete operation here, for example:
-    await supabase.from('profiles').delete().eq('id', userId);
-    await supabase.auth.admin.deleteUser(userId)
-
-    // Optionally, you can perform any additional actions after deletion
-    console.log('User deleted successfully');
-  } catch (error) {
-    console.log('Error deleting user:', error.message);
-  }
-};
-
+  const deleteUser = async (userId) => {
+    try {
+      // Delete from friend_requests table
+      const { error: errorFriendRequests } = await supabase.from('friend_requests').delete().or(`requester_id.eq.${userId},requestee_id.eq.${userId}`);
+      if (errorFriendRequests) throw errorFriendRequests;
+  
+      // Delete from locations table
+      const { error: errorLocations } = await supabase.from('locations').delete().eq('user_id', userId);
+      if (errorLocations) throw errorLocations;
+  
+      // Delete from versus table
+      const { error: errorVersus } = await supabase.from('versus').delete().or(`creator_id.eq.${userId},friend_id.eq.${userId}`);
+      if (errorVersus) throw errorVersus;
+  
+      // Delete from challenges table
+      const { error: errorChallenges } = await supabase.from('challenges').delete().eq('user_id', userId);
+      if (errorChallenges) throw errorChallenges;
+  
+      // Delete from profiles table
+      const { error: errorProfiles } = await supabase.from('profiles').delete().eq('id', userId);
+      if (errorProfiles) throw errorProfiles;
+  
+      // Finally, delete the user from the authentication table
+      const { error: errorAuth } = await supabaseAdmin.auth.admin.deleteUser(userId);
+      if (errorAuth) throw errorAuth;
+  
+      const { error: signOutError } = await supabase.auth.signOut();
+      if (signOutError) throw signOutError;
+    } catch (error) {
+      console.log('Error deleting user:', error.message);
+    }
+  };
+  
+  
 const handleDeleteUser = (userId) => {
   // Show an alert to confirm deletion
   Alert.alert(
