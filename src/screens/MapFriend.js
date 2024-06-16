@@ -169,7 +169,7 @@ const MapFriend = ({navigation}) => {
         Alert.alert(error.message);
       }
     } finally {
-      setLoading(false);
+      // setLoading(false);
     }
   }
 

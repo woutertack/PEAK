@@ -407,6 +407,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     marginBottom: 10,
+    textAlign: 'center',
   },
   progressPercent: {
     fontSize: 15,

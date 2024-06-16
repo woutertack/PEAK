@@ -18,8 +18,11 @@ import { useHealthConnect } from "../provider/HealthConnectProvider";
 import DailyChallengeCard from "../components/cards/DailyChallengeCard";
 import { useFocusEffect } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
-
 import { tutorialTexts } from "./../components/utils/TutorialTexts"; 
+// import { requestNotificationsPermissions } from './../helpers/notifications'; // Import notifications
+import PrimaryButton from "../components/utils/buttons/PrimaryButton";
+
+import { usePushNotifications } from "../helpers/usePushNotifications";
 
 export default function ({ navigation }) {
   const { session } = useContext(AuthContext);
@@ -33,6 +36,13 @@ export default function ({ navigation }) {
   const [currentTutorialIndex, setCurrentTutorialIndex] = useState(0);
   const animation = useRef(null);  // Ref for the animation
   const { readHealthData } = useHealthConnect();
+
+  const { expoPushToken, notification } = usePushNotifications();
+
+  const data = JSON.stringify(notification, undefined, 2);
+
+  console.log(expoPushToken?.data ?? "No token")
+  // console.log(data)
 
   
 
@@ -67,6 +77,7 @@ export default function ({ navigation }) {
 
   useEffect(() => {
     getFirstLogin();
+
   }, []);
 
   const fetchStreakData = async () => {
@@ -294,6 +305,7 @@ export default function ({ navigation }) {
               </TouchableOpacity>
           </View>
         </View>
+       
         <View style={styles.mapSection}>
           <Map onHexagonCaptured={handleHexagonCaptured}/>
         </View>
@@ -306,6 +318,7 @@ export default function ({ navigation }) {
               navigation={navigation}
             />
           </View>
+          
         ) : (
           <TouchableOpacity style={styles.noChallengeContainer} onPress={() => navigation.navigate("Challenges")}  activeOpacity={0.9}>
               <Text style={styles.noChallengeText}>Klik hier voor nieuwe uitdaging</Text>
@@ -352,6 +365,10 @@ export default function ({ navigation }) {
                 
          
           <View style={styles.tutorialContainer}>
+
+            
+
+            
             {currentTutorialIndex == 3 ? (
                 <TouchableOpacity style={[styles.profileIconModal, { top: '2.6%', right: '5.1%'}]} pointerEvents="none">
                   <User />

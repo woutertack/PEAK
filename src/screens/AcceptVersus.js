@@ -18,6 +18,10 @@ const AcceptVersus = ({ navigation }) => {
   const userId = session.user.id;
   const [challenges, setChallenges] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [firstName, setFirstName] = useState(session?.user?.user_metadata.first_name);
+  const [lastName, setLastName] = useState(session?.user?.user_metadata.last_name);
+
+  
 
   useEffect(() => {
     const fetchChallenges = async () => {
@@ -55,15 +59,46 @@ const AcceptVersus = ({ navigation }) => {
       .update(updateData)
       .eq('id', challengeId);
 
-
     if (error) {
       Alert.alert('Error updating challenge status', error.message);
     } else {
-     
+      if (response === 'accepted') {
+        // Fetch the creator's expo_push_token
+        const { data: challengeData, error: challengeError } = await supabase
+          .from('versus')
+          .select(`
+            creator:creator_id (expo_push_token)
+          `)
+          .eq('id', challengeId)
+          .single();
+
+        if (challengeError) {
+          console.error(challengeError);
+        } else {
+          const message = {
+            to: challengeData.creator.expo_push_token,
+            channel: 'default',
+            title: 'Een uitdaging van u is geaccepteerd!',
+            body: `${firstName} ${lastName} heeft uw uitdaging geaccepteerd, de uitdaging is nu begonnen!`,
+          };
+          console.log('Sending push notification:', message);
+
+
+          await fetch('https://exp.host/--/api/v2/push/send', {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(message),
+          });
+        }
+      }
       setChallenges(challenges.filter(challenge => challenge.id !== challengeId));
     }
     setLoading(false);
   };
+
 
   return (
     <Layout style={{ flex: 1 }}>
@@ -157,7 +192,7 @@ const styles = StyleSheet.create({
   },
   incomingChallenge: {
     flexDirection: 'row',
-    marginBottom: 20,
+    marginBottom: 0,
     marginTop: 20,
   },
   avatar: {

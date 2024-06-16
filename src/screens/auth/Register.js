@@ -67,7 +67,7 @@ export default function Register({ navigation }) {
       navigation.navigate("Login");
   
     } catch (error) {
-      console.error("Vul alle gegevens correct in alstublieft.");
+      console.error("Gebruik een ander email of wachtwoord");
       // setError("Wachtwoord moet minimum 7 karakters lang zijn.");
      
     } finally {

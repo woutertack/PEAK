@@ -11,6 +11,7 @@ import PrimaryButton from '../components/utils/buttons/PrimaryButton';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { AuthContext } from '../provider/AuthProvider';
 import { useRoute } from '@react-navigation/native';
+import { fi } from 'date-fns/locale';
 
 const CreateVersus = ({ navigation }) => {
   useStatusBar(Colors.secondaryGreen, 'light-content');
@@ -26,6 +27,9 @@ const CreateVersus = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
+  const [firstName, setFirstName] = useState(session?.user?.user_metadata.first_name);
+  const [lastName, setLastName] = useState(session?.user?.user_metadata.last_name);
+ 
 
   useEffect(() => {
     const fetchFriends = async () => {
@@ -49,12 +53,13 @@ const CreateVersus = ({ navigation }) => {
       if (friendIds.length > 0) {
         const { data: friendsData, error: friendsError } = await supabase
           .from('profiles')
-          .select('id, first_name, last_name')
+          .select('id, first_name, last_name, expo_push_token')
           .in('id', friendIds);
 
         if (friendsError) {
           Alert.alert('Error fetching friends profiles', friendsError.message);
         } else {
+          
           setFriends(friendsData);
         }
       } else {
@@ -147,6 +152,38 @@ const CreateVersus = ({ navigation }) => {
     } else {
       Alert.alert('Uitdaging aangemaakt!', 'Je uitdaging zal starten wanneer je vriend deze accepteert.');
       navigation.goBack();
+    
+      // SEND A PUSH NOTIFICATION TO THE FRIEND
+      const { data: friendData, error: friendError } = await supabase
+        .from('profiles')
+        .select('expo_push_token')
+        .eq('id', friendId)
+        .single();
+
+      if (friendError) {
+        console.error(friendError);
+      } else {
+        const message = {
+          to: friendData.expo_push_token,
+          channel: 'default',
+          title: 'Nieuwe uitdaging!',
+          body: `${firstName} ${lastName} heeft je uitgedaagd!`,
+         
+        };
+        console.log(message);
+        
+       
+
+        await fetch('https://exp.host/--/api/v2/push/send', {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(message),
+        });
+       
+      }
     }
 
     setLoading(false);
@@ -178,7 +215,7 @@ const CreateVersus = ({ navigation }) => {
                 style={styles.picker}
               >
                 <Picker.Item label="Stappen" value="steps" />
-                <Picker.Item label="Afstand" value="distance" />
+                <Picker.Item label="Afstand (km)" value="distance" />
                 <Picker.Item label="Gebieden" value="hexagons" />
               </Picker>
             </View>
@@ -191,9 +228,15 @@ const CreateVersus = ({ navigation }) => {
             </Text>
             <TextInput
               value={goal}
-              onChangeText={(value) => setGoal(value)}
+              onChangeText={(value) => {
+                // Ensure that only numeric values are accepted
+                if (/^\d*$/.test(value)) {
+                  setGoal(value);
+                }
+              }}
               keyboardType="numeric"
               style={styles.TextInput}
+              number
             />
           </View>
 

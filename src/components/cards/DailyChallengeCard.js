@@ -23,7 +23,7 @@ const DailyChallengeCard = ({ progress, goal, unit, navigation }) => {
         <Text style={styles.progressText}>{`${Math.floor(progress)} / ${goal} ${type}`}</Text>
         <Progress.Bar 
           progress={progressPercentage} 
-          width={150} 
+          width={175} 
           color={Colors.secondaryGreen} 
           unfilledColor="#e0e0e0"
           borderWidth={0}
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 4,
     alignItems: 'start',
-    maxWidth: 180,
+    maxWidth: 190,
   },
   title : {
     fontSize: 16,
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   progressBar: {
-    width: '100%',
+    width: '102%',
 
   },
 });

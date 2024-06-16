@@ -26,7 +26,7 @@ const StreaksScreen = ({ navigation }) => {
   const [todayVisits, setTodayVisits] = useState(0);
   const [timeLeft, setTimeLeft] = useState('');
   const { expoPushToken } = usePushNotifications();
-  console.log(expoPushToken)
+  // console.log(expoPushToken)
 
   useStatusBar(Colors.secondaryGreen, 'light-content');
   
@@ -59,7 +59,7 @@ const StreaksScreen = ({ navigation }) => {
           .flatMap(location => location.visit_times || [])
           .filter(visitTime => new Date(visitTime).toDateString() === today).length;
         setTodayVisits(todayVisitsCount);
-
+       
         // Calculate time left for today
         const now = new Date();
         const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
@@ -71,7 +71,7 @@ const StreaksScreen = ({ navigation }) => {
 
         setTimeLeft(`${hoursLeft}h ${minutesLeft}m ${secondsLeft}s`);
 
-        if (hoursLeft <= 8 && expoPushToken) {
+        if (hoursLeft <= 8 && expoPushToken && todayVisits < 6) {
           await scheduleNotification(expoPushToken);
         }
       }
@@ -99,10 +99,10 @@ const StreaksScreen = ({ navigation }) => {
     await Notifications.scheduleNotificationAsync({
       content: {
         title: "Streak Alert!",
-        body: "You have only 3 hours left to complete your streak!",
+        body: "Je hebt nog maar een paar uur om je streak te behouden! 🚨",
       },
       trigger: {
-        seconds: 1,
+        seconds: 5,
       },
     });
   };

@@ -34,7 +34,11 @@
         "android.permission.health.READ_FLOORS_CLIMBED",
         "android.permission.health.READ_DISTANCE",
         "android.permission.health.READ_ACTIVE_CALORIES_BURNED"
-      ]
+      ],
+      "notification": {
+        "icon": "./assets/IconNotification.png",
+        "color": "#127780"
+      }
     },
     "web": {
       "favicon": "./assets/PeakFavicon.png"
@@ -68,9 +72,9 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/PeakIcon.png",
-          "color": "#127780"
-          
+          "icon": "./assets/IconNotification.png",
+          "color": "#127780",
+          "defaultChannel": "default"
         }
       ]
     ],
