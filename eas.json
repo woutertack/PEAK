@@ -10,7 +10,7 @@
         "artifactPath": "android/app/build/outputs/apk/debug/app-debug.apk"
       }
     },
-    "preview": {
+    "preview2": {
       "distribution": "internal",
       "android": {
         "artifactPath": "android/app/build/outputs/apk/release/app-release.apk"
