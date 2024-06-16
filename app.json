@@ -36,12 +36,12 @@
         "android.permission.health.READ_ACTIVE_CALORIES_BURNED"
       ],
       "notification": {
-        "icon": "./assets/IconNotification.png",
+        "icon": "./assets/FaviconIcon.png",
         "color": "#127780"
       }
     },
     "web": {
-      "favicon": "./assets/PeakFavicon.png"
+      "favicon": "./assets/FaviconIcon.png"
     },
     "plugins": [
       [

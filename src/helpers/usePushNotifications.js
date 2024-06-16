@@ -14,7 +14,7 @@ export const usePushNotifications = () => {
   const { session } = useContext(AuthContext);
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
-      shouldPlaySound: false,
+      shouldPlaySound: true,
       shouldShowAlert: true,
       shouldSetBadge: false,
     }),
@@ -59,7 +59,7 @@ export const usePushNotifications = () => {
       });
     }
 
-    if(token) {
+    if(token && session?.user) {
       const { data, error } = await supabase
         .from("profiles")
         .update({ expo_push_token: token.data })
@@ -82,11 +82,12 @@ export const usePushNotifications = () => {
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
         setNotification(notification);
+
       });
 
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
-        // console.log(response);
+        console.log(response);
       });
 
     return () => {

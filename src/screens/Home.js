@@ -41,6 +41,16 @@ export default function ({ navigation }) {
 
   const data = JSON.stringify(notification, undefined, 2);
 
+  useEffect(() => {
+    if (notification) {
+      // Handle the notification when received
+      console.log(
+        notification.request.content.title,
+        notification.request.content.body
+      );
+    }
+  }, [notification]);
+
   console.log(expoPushToken?.data ?? "No token")
   // console.log(data)
 
@@ -50,7 +60,7 @@ export default function ({ navigation }) {
     const { data, error } = await supabase
       .from('profiles')
       .select('tutorial_seen')
-      .eq('id', session.user.id)
+      .eq('id', session?.user.id)
       .single();
 
     if (error) {
@@ -216,7 +226,7 @@ export default function ({ navigation }) {
         default:
           progress = 0;
       }
-
+      console.log('Progress:', progress);
       
     }
 
@@ -362,13 +372,8 @@ export default function ({ navigation }) {
           onRequestClose={() => setShowTutorial(false)}
         >
 
-                
-         
           <View style={styles.tutorialContainer}>
 
-            
-
-            
             {currentTutorialIndex == 3 ? (
                 <TouchableOpacity style={[styles.profileIconModal, { top: '2.6%', right: '5.1%'}]} pointerEvents="none">
                   <User />

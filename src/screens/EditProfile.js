@@ -58,6 +58,11 @@ const EditProfile = ({navigation}) => {
   async function updateProfile({ firstName, lastName, avatar_url }) {
     try {
       setLoading(true);
+        // Update the display name in Supabase authentication
+      const { error: authError } = await supabase.auth.updateUser({
+        data: { displayName: `${firstName} ${lastName}` },
+      });
+      if (authError) throw authError;
 
       const updates = {
         id: session?.user.id,
@@ -73,7 +78,7 @@ const EditProfile = ({navigation}) => {
         throw error;
       }
 
-      Alert.alert('Success', 'Profile updated successfully!');
+      Alert.alert('Succes', 'Profiel is bijgewerkt!');
       navigation.navigate('Profile');
     } catch (error) {
       if (error instanceof Error) {

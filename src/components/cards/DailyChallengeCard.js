@@ -5,8 +5,10 @@ import * as Progress from 'react-native-progress';
 import Colors from '../../consts/Colors';
 import getChallengeTypeText from '../utils/getChallengeTypeText';
 
-const DailyChallengeCard = ({ progress, goal, unit, navigation }) => {
-  const progressPercentage = progress / goal;
+const DailyChallengeCard = ({  goal, unit, navigation }) => {
+  const progress = 1;
+  const formattedProgress = progress.toLocaleString('nl-NL', { minimumFractionDigits: 0, maximumFractionDigits: 2});
+  const progressPercentage = 1.2 / goal;
 
   const type = getChallengeTypeText(unit);
 
@@ -20,10 +22,10 @@ const DailyChallengeCard = ({ progress, goal, unit, navigation }) => {
     <View style={styles.underlineInside}></View> */}
     <TouchableOpacity onPress={() => navigation.navigate("Challenges")}  activeOpacity={0.9}>
       <View styles={styles.progressBarContainer}>
-        <Text style={styles.progressText}>{`${Math.floor(progress)} / ${goal} ${type}`}</Text>
+        <Text style={styles.progressText}>{`${formattedProgress} / ${goal} ${type}`}</Text>
         <Progress.Bar 
           progress={progressPercentage} 
-          width={175} 
+          width={160} 
           color={Colors.secondaryGreen} 
           unfilledColor="#e0e0e0"
           borderWidth={0}
@@ -87,7 +89,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   progressBar: {
-    width: '102%',
+    width: '100%',
 
   },
 });

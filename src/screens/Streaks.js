@@ -71,7 +71,7 @@ const StreaksScreen = ({ navigation }) => {
 
         setTimeLeft(`${hoursLeft}h ${minutesLeft}m ${secondsLeft}s`);
 
-        if (hoursLeft <= 8 && expoPushToken && todayVisits < 6) {
+        if (hoursLeft <= 18 && expoPushToken && todayVisits < 5) {
           await scheduleNotification(expoPushToken);
         }
       }
