@@ -7,18 +7,25 @@
       "developmentClient": true,
       "distribution": "internal",
       "android": {
-        "artifactPath": "android/app/build/outputs/apk/debug/app-debug.apk"
+        "applicationArchivePath": "android/app/build/outputs/apk/debug/app-debug.apk"
       }
     },
     "preview2": {
       "distribution": "internal",
       "android": {
-        "artifactPath": "android/app/build/outputs/apk/release/app-release.apk"
+        "applicationArchivePath": "android/app/build/outputs/apk/release/app-release.apk",
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://efopnkxuzwafypfszrnv.supabase.co",
+        "EXPO_PUBLIC_API_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmb3Bua3h1endhZnlwZnN6cm52Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTU5NTc1MDUsImV4cCI6MjAzMTUzMzUwNX0.eU-1ujhGQozZMOBdpm0q_NAbawwRDBopOHYI0kTNi5Q",
+        "EXPO_PUBLIC_MAPBOX_KEY": "pk.eyJ1Ijoid291dGVydGFjayIsImEiOiJja3A3MWV4NzcwdzVhMnRxdHJmcmJzbWZtIn0.3DtWFcL1fG0pk3JsABoTpA",
+        "EXPO_PUBLIC_SUPABASE_SERVICE_ROLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmb3Bua3h1endhZnlwZnN6cm52Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcxNTk1NzUwNSwiZXhwIjoyMDMxNTMzNTA1fQ.gXvs16rW2cbJMnVBF0LxLa4S7WM0auB4ue2ad8KhaZA"
       }
     },
     "production": {
       "android": {
-        "artifactPath": "android/app/build/outputs/apk/release/app-release.apk"
+        "applicationArchivePath": "android/app/build/outputs/apk/release/app-release.apk"
       }
     }
   },
