@@ -48,7 +48,7 @@ node_modules/
 .expo/
 dist/
 web-build/
-eas.json
+
 
 # Native
 *.orig.*

@@ -1,5 +1,5 @@
 import React, { useContext, useState, useCallback, useRef, useEffect } from "react";
-import { View, TouchableOpacity, StyleSheet, SafeAreaView, Modal } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, SafeAreaView, Modal, Dimensions } from 'react-native';
 import { StatusBar } from "expo-status-bar";
 import { supabase } from "../lib/initSupabase";
 import { Layout, Text } from "react-native-rapi-ui";
@@ -23,6 +23,8 @@ import { tutorialTexts } from "./../components/utils/TutorialTexts";
 import PrimaryButton from "../components/utils/buttons/PrimaryButton";
 
 import { usePushNotifications } from "../helpers/usePushNotifications";
+
+const { height, width } = Dimensions.get('window');
 
 export default function ({ navigation }) {
   const { session } = useContext(AuthContext);
@@ -292,30 +294,22 @@ export default function ({ navigation }) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <Layout>
-        <View style={styles.topNavContainer} pointerEvents="box-none" >
-        
+        <View style={styles.topNavContainer} pointerEvents="box-none">
           <View style={styles.navButtonGroup}>
-           
-              <TouchableOpacity style={styles.profileIcon} onPress={() => navigation.navigate("Profile")}>
-                <User />
-              </TouchableOpacity>
-         
-           
-              <TouchableOpacity style={styles.profileIcon} onPress={() => navigation.navigate("Challenges")}>
-                <Target />
-              </TouchableOpacity>
-         
-              <TouchableOpacity style={styles.profileIcon} onPress={() => navigation.navigate("Friends")}>
-                <FriendsIcon />
-              </TouchableOpacity>
-
-     
-              <TouchableOpacity style={styles.streakIcon} onPress={() => navigation.navigate("Streaks")}>
-                <StreakIcon streak={currentStreak} />
-              </TouchableOpacity>
+            <TouchableOpacity style={[styles.profileIcon,  { position: 'absolute', top: height * 0.0036, right: width * 0.001 }]} onPress={() => navigation.navigate("Profile")}>
+              <User />
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.profileIcon,  { position: 'absolute', top: height * 0.072, right: width * 0.001 }]} onPress={() => navigation.navigate("Challenges")}>
+              <Target />
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.profileIcon,  { position: 'absolute', top: height * 0.1404, right: width * 0.001 }]} onPress={() => navigation.navigate("Friends")}>
+              <FriendsIcon />
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.streakIcon,  { position: 'absolute', top: height * 0.212, right: width * 0.001 }]} onPress={() => navigation.navigate("Streaks")}>
+              <StreakIcon streak={currentStreak} />
+            </TouchableOpacity>
           </View>
         </View>
-       
         <View style={styles.mapSection}>
           <Map onHexagonCaptured={handleHexagonCaptured}/>
         </View>
@@ -328,94 +322,71 @@ export default function ({ navigation }) {
               navigation={navigation}
             />
           </View>
-          
         ) : (
-          <TouchableOpacity style={styles.noChallengeContainer} onPress={() => navigation.navigate("Challenges")}  activeOpacity={0.9}>
-              <Text style={styles.noChallengeText}>Klik hier voor nieuwe uitdaging</Text>
+          <TouchableOpacity style={styles.noChallengeContainer} onPress={() => navigation.navigate("Challenges")} activeOpacity={0.9}>
+            <Text style={styles.noChallengeText}>Klik hier voor nieuwe uitdaging</Text>
           </TouchableOpacity>
         )}
-         {showAnimation && (
-        <View style={styles.lottieContainer}>
-          <LottieView
-            autoPlay
-            loop={false}
-            ref={animation}
-            style={styles.lottieAnimation}
-            source={require('./../components/utils/animations/confetti.json')}
-            speed={0.5}
-
-          />
-          <LottieView
-            autoPlay
-            loop={false}
-            style={styles.lottieAnimation}
-            source={require('./../components/utils/animations/confetti.json')}
-            speed={0.5}
-            
-          />
-          <LottieView
-            autoPlay
-            loop={false}
-            style={styles.lottieAnimation}
-            source={require('./../components/utils/animations/confetti.json')}
-            speed={0.5}
-           
-          />
-          
-        </View>
-      )}
-
+        {showAnimation && (
+          <View style={styles.lottieContainer}>
+            <LottieView
+              autoPlay
+              loop={false}
+              ref={animation}
+              style={styles.lottieAnimation}
+              source={require('./../components/utils/animations/confetti.json')}
+              speed={0.5}
+            />
+            <LottieView
+              autoPlay
+              loop={false}
+              style={styles.lottieAnimation}
+              source={require('./../components/utils/animations/confetti.json')}
+              speed={0.5}
+            />
+            <LottieView
+              autoPlay
+              loop={false}
+              style={styles.lottieAnimation}
+              source={require('./../components/utils/animations/confetti.json')}
+              speed={0.5}
+            />
+          </View>
+        )}
         <Modal
           visible={showTutorial}
           transparent={true}
           animationType="fade"
           onRequestClose={() => setShowTutorial(false)}
         >
-
           <View style={styles.tutorialContainer}>
-
-            {currentTutorialIndex == 3 ? (
-                <TouchableOpacity style={[styles.profileIconModal, { top: '2.6%', right: '5.1%'}]} pointerEvents="none">
-                  <User />
-                </TouchableOpacity>
-                 ) : (
-                  <></>
-                )}
-
-            {currentTutorialIndex == 4 ? (
-                <TouchableOpacity style={[styles.profileIconModal, { top: '9.6%', right: '5.1%'}]} pointerEvents="none">
-                   <Target />
-                </TouchableOpacity>
-                 ) : (
-                  <></>
-                )}
-
-            {currentTutorialIndex == 5 ? (
-                <TouchableOpacity style={[styles.profileIconModal, { top: '16.6%', right: '5.1%'}]} pointerEvents="none">
-                  <FriendsIcon />
-                </TouchableOpacity>
-                 ) : (
-                  <></>
-                )}
-
-            {currentTutorialIndex == 6 ? (
-                <TouchableOpacity style={[styles.streakIconModal, { top: '23.5%', right: '5.2%'}]} pointerEvents="none">
-                  <IconStreakModal  />
-                </TouchableOpacity>
-                 ) : (
-                  <></>
-                )}
-
-
-
+            {currentTutorialIndex == 3 && (
+              <TouchableOpacity style={[styles.profileIconModal, { top: height * 0.030, right: width * 0.055 }]} pointerEvents="none">
+                <User />
+              </TouchableOpacity>
+            )}
+            {currentTutorialIndex == 4 && (
+              <TouchableOpacity style={[styles.profileIconModal, { top: height * 0.098, right: width * 0.055 }]} pointerEvents="none">
+                <Target />
+              </TouchableOpacity>
+            )}
+            {currentTutorialIndex == 5 && (
+              <TouchableOpacity style={[styles.profileIconModal, { top: height * 0.167, right: width * 0.055 }]} pointerEvents="none">
+                <FriendsIcon />
+              </TouchableOpacity>
+            )}
+            {currentTutorialIndex == 6 && (
+              <TouchableOpacity style={[styles.streakIconModal, { top: height * 0.2385, right: width * 0.055 }]} pointerEvents="none">
+                <IconStreakModal />
+              </TouchableOpacity>
+            )}
             <View style={styles.tutorialBox}>
-            <Text style={styles.tutorialTitle}>
-              {currentTutorialIndex == 7 ? 'Einde' : 'Hoe werkt het'}
-            </Text>
-
+              <Text style={styles.tutorialTitle}>
+                {currentTutorialIndex == 7 ? 'Einde' : 'Hoe werkt het'}
+              </Text>
               <Text style={styles.tutorialText}>{tutorialTexts[currentTutorialIndex].text}</Text>
               <Text style={styles.tutorialProgress}>
-                 {currentTutorialIndex + 1} / {tutorialTexts.length}
+                {currentTutorialIndex + 1} / {tutorialTexts.length}
               </Text>
               <TouchableOpacity style={styles.nextButton} onPress={nextTutorial}>
                 <Text style={styles.nextButtonText}>Volgende</Text>
@@ -423,12 +394,10 @@ export default function ({ navigation }) {
             </View>
           </View>
         </Modal>
-     
       </Layout>
     </SafeAreaView>
   );
 }
-
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -448,16 +417,16 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   profileIcon: {
-    backgroundColor: Colors.secondaryGreen, 
-    borderRadius: 12, 
+    backgroundColor: Colors.secondaryGreen,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     width: 45,
     height: 42,
     shadowColor: "#000",
     shadowOffset: {
-        width: 5,
-        height: 5,
+      width: 5,
+      height: 5,
     },
     shadowOpacity: 0.5,
     shadowRadius: 5,
@@ -484,7 +453,6 @@ const styles = StyleSheet.create({
     bottom: 20,
     left: 20,
     width: '100%',
-   
     borderRadius: 10,
     padding: 5,
   },
@@ -516,92 +484,88 @@ const styles = StyleSheet.create({
     color: Colors.secondaryGreen,
     fontWeight: 'bold',
     marginBottom: 0,
-    },
-    underlineInside : {
-      left: 0,
-  
-    height: 3,  // 3px width
+  },
+  underlineInside: {
+    left: 0,
+    height: 3,
     backgroundColor: Colors.secondaryGreen,
     marginBottom: 10,
+  },
+  lottieContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    zIndex: 2,
+  },
+  lottieAnimation: {
+    width: '100%',
+    height: '40%',
+    backgroundColor: 'transparent',
+  },
+  tutorialContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 0,
+  },
+  tutorialBox: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
     },
-    lottieContainer: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      width: '100%',
-      height: '100%',
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: 'transparent',
-      zIndex: 2,
-    },
-    lottieAnimation: {
-      width: '100%',
-      height: '40%', // One third of the height
-      backgroundColor: 'transparent',
-    },
-    tutorialContainer: {
-      flex: 1,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      justifyContent: 'center',
-      alignItems: 'center',
-      paddingBottom: 0,
-      
-    },
-    tutorialBox: {
-      backgroundColor: 'white',
-      padding: 20,
-      borderRadius: 10,
-      elevation: 5,
-      shadowColor: "#000",
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 0.25,
-      shadowRadius: 3.84,
-      alignItems: 'center',
-      maxWidth: 350,
-      justifyContent: 'space-between',
-      height: '42%',
-      width: '75%'
-    },
-    tutorialTitle: {
-      fontSize: 24,
-      fontWeight: 'bold',
-      marginBottom: 10,
-      color: Colors.secondaryGreen, 
-    },
-    tutorialText: {
-      textAlign: 'center',
-      color: Colors.secondaryGreen,
-      marginHorizontal: 0,
-      fontSize: 18,
-      marginBottom: 10
-    },
-    nextButton: {
-      padding: 4,
-      paddingHorizontal: 8,
-      borderWidth: 2,
-      borderColor: Colors.secondaryGreen,
-      borderRadius: 15,
-      marginTop: 0
-    },
-    nextButtonText:{
-      color: Colors.secondaryGreen,
-    },
-    tutorialProgress:{
-      color: Colors.secondaryGreen,
-      fontWeight: 'bold',
-      marginTop: 15
-    },
-
-
-    profileIconModal:{
-      backgroundColor: Colors.secondaryGreen, 
-    borderRadius: 12, 
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    alignItems: 'center',
+    maxWidth: 350,
+    justifyContent: 'space-between',
+    height: '42%',
+    width: '75%',
+  },
+  tutorialTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: Colors.secondaryGreen,
+  },
+  tutorialText: {
+    textAlign: 'center',
+    color: Colors.secondaryGreen,
+    marginHorizontal: 0,
+    fontSize: 18,
+    marginBottom: 10,
+  },
+  nextButton: {
+    padding: 4,
+    paddingHorizontal: 8,
+    borderWidth: 2,
+    borderColor: Colors.secondaryGreen,
+    borderRadius: 15,
+    marginTop: 0,
+  },
+  nextButtonText: {
+    color: Colors.secondaryGreen,
+  },
+  tutorialProgress: {
+    color: Colors.secondaryGreen,
+    fontWeight: 'bold',
+    marginTop: 15,
+  },
+  profileIconModal: {
+    backgroundColor: Colors.secondaryGreen,
+    borderRadius: 12,
     borderColor: Colors.primaryGreen,
     borderWidth: 1.5,
     justifyContent: 'center',
@@ -610,23 +574,20 @@ const styles = StyleSheet.create({
     height: 42,
     shadowColor: "#000",
     shadowOffset: {
-        width: 5,
-        height: 5,
+      width: 5,
+      height: 5,
     },
     shadowOpacity: 0.5,
     shadowRadius: 5,
     elevation: 5,
-
     position: 'absolute',
-    
-    },
-    streakIconModal: {
-      justifyContent: 'center',
+  },
+  streakIconModal: {
+    justifyContent: 'center',
     alignItems: 'center',
     paddingLeft: 5,
     width: 45,
     height: 42,
     position: 'absolute',
-    
-    }
+  },
 });
