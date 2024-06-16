@@ -2,7 +2,9 @@
   "build": {
     "preview": {
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "distribution": "internal",
+        "gradleCommand": ":app:assembleRelease"
       }
     },
     "preview2": {
@@ -10,12 +12,7 @@
         "gradleCommand": ":app:assembleRelease"
       }
     },
-    "preview3": {
-      "developmentClient": true
-    },
-    "preview4": {
-      "distribution": "internal"
-    },
+  
     "production": {}
   }
 }
