@@ -5,10 +5,9 @@ import * as Progress from 'react-native-progress';
 import Colors from '../../consts/Colors';
 import getChallengeTypeText from '../utils/getChallengeTypeText';
 
-const DailyChallengeCard = ({  goal, unit, navigation }) => {
-  const progress = 1;
+const DailyChallengeCard = ({ progress, goal, unit, navigation }) => {
   const formattedProgress = progress.toLocaleString('nl-NL', { minimumFractionDigits: 0, maximumFractionDigits: 2});
-  const progressPercentage = 1.2 / goal;
+  const progressPercentage = progress / goal;
 
   const type = getChallengeTypeText(unit);
 

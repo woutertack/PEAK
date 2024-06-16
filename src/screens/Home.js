@@ -195,8 +195,10 @@ export default function ({ navigation }) {
   const calculateDailyProgress = async (challenge) => {
    
     let progress = 0;
+    console.log('Challenge:', challenge);
 
     if (challenge.challenge_type === 'hexagons') {
+  
       const { data: hexagons, error } = await supabase
         .from('locations')
         .select('visit_times')
@@ -212,9 +214,12 @@ export default function ({ navigation }) {
         const validVisits = hexagons.flatMap(location =>
           (location.visit_times || []).filter(visitTime => new Date(visitTime) >= new Date(challenge.creation_time))
         );
+
+        console.log('All visits:', hexagons);
         // console.log('Valid visits:', validVisits);
     
         progress = validVisits.length ;
+        console.log('Progress:', progress);
     } else {
 
       const { totalSteps, totalDistance } = await readHealthData(challenge.creation_time);
@@ -231,7 +236,7 @@ export default function ({ navigation }) {
       console.log('Progress:', progress);
       
     }
-
+    
     setDailyProgress(progress);
     updateChallengeCompletionStatus(challenge, progress);
   };
@@ -267,7 +272,7 @@ export default function ({ navigation }) {
         await Promise.all([fetchStreakData(), fetchDailyChallenge(), getTotalVisits()]);
       };
       fetchData();
-    }, [session?.user.id, readHealthData])
+    }, [session?.user.id, readHealthData,])
   );
 
   useEffect(() => {
