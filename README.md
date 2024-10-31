@@ -1,5 +1,6 @@
 ﻿# PEAK
 Peak is a school project designed to motivate young adults to walk more and adopt a healthier lifestyle. The app features an interactive map with challenges, gamification elements like streaks and rewards, and social competitions. Users can track their progress, set goals, and challenge friends, making daily walks fun and engaging.
+
 ![Group 199](https://github.com/user-attachments/assets/16032c87-a14a-49fd-974b-871b19f0b6e1)
 
 ## Build with
@@ -23,8 +24,8 @@ Peak is a school project designed to motivate young adults to walk more and adop
 (This project does not work on Expo Go)
 
 ## Design
-![Startscreen slider 1 – 3](https://github.com/user-attachments/assets/40c03111-76ff-448b-88a0-fd4a5f7442be)![First login](https://github.com/user-attachments/assets/08aeb6d3-3c75-45fc-8ff6-8b8156d4e65a)![Map-home](https://github.com/user-attachments/assets/9754fa04-ec84-49e1-a231-0f8e1eccfc46)
-![Streak screen](https://github.com/user-attachments/assets/098bea21-5dc3-4052-b10a-e45069fb3251)![Profile](https://github.com/user-attachments/assets/6ff640ee-b154-4a58-8ea5-67e55567896c)![Challenges-badges – 2](https://github.com/user-attachments/assets/5a8d634d-edc9-4ac0-ba75-811452017d29)
+![Startscreen slider 1 – 3](https://github.com/user-attachments/assets/40c03111-76ff-448b-88a0-fd4a5f7442be) ![First login](https://github.com/user-attachments/assets/08aeb6d3-3c75-45fc-8ff6-8b8156d4e65a) ![Map-home](https://github.com/user-attachments/assets/9754fa04-ec84-49e1-a231-0f8e1eccfc46)
+![Streak screen](https://github.com/user-attachments/assets/098bea21-5dc3-4052-b10a-e45069fb3251) ![Profile](https://github.com/user-attachments/assets/6ff640ee-b154-4a58-8ea5-67e55567896c) ![Challenges-badges – 2](https://github.com/user-attachments/assets/5a8d634d-edc9-4ac0-ba75-811452017d29)
 
 
 
